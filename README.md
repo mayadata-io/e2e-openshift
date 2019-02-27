@@ -1,4 +1,4 @@
-#e2e-openshift
+# e2e-openshift
 
 This repository contains platform execution code to run OpenEBS and workloads E2E testing pipelines for OpenShift platform. The platform is built around GitLab and OpenEBS Litmus.
 
@@ -10,31 +10,31 @@ This platform has the following pipelines and all of them can be run against a g
 
 
 
-##OpenShift 3.11 Enterprise Edition
+## OpenShift 3.11 Enterprise Edition
 
   
 
 | Pipeline                     | Description | Status         |
 | ---------------------------- | ----------- | -------------- |
-| OpenEBS Base                 |             | In development |
-| Prometheus                   |             | In development |
-| ElasticSearch                |             | In development |
-| GitLab                       |             | In development |
-| NuoDB EE                     |             | In development |
-| MongoDB                      |             | In development |
-| PostgreSQL                   |             | In development |
-| Cassandra CE                 |             | In development |
-| Minio object storage         |             | In development |
-| Redis                        |             | In development |
-| MySQL                        |             | In development |
-| Percona                      |             | In development |
-| WordPress - NFS for RWM PVCs |             | In development |
+| OpenEBS Base                 |Validation of OpenEBS control plane and basic data plane functionality             | In development |
+| Prometheus                   |Prometheus E2E with OpenEBS as Persistent storage             | In development |
+| ElasticSearch                |ElasticSearch E2E with OpenEBS as Persistent storage             | In development |
+| GitLab                       |GitLab E2E with OpenEBS as Persistent storage             | In development |
+| NuoDB EE                     |NuoDB EE E2E with OpenEBS as Persistent storage             | In development |
+| MongoDB                      |MongoDB E2E with OpenEBS as Persistent storage             | In development |
+| PostgreSQL                   |PostgreSQL E2E with OpenEBS as Persistent storage             | In development |
+| Cassandra CE                 |Cassandra CE E2E with OpenEBS as Persistent storage             | In development |
+| Minio object storage         |Minio object storage E2E with OpenEBS as Persistent storage             | In development |
+| Redis                        |Redis E2E with OpenEBS as Persistent storage             | In development |
+| MySQL                        |MySQL E2E with OpenEBS as Persistent storage             | In development |
+| Percona                      |Percona E2E with OpenEBS as Persistent storage             | In development |
+| WordPress - NFS for RWM PVCs |WordPress E2E with OpenEBS as Persistent storage             | In development |
 
 
 
 
 
-##Pipeline stages
+## Pipeline stages
 
 Each of the pipelines has five stages
 
@@ -46,7 +46,7 @@ Each of the pipelines has five stages
 
 
 
-##How it works?
+## How it works?
 
 
 
