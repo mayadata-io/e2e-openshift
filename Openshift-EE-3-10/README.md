@@ -4,7 +4,7 @@ OpenEBS enables the use of containers for mission-critical, persistent workloads
 
 Here, We validate OpenEBS storage services being consumed by stateful applications on the platform OpenShift enterprise 3.10 clusters.
 
- We have Ansible based chaos engineering framework named Litmus which is capable of performing storage and application specific chaos tests.
+ We have Ansible based chaos engineering framework named [Litmus](https://github.com/openebs/litmus) which is capable of performing storage and application specific chaos tests.
 
 ### **Platform**
 
