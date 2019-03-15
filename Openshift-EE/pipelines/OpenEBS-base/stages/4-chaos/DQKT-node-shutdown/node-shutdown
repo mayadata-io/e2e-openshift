@@ -1,0 +1,63 @@
+#!/bin/bash
+set -x
+
+
+pod() {
+echo $CI_JOB_ID
+###clone e2e-openshift-repo
+echo "cloning e2e-openshift repo*************"
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip 'git clone https://github.com/openebs/e2e-openshift.git'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip 'cd e2e-openshift && git checkout master && bash Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/DQKT-node-shutdown/node-shutdown node '"'$CI_JOB_ID'"''
+}
+
+node() {
+job_id=$(echo $1)
+echo $job_id
+echo "*********Applying e2e-crd***********"
+kubectl apply -f Openshift-EE/utils/e2e-crd.yml
+
+echo "****Creating e2e-crd********"
+cat Openshift-EE/utils/e2e-result.yml > node-shutdown-result.yml
+sed -i -e "s/<test-phase>/Running/g" -e "s/<test-name>/node-shutdown/g" -e"s/<job_id>/$job_id/g" node-shutdown-result.yml
+
+time="date"
+current_time=$(eval $time)
+sed -i -e "s/<test-init>/$current_time/g" -e "s/<openebs-id>/0.8.1/g" node-shutdown-result.yml
+kubectl apply -f node-shutdown-result.yml
+cat node-shutdown-result.yml
+
+echo "*******Deploying Application****"
+sleep 5
+echo "      Application-Deployment: Pass" >> node-shutdown-result.yml
+cat node-shutdown-result.yml
+kubectl apply -f node-shutdown-result.yml
+
+echo "*******Generating load**********"
+sleep 5
+echo "      Application-Loadgen: Pass" >> node-shutdown-result.yml
+cat node-shutdown-result.yml
+kubectl apply -f node-shutdown-result.yml
+
+echo "*******Shutting down the node************"
+sleep 5
+echo "      node-shutdown: Fail" >> node-shutdown-result.yml
+cat node-shutdown-result.yml
+kubectl apply -f node-shutdown-result.yml
+
+echo "*******Deprovisioning Application******"
+sleep 5
+echo "      Application-Deprovisioning: Pass" >> node-shutdown-result.yml
+cat node-shutdown-result.yml
+kubectl apply -f node-shutdown-result.yml
+
+current_time=$(eval $time)
+sed -i -e "s/<test-finish>/$current_time/g" node-shutdown-result.yml
+sed -i -e "s/<test-result>/Fail/g" node-shutdown-result.yml
+cat node-shutdown-result.yml
+}
+
+if [ "$1" == "node" ];then
+  node $2
+else
+  pod
+fi
