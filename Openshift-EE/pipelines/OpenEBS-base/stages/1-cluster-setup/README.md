@@ -15,6 +15,3 @@ Check if the OpenShift cluster is ready using kubectl command.
 #### Test Result
 
 
-
-
-
