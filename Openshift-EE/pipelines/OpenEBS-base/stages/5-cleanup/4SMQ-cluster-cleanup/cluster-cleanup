@@ -11,6 +11,7 @@ sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip 'cd e2e-openshift && 
 
 node() {
 job_id=$(echo $1)
+
 git clone https://github.com/openebs/litmus.git
 cd litmus
 
@@ -41,6 +42,9 @@ sed -i -e 's/snapshot_name: "oc-cluster"/snapshot_name: "cauto"/g' \
 -e 's/esx_ip: "10.12.1.1"/esx_ip: "10.23.1.1"/g' k8s/on-prem/openshift-installer/vars.yml
 
 ansible-playbook k8s/on-prem/openshift-installer/revert_cluster_state.yml -vv
+
+#Removimg e2e openshift test repo
+cd  && rm -rf e2e-openshift
 }
 
 if [ "$1" == "node" ];then
