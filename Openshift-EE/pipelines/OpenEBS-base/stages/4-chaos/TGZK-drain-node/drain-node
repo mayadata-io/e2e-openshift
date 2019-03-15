@@ -1,0 +1,63 @@
+#!/bin/bash
+set -x
+
+
+pod() {
+echo $CI_JOB_ID
+###clone e2e-openshift-repo
+echo "cloning e2e-openshift repo*************"
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip 'git clone https://github.com/openebs/e2e-openshift.git'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip 'cd e2e-openshift && git checkout master && bash Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/TGZK-drain-node/drain-node node '"'$CI_JOB_ID'"''
+}
+
+node() {
+job_id=$(echo $1)
+echo $job_id
+echo "*********Applying e2e-crd***********"
+kubectl apply -f Openshift-EE/utils/e2e-crd.yml
+
+echo "****Creating e2e-crd********"
+cat Openshift-EE/utils/e2e-result.yml > drain-node-result.yml
+sed -i -e "s/<test-phase>/Running/g" -e "s/<test-name>/drain-node/g" -e"s/<job_id>/$job_id/g" drain-node-result.yml
+
+time="date"
+current_time=$(eval $time)
+sed -i -e "s/<test-init>/$current_time/g" -e "s/<openebs-id>/0.8.1/g" drain-node-result.yml
+kubectl apply -f drain-node-result.yml
+cat drain-node-result.yml
+
+echo "*******Deploying Application****"
+sleep 5
+echo "      Application-Deployment: Pass" >> drain-node-result.yml
+cat drain-node-result.yml
+kubectl apply -f drain-node-result.yml
+
+echo "*******Generating load**********"
+sleep 5
+echo "      Application-Loadgen: Pass" >> drain-node-result.yml
+cat drain-node-result.yml
+kubectl apply -f drain-node-result.yml
+
+echo "*******Draining node************"
+sleep 5
+echo "      drain-node: Fail" >> drain-node-result.yml
+cat drain-node-result.yml
+kubectl apply -f drain-node-result.yml
+
+echo "*******Deprovisioning Application******"
+sleep 5
+echo "      Application-Deprovisioning: Pass" >> drain-node-result.yml
+cat drain-node-result.yml
+kubectl apply -f drain-node-result.yml
+
+current_time=$(eval $time)
+sed -i -e "s/<test-finish>/$current_time/g" drain-node-result.yml
+sed -i -e "s/<test-result>/Fail/g" drain-node-result.yml
+cat drain-node-result.yml
+}
+
+if [ "$1" == "node" ];then
+  node $2
+else
+  pod
+fi

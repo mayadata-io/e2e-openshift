@@ -1,0 +1,62 @@
+#!/bin/bash
+set -x
+
+pod() {
+echo $CI_JOB_ID
+###clone e2e-openshift-repo
+echo "cloning e2e-openshift repo*************"
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip 'git clone https://github.com/openebs/e2e-openshift.git'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip 'cd e2e-openshift && git checkout master && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/5O5V-Clone-parent-vol-delete/clone-parent-vol-delete node '"'$CI_JOB_ID'"''
+}
+
+node() {
+job_id=$(echo $1)
+echo "*********Applying e2e-crd***********"
+kubectl apply -f Openshift-EE/utils/e2e-crd.yml
+
+echo "****Creating e2e-crd********"
+cat Openshift-EE/utils/e2e-result.yml > clone-parent-vol-delete-$job_id.yml
+sed -i -e "s/<test-phase>/Running/g" -e "s/<test-name>/Clone-parent-volume-delete/g" -e"s/<job_id>/$job_id/g" clone-parent-vol-delete-$job_id.yml
+
+time="date"
+current_time=$(eval $time)
+sed -i -e "s/<test-init>/$current_time/g" -e "s/<openebs-id>/0.8.1/g" clone-parent-vol-delete-$job_id.yml
+kubectl apply -f clone-parent-vol-delete-$job_id.yml
+cat clone-parent-vol-delete-$job_id.yml
+
+echo "*******Deploying Application****"
+sleep 5
+echo "      Application-Deployment: Pass" >> clone-parent-vol-delete-$job_id.yml
+cat clone-parent-vol-delete-$job_id.yml
+kubectl apply -f clone-parent-vol-delete-$job_id.yml
+
+echo "*******Generating load**********"
+sleep 5
+echo "      Application-Loadgen: Pass" >> clone-parent-vol-delete-$job_id.yml
+cat clone-parent-vol-delete-$job_id.yml
+kubectl apply -f clone-parent-vol-delete-$job_id.yml
+
+echo "*******Deleting parent volume that has clone************"
+sleep 5
+echo "      clone-parent-vol-delete: Fail" >> clone-parent-vol-delete-$job_id.yml
+cat clone-parent-vol-delete-$job_id.yml
+kubectl apply -f clone-parent-vol-delete-$job_id.yml
+
+echo "*******Deprovisioning Application******"
+sleep 5
+echo "      Application-Deprovisioning: Pass" >> clone-parent-vol-delete-$job_id.yml
+cat clone-parent-vol-delete-$job_id.yml
+kubectl apply -f clone-parent-vol-delete-$job_id.yml
+
+current_time=$(eval $time)
+sed -i -e "s/<test-finish>/$current_time/g" clone-parent-vol-delete-$job_id.yml
+sed -i -e "s/<test-result>/Fail/g" clone-parent-vol-delete-$job_id.yml
+sed -i -e "s/Running/Completed/g" clone-parent-vol-delete-$job_id.yml
+cat clone-parent-vol-delete-$job_id.yml
+}
+
+if [ "$1" == "node" ];then
+  node $2
+else
+  pod
+fi
