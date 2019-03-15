@@ -1,0 +1,3 @@
+#!/bin/bash
+
+echo "Destroying openshift cluster"
