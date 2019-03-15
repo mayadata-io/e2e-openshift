@@ -78,10 +78,10 @@ kubectl create cm kubeconfig --from-file=admin.conf -n litmus
 echo "Running litmus test for openebs deploy.."
 
 run_test=providers/openebs/installers/operator/master/litmusbook/openebs_setup.yaml
-bash Openshift-EE/utils/litmus_job_runner label='provider:openebs-setup' job=$run_test
+bash ../Openshift-EE/utils/litmus_job_runner label='provider:openebs-setup' job=$run_test
 
 echo "Dumping state of cluster post job run"; echo ""
-bash Openshift-EE/utils/dump_cluster_state;
+bash ../Openshift-EE/utils/dump_cluster_state;
 
 #################
 ## GET RESULT  ##

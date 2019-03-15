@@ -21,7 +21,7 @@ echo "***********Applying openebs-storage-clas********"
 bash Openshift-EE/utils/pooling jobname:s2-j2-cstor-pool
 bash Openshift-EE/utils/e2e-cr jobname:s2-j3-policies jobphase:Running init_time:"$current_time"
 
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase=ctor-storage-policies metadata="")
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=cstor-storage-policies metadata="")
 echo $test_name
 
 cd litmus
@@ -31,10 +31,10 @@ run_test=providers/cstor-storage-policies/run_litmus_test.yml
 
 cat $run_test
 
-bash Openshift-EE/utils/litmus_job_runner label='app:cstor-storage-policy' job=$run_test
+bash ../Openshift-EE/utils/litmus_job_runner label='app:cstor-storage-policy' job=$run_test
 
 echo "Dumping state of cluster post job run"; echo ""
-bash Openshift-EE/utils/dump_cluster_state;
+bash ../Openshift-EE/utils/dump_cluster_state;
 
 #################
 ## GET RESULT  ##
