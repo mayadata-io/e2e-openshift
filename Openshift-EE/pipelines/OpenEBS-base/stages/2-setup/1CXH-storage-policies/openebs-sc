@@ -21,7 +21,7 @@ echo "***********Applying openebs-storage-clas********"
 bash Openshift-EE/utils/pooling jobname:s2-j2-cstor-pool
 bash Openshift-EE/utils/e2e-cr jobname:s2-j3-policies jobphase:Running init_time:"$current_time"
 
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase=ctor-storage-policies metadata="")
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=cstor-storage-policies metadata="")
 echo $test_name
 
 cd litmus
