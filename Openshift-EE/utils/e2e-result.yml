@@ -1,0 +1,16 @@
+---
+apiVersion: e2e.io/v1alpha1
+kind: e2eResult
+metadata:
+
+  # name of the e2e testcase
+  name: <test-name>-<job_id>
+spec:
+  testResult: <test-result>
+  testStatus:
+    phase: <test-phase>
+    start_time: <test-init>
+    end_time: <test-finish>
+    build_id: <openebs-id>
+    job_id: <job-id>
+    event:   

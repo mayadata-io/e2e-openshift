@@ -1,0 +1,254 @@
+## Define the stages & order of execution
+
+stages:
+  - CLUSTER-SETUP
+  - OPENEBS-SETUP
+  - FUNCTIONAL
+  - CHAOS
+  - CLEANUP
+
+0001-OS-3.10:
+  image: openebs/openshift-ci:latest
+  stage: CLUSTER-SETUP
+  script:     
+    - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/1-cluster-setup/cluster-state.sh
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/1-cluster-setup/cluster-state.sh
+
+0002-v0.8.1:
+  image: openebs/openshift-ci:latest
+  stage: OPENEBS-SETUP
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/deploy-openebs.sh
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/deploy-openebs.sh
+
+0004-POLICIES:
+  image: openebs/openshift-ci:latest
+  stage: OPENEBS-SETUP
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/openebs-sc
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/openebs-sc   
+  
+0003-CSTOR-POOL:
+  image: openebs/openshift-ci:latest
+  stage: OPENEBS-SETUP
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/create-pool.sh
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/create-pool.sh
+    
+.func_test_template:
+  image: openebs/openshift-ci:latest
+  stage: FUNCTIONAL
+  dependencies:
+    - 0002-v0.8.1
+     
+0005-Snapshot:
+  extends: .func_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UC1-snapshot/snapshot
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UC1-snapshot/snapshot
+
+0006-Clone:
+  extends: .func_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UC2-snapshot-clone/snapshot-clone
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UC2-snapshot-clone/snapshot-clone
+
+0007-Snap-Rebuild-1:
+  extends: .func_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UC3-snap-rebuild-single-rep/snap-rebuild-single-rep
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UC3-snap-rebuild-single-rep/snap-rebuild-single-rep
+
+0008-Snap-Rebuild-2:
+  extends: .func_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UC4-snap-rebuild-multiple-rep/snap-rebuild-multiple-rep
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UC4-snap-rebuild-multiple-rep/snap-rebuild-multiple-rep
+
+0009-Clone-Rebuild-1:
+  extends: .func_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UC5-clone-pre-snap-rebuild/clone-pre-rebuild
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UC5-clone-pre-snap-rebuild/clone-pre-rebuild
+
+0010-Clone-Rebuild-2:
+  extends: .func_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UC6-clone-during-snap-rebuild/clone-during-rebuild
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UC6-clone-during-snap-rebuild/clone-during-rebuild
+
+0011-Clone-Rebuild-3:
+  extends: .func_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UC7-clone-post-snap-rebuild/clone-post-rebuild
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UC7-clone-post-snap-rebuild/clone-post-rebuild
+
+0012-Parent-Vol-Delete:
+  extends: .func_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UC8-Clone-parent-vol-delete/clone-parent-vol-delete
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UC8-Clone-parent-vol-delete/clone-parent-vol-delete
+
+App-Upgrade:
+  extends: .func_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UC9-Application-Upgrade/application-upgrade
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UC9-Application-Upgrade/application-upgrade
+
+App-Scaleup:
+  extends: .func_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UC10-Sts-App-replica-scaleup/app-replica-scaleup
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UC10-Sts-App-replica-scaleup/app-replica-scaleup
+
+Storage-Scaleup:
+  extends: .func_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UC11-Storage-Volume-scaleup/storage-volume-scaleup
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UC11-Storage-Volume-scaleup/storage-volume-scaleup
+
+Storage-Upgrade:
+  extends: .func_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UC12-Storage-volume-upgrade/storage-volume-upgrade
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UC12-Storage-volume-upgrade/storage-volume-upgrade
+
+Vol-Distribute:
+  extends: .func_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UC13-STS-Volume-Distribution/volume-distribution
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UC13-STS-Volume-Distribution/volume-distribution
+
+Data-integrity:
+  extends: .func_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UC14-Data-Integrity/data-integrity
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UC14-Data-Integrity/data-integrity
+
+Memory-Usage:
+  extends: .func_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UC15-Memory-Consumption/memory-consumption
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UC15-Memory-Consumption/memory-consumption
+
+Volume-Capacity:
+  extends: .func_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UC16-Volume-Capacity/volume-capacity
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UC16-Volume-Capacity/volume-capacity
+
+.chaos_test_template:
+  image: openebs/openshift-ci:latest
+  stage: CHAOS
+  dependencies:
+    - 0002-v0.8.1
+
+App-Kill:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/UC-1-app-kill/app-kill
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/UC-1-app-kill/app-kill
+
+iStgt-Kill:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/UC-2-istgt-kill/istgt-kill
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/UC-2-istgt-kill/istgt-kill
+
+Pool-Kill:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/UC-3-pool-kill/pool-kill
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/UC-3-pool-kill/pool-kill
+    
+Volume-Kill:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/UC-4-volume-kill/volume-kill
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/UC-4-volume-kill/volume-kill
+
+Target-n/w-Delay:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/UC-5-target-network-delay/target-network-delay
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/UC-5-target-network-delay/target-network-delay
+
+Target-n/w-Loss:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/UC-5-target-network-loss/target-network-loss
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/UC-5-target-network-loss/target-network-loss
+
+Pool-n/w-Loss:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/UC-6-pool-network-loss/pool-network-loss
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/UC-6-pool-network-loss/pool-network-loss
+
+Pool-n/w-Delay:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/UC-7-pool-network-delay/pool-network-delay
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/UC-7-pool-network-delay/pool-network-delay
+
+Zrepl-Kill:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/UC-8-zrepl-kill/zrepl-kill
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/UC-8-zrepl-kill/zrepl-kill
+
+Kubelet-Crash:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/UC-9-kubelet-down/kubelet-down
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/UC-9-kubelet-down/kubelet-down
+
+Node-Shutdown:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/UC-10-node-shutdown/node-shutdown
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/UC-10-node-shutdown/node-shutdown
+
+Docker-Crash:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/UC-11-docker-down/docker-down
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/UC-11-docker-down/docker-down
+
+Memory-Pressure:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/UC-12-memory-pressure/memory-pressure
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/UC-12-memory-pressure/memory-pressure
+
+CPU-Pressure:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/UC-13-cpu-pressure/cpu-pressure
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/UC-13-cpu-pressure/cpu-pressure
+
+Node-Drain:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/UC-14-drain-node/drain-node
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/UC-14-drain-node/drain-node
+
+Node-Evict:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/UC-15-evict-node/evict-node
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/UC-15-evict-node/evict-node
+
+openebs-cleanup:
+  image: openebs/openshift-ci:latest
+  stage: CLEANUP
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/5-cleanup/openebs-cleanup/openebs-delete.sh
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/5-cleanup/openebs-cleanup/openebs-delete.sh
+  
+OS-cleanup:
+  image: openebs/openshift-ci:latest
+  stage: CLEANUP
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/5-cleanup/OS-3.10-cleanup/OS-cleanup
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/5-cleanup/OS-3.10-cleanup/OS-cleanup
