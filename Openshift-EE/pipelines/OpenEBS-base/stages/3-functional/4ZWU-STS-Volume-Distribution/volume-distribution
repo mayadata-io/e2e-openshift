@@ -11,48 +11,40 @@ sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip 'cd e2e-openshift && 
 
 node() {
 job_id=$(echo $1)
-echo "*********Applying e2e-crd***********"
-kubectl apply -f Openshift-EE/utils/e2e-crd.yml
-
-echo "****Creating e2e-crd********"
-cat Openshift-EE/utils/e2e-result.yml > volume-distribution-$job_id.yml
-sed -i -e "s/<test-phase>/Running/g" -e "s/<test-name>/sts-volume-distribution/g" -e"s/<job_id>/$job_id/g" volume-distribution-$job_id.yml
-
 time="date"
 current_time=$(eval $time)
-sed -i -e "s/<test-init>/$current_time/g" -e "s/<openebs-id>/0.8.1/g" volume-distribution-$job_id.yml
-kubectl apply -f volume-distribution-$job_id.yml
-cat volume-distribution-$job_id.yml
+echo "*********Applying e2e-crd***********"
+kubectl apply -f Openshift-EE/utils/e2e-crd.yml
+echo "*****Deploying openebs*******"
+bash Openshift-EE/utils/e2e-cr jobname:volume-replica-distribution jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:volume-replica-distribution jobphase:Running init_time:"$current_time"
 
-echo "*******Deploying Application****"
-sleep 5
-echo "      Application-Deployment: Pass" >> volume-distribution-$job_id.yml
-cat volume-distribution-$job_id.yml
-kubectl apply -f volume-distribution-$job_id.yml
+# Removing test_id from e2e-result.yml spec for simple mode
+#sed -i "s/-<job_id>/ /g" Openshift-EE/utils/result-volume-replica-distribution.yml
 
-echo "*******Generating load**********"
-sleep 5
-echo "      Application-Loadgen: Pass" >> volume-distribution-$job_id.yml
-cat volume-distribution-$job_id.yml
-kubectl apply -f volume-distribution-$job_id.yml
+kubectl apply -f Openshift-EE/utils/result-volume-replica-distribution.yml
 
-echo "*******Checking the statefulset storage volume distributed************"
-sleep 5
-echo "      Sts-Vol-Distribution: Fail" >> volume-distribution-$job_id.yml
-cat volume-distribution-$job_id.yml
-kubectl apply -f volume-distribution-$job_id.yml
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=replica-distribution metadata="")
+echo $test_name
 
-echo "*******Deprovisioning Application******"
-sleep 5
-echo "      Application-Deprovisioning: Pass" >> volume-distribution-$job_id.yml
-cat volume-distribution-$job_id.yml
-kubectl apply -f volume-distribution-$job_id.yml
+echo "*******Deploying Application and Check the statefulset storage volume distributed************"
+cd litmus
+echo "Running the litmus test.."
+run_test=apps/busybox/functional/volume-distribution/run_litmus_test.yml
+cat $run_test
 
-current_time=$(eval $time)
-sed -i -e "s/<test-finish>/$current_time/g" volume-distribution-$job_id.yml
-sed -i -e "s/<test-result>/Fail/g" volume-distribution-$job_id.yml
-sed -i -e "s/Running/Completed/g" volume-distribution-$job_id.yml
-cat volume-distribution-$job_id.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-statefulset-litmus' job=$run_test
+
+echo "Dumping state of cluster post job run"; echo ""
+bash ../Openshift-EE/utils/dump_cluster_state;
+
+#################
+## GET RESULT  ##
+#################
+
+## Check the test status & result from the litmus result custom resource
+
+cd .. && bash Openshift-EE/utils/get_litmus_result ${test_name} volume-replica-distribution
 }
 
 if [ "$1" == "node" ];then

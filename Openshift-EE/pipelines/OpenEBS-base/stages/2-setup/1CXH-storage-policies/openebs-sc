@@ -42,7 +42,7 @@ bash ../Openshift-EE/utils/dump_cluster_state;
 
 ## Check the test status & result from the litmus result custom resource
 
-cd .. && bash Openshift-EE/utils/get_litmus_result ${test_name} s2-j3-cstor-pool
+cd .. && bash Openshift-EE/utils/get_litmus_result ${test_name} s2-j3-policies
 
 }
 
