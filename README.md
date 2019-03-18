@@ -10,7 +10,8 @@ This platform has the following pipelines and all of them can be run against a g
 
 
 
-## OpenShift 3.11 Enterprise Edition
+## OpenShift 3.10 Enterprise Edition
+
 
   
 
