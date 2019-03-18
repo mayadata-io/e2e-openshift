@@ -37,11 +37,11 @@ This platform has the following pipelines and all of them can be run against a g
 
 ## Pipeline stages
 
-Each of the pipelines has five stages
+Each of the pipelines has the following five stages 
 
 1. OpenShift cluster setup
 2. OpenEBS setup
-3. Funcational tests
+3. Functional tests
 4. Chaos tests
 5. Cleanup everything
 
