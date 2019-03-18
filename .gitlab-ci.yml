@@ -41,13 +41,13 @@ HC5P-CSTOR-POOL:
   dependencies:
     - K9YC-OpenEBS-v0.8.1
      
-9AKX-Snapshot-Creation:
+9AKX-Create-Snapshot:
   extends: .func_test_template
   script: 
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/9AKX-snapshot/snapshot
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/9AKX-snapshot/snapshot
 
-ZK9B-Clone-Creation:
+ZK9B-Create-Clone:
   extends: .func_test_template
   script: 
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/ZK9B-snapshot-clone/snapshot-clone
@@ -101,7 +101,7 @@ OBS2-Memory-Usage:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/OBS2-Memory-Consumption/memory-consumption
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/OBS2-Memory-Consumption/memory-consumption
 
-29O5-Volume-Capacity:
+29O5-Fill-Volume:
   extends: .func_test_template
   script: 
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/29O5-Volume-Capacity/volume-capacity
@@ -119,19 +119,19 @@ OBS2-Memory-Usage:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/1PP5-app-kill/app-kill
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/1PP5-app-kill/app-kill
 
-PG1D-cstor-istgt:
+PG1D-cStor-istgt-Kill:
   extends: .chaos_test_template
   script: 
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/PG1D-cstor-pool-istgt-kill/cstor-pool-istgt-kill
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/PG1D-cstor-pool-istgt-kill/cstor-pool-istgt-kill
 
-KBM1-Pool-Kill:
+KBM1-cStor-Pool-Kill:
   extends: .chaos_test_template
   script: 
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/KBM1-pool-kill/pool-kill
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/KBM1-pool-kill/pool-kill
     
-VZPY-target-kill:
+VZPY-cStor-target-kill:
   extends: .chaos_test_template
   script: 
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/VZPY-target-kill/target-kill
@@ -227,13 +227,13 @@ XUF7-CPU-Pressure:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/XUF7-cpu-pressure/cpu-pressure
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/XUF7-cpu-pressure/cpu-pressure
 
-TGZK-Node-Drain:
+TGZK-Drain-Node:
   extends: .chaos_test_template
   script: 
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/TGZK-drain-node/drain-node
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/TGZK-drain-node/drain-node
 
-BF12-Node-Evict:
+BF12-Evict-Node:
   extends: .chaos_test_template
   script: 
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/BF12-evict-node/evict-node
