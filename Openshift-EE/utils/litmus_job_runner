@@ -11,13 +11,19 @@ jobNameCmd="kubectl get jobs -n litmus --no-headers -o jsonpath='{.items[?(@.met
 
 job_deploy_out=$(kubectl create -f ${litmus_job_file}) && \
 job_name=$(eval ${jobNameCmd}); retcode=$?
-../Openshift-EE/utils/error_handler ${retcode} msg="Unable to run litmusbook, exiting" action="exit"
+
+while [ -z "$job_name" ]; do
+  sleep 5
+  job_name=$(eval ${jobNameCmd});
+done
+chmod 755 ../Openshift-EE/utils/error_handler
+bash ../Openshift-EE/utils/error_handler ${retcode} msg="Unable to run litmusbook, exiting" action="exit"
 
 ## Obtain the litmus pod name 
 
 litmusPodCmd="kubectl get pod --no-headers -n litmus -o jsonpath='{.items[?(@.metadata.labels.job-name==\"${job_name}\")].metadata.name}'"
 litmus_pod=$(eval ${litmusPodCmd}); retcode=$?
-../Openshift-EE/utils/error_handler ${retcode} msg="Unable to find litmus test runner pod, exiting" action="exit"
+bash ../Openshift-EE/utils/error_handler ${retcode} msg="Unable to find litmus test runner pod, exiting" action="exit"
 
 ## Wait till the ansibletest container terminates && also confirm job completion status. This is done to ensure
 ## that execution of auxiliary containers such as loggers is completed. Getting the ansibletest ccontainer to completed state 
