@@ -39,7 +39,7 @@ HC5P-CSTOR-POOL:
   image: openebs/openshift-ci:latest
   stage: FUNCTIONAL
   dependencies:
-    - K9YC-v0.8.1
+    - K9YC-OpenEBS-v0.8.1
      
 9AKX-Snapshot-Creation:
   extends: .func_test_template
@@ -111,7 +111,7 @@ OBS2-Memory-Usage:
   image: openebs/openshift-ci:latest
   stage: CHAOS
   dependencies:
-    - K9YC-v0.8.1
+    - K9YC-OpenEBS-v0.8.1
 
 1PP5-App-Kill:
   extends: .chaos_test_template
@@ -239,22 +239,22 @@ BF12-Node-Evict:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/BF12-evict-node/evict-node
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/BF12-evict-node/evict-node
 
-GP95-openebs:
+GP95-openebs-Uninstall:
   image: openebs/openshift-ci:latest
   stage: CLEANUP
   when: always
   dependencies:
-    - K9YC-v0.8.1
+    - K9YC-OpenEBS-v0.8.1
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/5-cleanup/GP95-openebs-cleanup/openebs-cleanup
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/5-cleanup/GP95-openebs-cleanup/openebs-cleanup
   
-4SMQ-cluster:
+4SMQ-cluster-Delete:
   image: openebs/openshift-ci:latest
   stage: CLEANUP
   when: always
   dependencies:
-    - PCZD-OS-3.10
+    - PCZD-OpenShift-3.10
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/5-cleanup/4SMQ-cluster-cleanup/cluster-cleanup
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/5-cleanup/4SMQ-cluster-cleanup/cluster-cleanup
