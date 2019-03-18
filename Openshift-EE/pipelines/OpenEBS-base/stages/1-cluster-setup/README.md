@@ -6,11 +6,13 @@ This stage includes the job that will configure OpenShift-3.10 enterprise cluste
 
 #### Prerequisites
 
-OpenShift Cluster should be created.
+ - The host environment should be setup and it should have the dependencies installed.
 
 #### Procedure
+ 
+ - The job should be capable of creating OpenShift 3.10 cluster with one master and 4 nodes configuraion. 
 
-Check if the OpenShift cluster is ready using kubectl command.
+ - Check if the OpenShift cluster is ready using kubectl command ```kubectl get nodes```
 
 #### Test Result
 
