@@ -1,0 +1,20 @@
+#!/bin/bash
+set -x
+
+time="date"
+current_time=$(eval $time)
+
+job_name=$(echo $1 | cut -d ":" -f 2)
+test_name=$(echo $2)
+
+testResult=$(kubectl get litmusresult ${litmus_test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+
+if [[ ${testResult} == "Pass" ]]; then
+echo "      $test_name: Pass" >> result-$job_name.yml
+kubectl apply -f result-$job_name.yml
+echo "***$test_name: Passed******"
+else
+echo "      $test_name: Fail" >> result-$job_name.yml
+bash Openshift-EE/utils/e2e-cr jobname:$2 jobphase:Completed end_time:"$current_time" test_result:Fail
+kubectl apply -f result-$job_name.yml; exit 1
+fi

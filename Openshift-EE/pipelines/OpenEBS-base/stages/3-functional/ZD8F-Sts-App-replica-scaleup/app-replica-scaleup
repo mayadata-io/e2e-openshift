@@ -11,48 +11,71 @@ sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip 'cd e2e-openshift && 
 
 node() {
 job_id=$(echo $1)
-echo "*********Applying e2e-crd***********"
-kubectl apply -f Openshift-EE/utils/e2e-crd.yml
-
-echo "****Creating e2e-crd********"
-cat Openshift-EE/utils/e2e-result.yml > application-scaleup-$job_id.yml
-sed -i -e "s/<test-phase>/Running/g" -e "s/<test-name>/app-rep-scaleup/g" -e"s/<job_id>/$job_id/g" application-scaleup-$job_id.yml
 
 time="date"
 current_time=$(eval $time)
-sed -i -e "s/<test-init>/$current_time/g" -e "s/<openebs-id>/0.8.1/g" application-scaleup-$job_id.yml
-kubectl apply -f application-scaleup-$job_id.yml
-cat application-scaleup-$job_id.yml
 
-echo "*******Deploying Application****"
-sleep 5
-echo "      Application-Deployment: Pass" >> application-scaleup-$job_id.yml
-cat application-scaleup-$job_id.yml
-kubectl apply -f application-scaleup-$job_id.yml
+present_dir=$(pwd)
+echo $present_dir
 
-echo "*******Generating load**********"
-sleep 5
-echo "      Application-Loadgen: Pass" >> application-scaleup-$job_id.yml
-cat application-scaleup-$job_id.yml
-kubectl apply -f application-scaleup-$job_id.yml
+sed -i "s/-<job_id>/ /g" Openshift-EE/utils/e2e-result.yml
 
-echo "*******Scalingup the application replica************"
-sleep 5
-echo "      App-Replica-Scaleup: Fail" >> application-scaleup-$job_id.yml
-cat application-scaleup-$job_id.yml
-kubectl apply -f application-scaleup-$job_id.yml
+bash Openshift-EE/utils/e2e-cr jobname:app-replica-scaleup jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:app-replica-scaleup jobphase:Running init_time:"$current_time"
 
-echo "*******Deprovisioning Application******"
-sleep 5
-echo "      Application-Deprovisioning: Pass" >> application-scaleup-$job_id.yml
-cat application-scaleup-$job_id.yml
-kubectl apply -f application-scaleup-$job_id.yml
+echo "*******Deploying Busybox-sts Application****"
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=litmus-busybox-deploy metadata="")
+echo $test_name
+cd litmus
+echo "Running the litmus test for Busybox Deployment.."
+run_test=litmus/apps/busybox/deployers/run_litmus_test.yml
+cat $run_test
+cd ..
+bash Openshift-EE/utils/litmus_job_runner label='app:busybox-litmus' job=$run_test
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:app-replica-scaleup $test_name
+if [ "$?" != "0" ]; then
+exit 1;
+fi
+
+echo "*******Scaling Application replicas**********"
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-replica-scale metadata="")
+echo $test_name
+cd litmus
+sed -i -e 's/app: cassandra-scaleup-litmus/app: busybox-scaleup-litmus/g' \
+-e 's/value: 'app=cassandra'/value: 'app=busybox-sts'/g' \
+-e 's/value: app-cass-ns/value: app-busybox-ns/g' /apps/cassandra/functional/scale_replicas/run_litmus_test
+echo "Running the litmus test for Busybox Deployment Scaleup.."
+run_test=litmus/apps/cassandra/functional/scale_replicas/run_litmus_test.yml
+cat $run_test
+cd ..
+bash Openshift-EE/utils/litmus_job_runner label='app:busybox-scaleup-litmus' job=$run_test
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:app-replica-scaleup $test_name
+if [ "$?" != "0" ]; then
+exit 1;
+fi
+
+echo "********Deprovisioning Busybox Application*******"
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=litmus-busybox-deprovision metadata="")
+echo $test_name
+cd litmus
+sed -i -e 's/generateName: litmus-busybox-deploy/generateName: litmus-busybox-deprovision/g' \
+-e 's/app: busybox-litmus/app: busybox-deprovision-litmus/g' \
+-e 's/value: provision/value: deprovision/g' apps/busybox/deployers/run_litmus_test.yml
+echo "Running the litmus test for Busybox Deployment Scaleup.."
+run_test=litmus/apps/busybox/deployers/run_litmus_test.yml
+cat $run_test
+cd ..
+bash Openshift-EE/utils/litmus_job_runner label='app:busybox-deprovision-litmus' job=$run_test
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:app-replica-scaleup $test_name
 
 current_time=$(eval $time)
-sed -i -e "s/<test-finish>/$current_time/g" application-scaleup-$job_id.yml
-sed -i -e "s/<test-result>/Fail/g" application-scaleup-$job_id.yml
-sed -i -e "s/Running/Completed/g" application-scaleup-$job_id.yml
-cat application-scaleup-$job_id.yml
+bash Openshift-EE/utils/e2e-cr jobname:app-replica-scaleup jobphase:Completed end_time:"$current_time" test_result:Pass
 }
 
 if [ "$1" == "node" ];then

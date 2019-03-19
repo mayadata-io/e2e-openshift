@@ -1,6 +1,22 @@
 #!/bin/bash
 set -x
 
+echo "***Checking the cluster is Engaged or not*"
+
+state="sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip 'ls | grep e2e-openshift'"
+cluster_state=$(eval $state)
+
+while [ "${cluster_state}" == "e2e-openshift" ]; do
+  echo "***cluster is Engaged******"
+  wait=1
+  cluster_state=$(eval $state)
+  sleep 30
+done
+
+if [ "$wait" == "1" ]; then
+sleep 120
+fi
+
 echo "*************************Checking the Cluster's Health********************"
 
 echo "Checking for the number of nodes in ready state*******************************"

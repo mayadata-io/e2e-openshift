@@ -31,9 +31,12 @@ echo "*******Deploying Application and Check the statefulset storage volume dist
 cd litmus
 echo "Running the litmus test.."
 run_test=apps/busybox/functional/volume-distribution/run_litmus_test.yml
+sed -i -e 's/app: busybox-statefulset-litmus/app: busybox-vol-distribute/g' \
+-e 's/value: 'app=busybox-sts'/value: 'app=busybox'/g' \
+-e 's/value: app-busybox-ns/value: busybox/g' $run_test
 cat $run_test
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-statefulset-litmus' job=$run_test
+bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-vol-distribute' job=$run_test
 
 echo "Dumping state of cluster post job run"; echo ""
 bash ../Openshift-EE/utils/dump_cluster_state;
