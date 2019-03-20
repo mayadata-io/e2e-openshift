@@ -50,10 +50,10 @@ test_name=$(bash Openshift-EE/utils/generate_test_name testcase=memcheck-test me
 echo $test_name
 cd litmus
 sed -i -e 's/value: 'app=busybox-sts'/value: 'app=busybox-mem'/g' \
--e 's/value: app-prometheus/value: mem-check/g' /apps/prometheus/functional/memcheck/run_litmus_test.yml
+-e 's/value: app-prometheus/value: mem-check/g' apps/prometheus/functional/memcheck/run_litmus_test.yml
 
 echo "Running the litmus test for Busybox Deployment Scaleup.."
-run_test=/apps/prometheus/functional/memcheck/run_litmus_test.yml
+run_test=apps/prometheus/functional/memcheck/run_litmus_test.yml
 cat $run_test
 bash ../Openshift-EE/utils/litmus_job_runner label='app:memcheck-cstor-test' job=$run_test
 cd ..

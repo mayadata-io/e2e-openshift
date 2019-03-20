@@ -89,11 +89,11 @@ GV2D-Storage-Upgrade:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/4ZWU-STS-Volume-Distribution/volume-distribution
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/4ZWU-STS-Volume-Distribution/volume-distribution
 
-QDLO-Data-integrity:
-  extends: .func_test_template
-  script: 
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/QDLO-Data-Integrity/data-integrity
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/QDLO-Data-Integrity/data-integrity
+      #QDLO-Data-integrity:
+      #  extends: .func_test_template
+      #  script: 
+      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/QDLO-Data-Integrity/data-integrity
+      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/QDLO-Data-Integrity/data-integrity
 
 OBS2-Memory-Usage:
   extends: .func_test_template
