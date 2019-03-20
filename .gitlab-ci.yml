@@ -18,7 +18,7 @@ K9YC-OpenEBS-v0.8.1:
   image: openebs/openshift-ci:latest
   stage: OPENEBS-SETUP
   script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/K9YC-openebs-depoy/deploy-openebs
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/K9YC-openebs-deploy/deploy-openebs
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/K9YC-openebs-deploy/deploy-openebs
 
 1CXH-OpenEBS-POLICIES:
