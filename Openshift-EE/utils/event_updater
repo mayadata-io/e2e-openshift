@@ -7,7 +7,7 @@ current_time=$(eval $time)
 job_name=$(echo $1 | cut -d ":" -f 2)
 test_name=$(echo $2)
 
-testResult=$(kubectl get litmusresult ${litmus_test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
 
 if [[ ${testResult} == "Pass" ]]; then
 echo "      $test_name: Pass" >> result-$job_name.yml

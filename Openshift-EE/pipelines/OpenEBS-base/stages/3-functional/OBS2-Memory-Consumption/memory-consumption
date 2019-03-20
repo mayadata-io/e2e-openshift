@@ -5,57 +5,88 @@ pod() {
 echo $CI_JOB_ID
 ###clone e2e-openshift-repo
 echo "cloning e2e-openshift repo*************"
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip 'git clone https://github.com/openebs/e2e-openshift.git'
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip 'cd e2e-openshift && git checkout OpenEBS-base && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/OBS2-Memory-Consumption/memory-consumption node '"'$CI_JOB_ID'"''
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'git clone https://github.com/openebs/e2e-openshift.git'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'cd e2e-openshift && git checkout OpenEBS-base && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/OBS2-Memory-Consumption/memory-consumption node '"'$CI_JOB_ID'"''
 }
 
 node() {
 job_id=$(echo $1)
-echo "*********Applying e2e-crd***********"
-kubectl apply -f Openshift-EE/utils/e2e-crd.yml
-
-echo "****Creating e2e-crd********"
-cat Openshift-EE/utils/e2e-result.yml > memory-check-$job_id.yml
-sed -i -e "s/<test-phase>/Running/g" -e "s/<test-name>/memory-check/g" -e"s/<job_id>/$job_id/g" memory-check-$job_id.yml
 
 time="date"
 current_time=$(eval $time)
-sed -i -e "s/<test-init>/$current_time/g" -e "s/<openebs-id>/0.8.1/g" memory-check-$job_id.yml
-kubectl apply -f memory-check-$job_id.yml
-cat memory-check-$job_id.yml
 
-echo "*******Deploying Application****"
-sleep 5
-echo "      Application-Deployment: Pass" >> memory-check-$job_id.yml
-cat memory-check-$job_id.yml
-kubectl apply -f memory-check-$job_id.yml
+present_dir=$(pwd)
+echo $present_dir
 
-echo "*******Generating load**********"
-sleep 5
-echo "      Application-Loadgen: Pass" >> memory-check-$job_id.yml
-cat memory-check-$job_id.yml
-kubectl apply -f memory-check-$job_id.yml
+sed -i "s/-<job_id>/ /g" Openshift-EE/utils/e2e-result.yml
 
-echo "*******Performing memory consumption check************"
-sleep 5
-echo "      Memory-check: Fail" >> memory-check-$job_id.yml
-cat memory-check-$job_id.yml
-kubectl apply -f memory-check-$job_id.yml
+bash Openshift-EE/utils/e2e-cr jobname:memory-consumption jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:memory-consumption jobphase:Running init_time:"$current_time"
 
-echo "*******Deprovisioning Application******"
-sleep 5
-echo "      Application-Deprovisioning: Pass" >> memory-check-$job_id.yml
-cat memory-check-$job_id.yml
-kubectl apply -f memory-check-$job_id.yml
+echo "*******Deploying Busybox-sts Application****"
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deployment metadata="")
+echo $test_name
+cd litmus
+echo "Running the litmus test for Busybox Deployment.."
+run_test=apps/busybox/deployers/run_litmus_test.yml
+sed -i -e 's/app: busybox-litmus/app: deploy-busybox-litmus/g' \
+-e 's/value: 'app=busybox-sts'/value: 'app=busybox-mem'/g' \
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/value: app-busybox-ns/value: mem-busybox/g' $run_test
+cat $run_test
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:deploy-busybox-litmus' job=$run_test
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:memory-consumption $test_name
+if [ "$?" != "0" ]; then
+exit 1;
+fi
+
+echo "*******Checking Memory Consumption**********"
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=memcheck-test metadata="")
+echo $test_name
+cd litmus
+sed -i -e 's/value: 'app=busybox-sts'/value: 'app=busybox-mem'/g' \
+-e 's/value: app-prometheus/value: mem-busybox/g' /apps/prometheus/functional/memcheck/run_litmus_test.yml
+
+echo "Running the litmus test for Busybox Deployment Scaleup.."
+run_test=/apps/prometheus/functional/memcheck/run_litmus_test.yml
+cat $run_test
+bash ../Openshift-EE/utils/litmus_job_runner label='app:memcheck-cstor-test' job=$run_test
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:memory-consumption $test_name
+if [ "$?" != "0" ]; then
+exit 1;
+fi
+
+echo "********Deprovisioning Busybox Application*******"
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deployment metadata="")
+echo $test_name
+cd litmus
+sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deployment-deprovision/g' \
+-e 's/app: busybox-litmus/app: busybox-deprovision/g' \
+-e 's/value: 'app=busybox-sts'/value: 'app=busybox-mem'/g' \
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/value: app-busybox-ns/value: mem-busybox/g'
+-e 's/value: provision/value: deprovision/g' apps/busybox/deployers/run_litmus_test.yml
+
+echo "Running the litmus test for Busybox Deployment Scaleup.."
+run_test=apps/busybox/deployers/run_litmus_test.yml
+cat $run_test
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-deprovision' job=$run_test
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:memory-consumption $test_name
 
 current_time=$(eval $time)
-sed -i -e "s/<test-finish>/$current_time/g" memory-check-$job_id.yml
-sed -i -e "s/<test-result>/Fail/g" memory-check-$job_id.yml
-sed -i -e "s/Running/Completed/g" memory-check-$job_id.yml
-cat memory-check-$job_id.yml
+bash Openshift-EE/utils/e2e-cr jobname:memory-consumption jobphase:Completed end_time:"$current_time" test_result:Pass
 }
-
-"$@"
 
 if [ "$1" == "node" ];then
   node $2
