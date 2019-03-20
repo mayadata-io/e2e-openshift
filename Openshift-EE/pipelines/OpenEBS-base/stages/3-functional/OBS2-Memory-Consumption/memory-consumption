@@ -25,7 +25,7 @@ bash Openshift-EE/utils/e2e-cr jobname:memory-consumption jobphase:Running init_
 
 echo "*******Deploying Busybox-sts Application****"
 
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deployment metadata="")
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-mem-check metadata="")
 echo $test_name
 cd litmus
 echo "Running the litmus test for Busybox Deployment.."
@@ -33,7 +33,7 @@ run_test=apps/busybox/deployers/run_litmus_test.yml
 sed -i -e 's/app: busybox-litmus/app: deploy-busybox-litmus/g' \
 -e 's/value: 'app=busybox-sts'/value: 'app=busybox-mem'/g' \
 -e 's/value: statefulset/value: deployment/g' \
--e 's/value: app-busybox-ns/value: mem-busybox/g' $run_test
+-e 's/value: app-busybox-ns/value: mem-check/g' $run_test
 cat $run_test
 
 bash ../Openshift-EE/utils/litmus_job_runner label='app:deploy-busybox-litmus' job=$run_test
@@ -50,7 +50,7 @@ test_name=$(bash Openshift-EE/utils/generate_test_name testcase=memcheck-test me
 echo $test_name
 cd litmus
 sed -i -e 's/value: 'app=busybox-sts'/value: 'app=busybox-mem'/g' \
--e 's/value: app-prometheus/value: mem-busybox/g' /apps/prometheus/functional/memcheck/run_litmus_test.yml
+-e 's/value: app-prometheus/value: mem-check/g' /apps/prometheus/functional/memcheck/run_litmus_test.yml
 
 echo "Running the litmus test for Busybox Deployment Scaleup.."
 run_test=/apps/prometheus/functional/memcheck/run_litmus_test.yml
@@ -65,7 +65,7 @@ fi
 
 echo "********Deprovisioning Busybox Application*******"
 
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deployment metadata="")
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-mem-check metadata="")
 echo $test_name
 cd litmus
 sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deployment-deprovision/g' \
