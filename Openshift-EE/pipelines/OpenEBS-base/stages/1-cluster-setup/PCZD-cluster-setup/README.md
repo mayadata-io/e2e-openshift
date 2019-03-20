@@ -1,4 +1,4 @@
-### Test bed setup.
+### Cluster setup.
 
 #### Description
 
@@ -6,11 +6,14 @@ This stage includes the job that will configure OpenShift-3.10 enterprise cluste
 
 #### Prerequisites
 
-OpenShift Cluster should be created.
+OpenShift Cluster should be created and have the dependencies installed.
 
 #### Procedure
 
-Check if the OpenShift cluster is ready using kubectl command.
+- The job should be capable of creating OpenShift 3.10 cluster with one master and 4 nodes configuraion. 
+- Check if the OpenShift cluster is ready using kubectl command ```kubectl get nodes```
+
+#### 
 
 #### Test Result
 
