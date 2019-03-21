@@ -53,7 +53,7 @@ echo $test_name
 cd litmus
 
 sed -i -e 's/name=prometheus/app=busybox-mem/g' \
--e 's/value: value: 'prometheus-claim'/value: value: 'openebs-busybox'/g' \	
+-e 's/prometheus-claim/openebs-busybox/g' \	
 -e 's/value: app-prometheus/value: mem-check/g' apps/prometheus/functional/memcheck/run_litmus_test.yml
 
 echo "Running the litmus test for Busybox Deployment Scaleup.."
