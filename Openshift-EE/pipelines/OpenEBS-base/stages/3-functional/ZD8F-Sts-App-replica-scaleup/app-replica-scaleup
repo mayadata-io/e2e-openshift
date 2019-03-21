@@ -51,7 +51,7 @@ cd litmus
 cp apps/cassandra/functional/scale_replicas/run_litmus_test.yml run_scaleup_test.yml
 
 sed -i -e 's/app: cassandra-scaleup-litmus/app: busybox-scaleup-litmus/g' \
--e 's/value: app=cassandra/value: app=busybox-sts/g' \
+-e 's/value: '\''app=cassandra'\''/value: '\''app=busybox-sts'\''/g' \
 -e 's/value: app-cass-ns/value: app-busybox-ns/g' run_scaleup_test.yml
 
 echo "Running the litmus test for Busybox Deployment Scaleup.."
