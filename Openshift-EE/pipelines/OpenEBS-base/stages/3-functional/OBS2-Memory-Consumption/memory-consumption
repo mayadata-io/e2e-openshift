@@ -49,7 +49,8 @@ echo "*******Checking Memory Consumption**********"
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=memcheck-test metadata="")
 echo $test_name
 cd litmus
-sed -i -e 's/value: 'app=busybox-sts'/value: 'app=busybox-mem'/g' \
+sed -i -e 's/name=prometheus/app=busybox-mem/g' \
+-e 's/value: value: 'prometheus-claim'/value: value: 'openebs-busybox'/g' \	
 -e 's/value: app-prometheus/value: mem-check/g' apps/prometheus/functional/memcheck/run_litmus_test.yml
 
 echo "Running the litmus test for Busybox Deployment Scaleup.."

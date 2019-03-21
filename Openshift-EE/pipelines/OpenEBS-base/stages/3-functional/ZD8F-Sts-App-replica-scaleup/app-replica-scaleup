@@ -33,7 +33,7 @@ echo "Running the litmus test for Busybox Deployment.."
 cp apps/busybox/deployers/run_litmus_test.yml deploy_run_test.yml
 cat deploy_run_test.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-litmus' deploy_run_test.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='app:deploy-busybox-litmus' deploy_run_test.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:app-replica-scaleup $test_name
