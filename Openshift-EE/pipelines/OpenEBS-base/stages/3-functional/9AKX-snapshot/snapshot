@@ -22,7 +22,7 @@ echo $present_dir
 
 sed -i "s/-<job_id>/ /g" Openshift-EE/utils/e2e-result.yml
 
-bash Openshift-EE/utils/e2e-cr jobname:snapshot jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:snapshot jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 bash Openshift-EE/utils/e2e-cr jobname:snapshot jobphase:Running init_time:"$current_time"
 
 echo "*******Deploying Busybox Application****"
