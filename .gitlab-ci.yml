@@ -14,7 +14,7 @@ PCZD-OpenShift-3.10:
     - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/1-cluster-setup/PCZD-cluster-setup/cluster-state
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/1-cluster-setup/PCZD-cluster-setup/cluster-state
 
-K9YC-OpenEBS-v0.8.1:
+K9YC-OpenEBS:
   image: openebs/openshift-ci:latest
   stage: OPENEBS-SETUP
   script:
@@ -39,7 +39,7 @@ HC5P-CSTOR-POOL:
   image: openebs/openshift-ci:latest
   stage: FUNCTIONAL
   dependencies:
-    - K9YC-OpenEBS-v0.8.1
+    - K9YC-OpenEBS
      
 9AKX-Create-Snapshot:
   extends: .func_test_template
@@ -112,7 +112,7 @@ OBS2-Memory-Usage:
   stage: CHAOS
   when: always
   dependencies:
-    - K9YC-OpenEBS-v0.8.1
+    - K9YC-OpenEBS
 
 1PP5-App-Kill:
   extends: .chaos_test_template
@@ -245,7 +245,7 @@ GP95-openebs-Uninstall:
   stage: CLEANUP
   when: always
   dependencies:
-    - K9YC-OpenEBS-v0.8.1
+    - K9YC-OpenEBS
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/5-cleanup/GP95-openebs-cleanup/openebs-cleanup
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/5-cleanup/GP95-openebs-cleanup/openebs-cleanup

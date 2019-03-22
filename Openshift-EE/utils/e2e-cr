@@ -39,7 +39,7 @@ if [ ! -z "$test_result" ];then
 fi
 
 # Update the openebs version in result yaml
-sed -i "s/<openebs-id>/0.8.1/g" result-$job_name.yml
+sed -i "s/<openebs-id>/0.8.2-RC1/g" result-$job_name.yml
 
 # Update the gitlab job id in result yaml
 sed -i "s/<job-id>/$job_id/g" result-$job_name.yml
