@@ -18,6 +18,6 @@ kubectl apply -f result-$job_name.yml
 echo "***$test_name: Passed******"
 else
 echo "      $test_name: Fail" >> result-$job_name.yml
-bash Openshift-EE/utils/e2e-cr jobname:$job_name jobphase:Completed end_time:"$current_time" test_result:Fail jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:$job_name jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Fail
 kubectl apply -f result-$job_name.yml; exit 1
 fi

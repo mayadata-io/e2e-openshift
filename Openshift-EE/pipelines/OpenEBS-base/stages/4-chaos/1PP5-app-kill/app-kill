@@ -49,7 +49,7 @@ fi
 
 echo "*******Performing Application pod Failure Chaos**********"
 
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase=app-kill metadata="")
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=application-pod-failure metadata="")
 echo $test_name
 cd litmus
 cp apps/jenkins/chaos/app_pod_failure/run_litmus_test.yml appkill.yml

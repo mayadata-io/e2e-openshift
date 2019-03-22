@@ -23,7 +23,7 @@ echo $present_dir
 sed -i "s/-<job_id>/ /g" Openshift-EE/utils/e2e-result.yml
 
 bash Openshift-EE/utils/e2e-cr jobname:data-integrity jobphase:Waiting
-bash Openshift-EE/utils/e2e-cr jobname:data-integrity jobphase:Running init_time:"$current_time"
+bash Openshift-EE/utils/e2e-cr jobname:data-integrity jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 echo "*******Deploying Busybox-sts Application****"
 
@@ -46,7 +46,7 @@ exit 1;
 fi
 
 current_time=$(eval $time)
-bash Openshift-EE/utils/e2e-cr jobname:data-integrity jobphase:Completed end_time:"$current_time" test_result:Pass jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:data-integrity jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
 
 }
 
