@@ -6,11 +6,13 @@ echo $CI_JOB_ID
 ###clone e2e-openshift-repo
 echo "cloning e2e-openshift repo*************"
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'git clone https://github.com/openebs/e2e-openshift.git'
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'cd e2e-openshift && git checkout OpenEBS-base && bash Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/1PP5-app-kill/app-kill node '"'$CI_JOB_ID'"''
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'cd e2e-openshift && git checkout OpenEBS-base && bash Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/1PP5-app-kill/app-kill node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"'
 }
 
 node() {
 job_id=$(echo $1)
+pipeline_id=$(echo $2)
+case_id=VZPY
 
 time="date"
 current_time=$(eval $time)
@@ -39,7 +41,8 @@ cat busybox_app_kill.yml
 bash ../Openshift-EE/utils/litmus_job_runner label='app:deploy-busybox-app-kill' job=busybox_app_kill.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
-bash Openshift-EE/utils/event_updater jobname:app-kill $test_name
+bash Openshift-EE/utils/event_updater jobname:app-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
 if [ "$?" != "0" ]; then
 exit 1;
 fi
@@ -49,18 +52,18 @@ echo "*******Performing Application pod Failure Chaos**********"
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=app-kill metadata="")
 echo $test_name
 cd litmus
+cp apps/jenkins/chaos/app_pod_failure/run_litmus_test.yml appkill.yml
 
-sed -i -e 's/app=jenkins-app/app=busybox-kill/g' \	
--e 's/value: app-jenkins-ns/value: app-kill/g' apps/jenkins/chaos/app_pod_failure/run_litmus_test.yml
+sed -i -e 's/app=jenkins-app/app=busybox-kill/g' \
+-e 's/value: app-jenkins-ns/value: app-kill/g' appkill.yml
 
-echo "Running the litmus test for Busybox Deployment Scaleup.."
-run_test=apps/jenkins/chaos/app_pod_failure/run_litmus_test.yml
-cat $run_test
+echo "Running the litmus test for Busybox Deployment application pod kill.."
+cat appkill.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='name:application-pod-failure' job=$run_test
+bash ../Openshift-EE/utils/litmus_job_runner label='name:application-pod-failure' job=appkill.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
-bash Openshift-EE/utils/event_updater jobname:app-kill $test_name
+bash Openshift-EE/utils/event_updater jobname:app-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 if [ "$?" != "0" ]; then
 exit 1;
@@ -73,7 +76,7 @@ echo $test_name
 cd litmus
 
 cp apps/busybox/deployers/run_litmus_test.yml deprovision_app_kill.yml
-sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deployment-deprovision/g' \
+sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovision-app-kill/g' \
 -e 's/app: busybox-litmus/app: busybox-deprovision-app-kill/g' \
 -e 's/value: 'app=busybox-sts'/value: 'app=busybox-app-kill'/g' \
 -e 's/value: statefulset/value: deployment/g' \
@@ -81,20 +84,23 @@ sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deploymen
 -e 's/value: provision/value: deprovision/g' deprovision_app_kill.yml
 
 echo "Running the litmus test for Busybox Deployment Scaleup.."
-#run_test=apps/busybox/deployers/run_litmus_test.yml
 cat deprovision_mem_check.yml
 
 bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-deprovision-app-kill' job=deprovision_app_kill.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
-bash Openshift-EE/utils/event_updater jobname:app-kill $test_name
+bash Openshift-EE/utils/event_updater jobname:app-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+exit 1;
+fi
 
 current_time=$(eval $time)
-bash Openshift-EE/utils/e2e-cr jobname:app-kill jobphase:Completed end_time:"$current_time" test_result:Pass
+bash Openshift-EE/utils/e2e-cr jobname:app-kill jobphase:Completed end_time:"$current_time" test_result:Pass jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 }
 
 if [ "$1" == "node" ];then
-  node $2
+  node $2 $3
 else
   pod
 fi

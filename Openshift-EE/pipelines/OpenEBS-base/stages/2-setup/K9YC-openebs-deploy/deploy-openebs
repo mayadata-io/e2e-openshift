@@ -1,16 +1,18 @@
 #!/bin/bash
 set -x
-
 pod() {
 echo $CI_JOB_ID
 ###clone e2e-openshift-repo
 echo "cloning e2e-openshift repo*************"
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'git clone https://github.com/openebs/e2e-openshift.git'
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'cd e2e-openshift && git checkout OpenEBS-base && bash Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/K9YC-openebs-deploy/deploy-openebs node '"'$CI_JOB_ID'"''
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone https://github.com/openebs/e2e-openshift.git'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && git checkout OpenEBS-base && bash Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/K9YC-openebs-deploy/deploy-openebs node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
 }
 
 node() {
 job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+case_id=K9YC
 
 time="date"
 current_time=$(eval $time)
@@ -18,8 +20,12 @@ current_time=$(eval $time)
 present_dir=$(pwd)
 echo $present_dir
 
-# Removing test_id from e2e-result.yml spec for simple mode
-sed -i "s/-<job_id>/ /g" Openshift-EE/utils/e2e-result.yml
+for i in efk-vars.yml efk.yml get_url.yml; do
+  wget https://raw.githubusercontent.com/openebs/e2e-infrastructure/master/workload/efk-client/playbook/$i
+done
+
+echo "EFK: Deploying Aggregrator and Forwarder on client"
+ansible-playbook efk.yml --extra-vars "commit_id=$commit_id pipeline_id=$pipeline_id" 
 
 # Applying e2e-CRD
 echo "***Applying e2e-crd***********"
@@ -82,21 +88,24 @@ bash ../Openshift-EE/utils/litmus_job_runner label='provider:openebs-setup' job=
 
 echo "Dumping state of cluster post job run"; echo ""
 bash ../Openshift-EE/utils/dump_cluster_state;
-
+cd ..
+bash Openshift-EE/utils/event_updater jobname:s2-j1-openebs-deploy $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 #################
 ## GET RESULT  ##
 #################
 
 ## Check the test status & result from the litmus result custom resource
+if [ "$?" != "0" ]; then
+exit 1;
+fi
 
-cd .. && bash Openshift-EE/utils/get_litmus_result ${test_name} s2-j1-openebs-deploy
+current_time=$(eval $time)
+bash Openshift-EE/utils/e2e-cr jobname:s2-j1-openebs-deploy jobphase:Completed end_time:"$current_time" test_result:Pass jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 }
 
-#"$@"
-
 if [ "$1" == "node" ];then
-  node $2
+  node $2 $3 $4
 else
   pod
 fi

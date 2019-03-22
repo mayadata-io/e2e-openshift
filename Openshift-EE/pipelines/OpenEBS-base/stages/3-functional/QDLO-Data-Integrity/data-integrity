@@ -6,11 +6,13 @@ echo $CI_JOB_ID
 ###clone e2e-openshift-repo
 echo "cloning e2e-openshift repo*************"
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'git clone https://github.com/openebs/e2e-openshift.git'
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'cd e2e-openshift && git checkout OpenEBS-base && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/QDLO-Data-Integrity/data-integrity node '"'$CI_JOB_ID'"''
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'cd e2e-openshift && git checkout OpenEBS-base && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/QDLO-Data-Integrity/data-integrity node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"'
 }
 
 node() {
 job_id=$(echo $1)
+pipeline_id=$(echo $2)
+case_id=QDLO
 
 time="date"
 current_time=$(eval $time)
@@ -37,12 +39,14 @@ cat $run_test
 bash ../Openshift-EE/utils/litmus_job_runner label='app:fio-di-litmus' job=$run_test
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
-bash Openshift-EE/utils/event_updater jobname:data-integrity $test_name
+bash Openshift-EE/utils/event_updater jobname:data-integrity $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
 if [ "$?" != "0" ]; then
 exit 1;
 fi
+
 current_time=$(eval $time)
-bash Openshift-EE/utils/e2e-cr jobname:data-integrity jobphase:Completed end_time:"$current_time" test_result:Pass
+bash Openshift-EE/utils/e2e-cr jobname:data-integrity jobphase:Completed end_time:"$current_time" test_result:Pass jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 }
 

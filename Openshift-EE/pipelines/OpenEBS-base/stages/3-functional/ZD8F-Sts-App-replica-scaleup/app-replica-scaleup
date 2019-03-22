@@ -5,20 +5,20 @@ pod() {
 echo $CI_JOB_ID
 ###clone e2e-openshift-repo
 echo "cloning e2e-openshift repo*************"
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'git clone https://github.com/openebs/e2e-openshift.git'
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'cd e2e-openshift && git checkout OpenEBS-base && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/ZD8F-Sts-App-replica-scaleup/app-replica-scaleup node '"'$CI_JOB_ID'"''
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone https://github.com/openebs/e2e-openshift.git'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && git checkout OpenEBS-base && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/ZD8F-Sts-App-replica-scaleup/app-replica-scaleup node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"'
 }
 
 node() {
 job_id=$(echo $1)
+pipeline_id=$(echo $2)
+case_id=ZD8F
 
 time="date"
 current_time=$(eval $time)
 
 present_dir=$(pwd)
 echo $present_dir
-
-sed -i "s/-<job_id>/ /g" Openshift-EE/utils/e2e-result.yml
 
 bash Openshift-EE/utils/e2e-cr jobname:app-replica-scaleup jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:app-replica-scaleup jobphase:Running init_time:"$current_time"
@@ -36,7 +36,7 @@ cat deploy_run_test.yml
 bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-litmus' job=deploy_run_test.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
-bash Openshift-EE/utils/event_updater jobname:app-replica-scaleup $test_name
+bash Openshift-EE/utils/event_updater jobname:app-replica-scaleup $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 if [ "$?" != "0" ]; then
 exit 1;
@@ -55,13 +55,12 @@ sed -i -e 's/app: cassandra-scaleup-litmus/app: busybox-scaleup-litmus/g' \
 -e 's/value: app-cass-ns/value: app-busybox-ns/g' run_scaleup_test.yml
 
 echo "Running the litmus test for Busybox Deployment Scaleup.."
-#cp apps/cassandra/functional/scale_replicas/run_litmus_test.yml run_scaleup_test.yml
 cat run_scaleup_test.yml
 
 bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-scaleup-litmus' job=run_scaleup_test.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
-bash Openshift-EE/utils/event_updater jobname:app-replica-scaleup $test_name
+bash Openshift-EE/utils/event_updater jobname:app-replica-scaleup $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 if [ "$?" != "0" ]; then
 exit 1;
@@ -85,14 +84,18 @@ cat deprovision_scaleup.yml
 bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-deprovision-litmus' job=deprovision_scaleup.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
-bash Openshift-EE/utils/event_updater jobname:app-replica-scaleup $test_name
+bash Openshift-EE/utils/event_updater jobname:app-replica-scaleup $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+exit 1;
+fi
 
 current_time=$(eval $time)
-bash Openshift-EE/utils/e2e-cr jobname:app-replica-scaleup jobphase:Completed end_time:"$current_time" test_result:Pass
+bash Openshift-EE/utils/e2e-cr jobname:app-replica-scaleup jobphase:Completed end_time:"$current_time" test_result:Pass jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 }
 
 if [ "$1" == "node" ];then
-  node $2
+  node $2 $3
 else
   pod
 fi

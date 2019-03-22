@@ -33,6 +33,10 @@ echo "All nodes are not ready"
 echo "******Cluster is in Unhealthy state*******"
 exit;
 fi
+echo "******* Tainting node ********"
+node_name=$(sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'kubectl get nodes | grep "compute" | awk 'NR == 1 {print$1}'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'kubectl taint nodes $node_name infra-aid=observer:NoSchedule'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'mkdir infra && echo "$node_name" >> infra/node_name'
 
 echo "********Disabling Selinux on nodes********"
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'ssh root@10.23.1.11 setenforce 0'

@@ -47,23 +47,23 @@ HC5P-CSTOR-POOL:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/9AKX-snapshot/snapshot
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/9AKX-snapshot/snapshot
 
-ZK9B-Create-Clone:
-  extends: .func_test_template
-  script: 
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/ZK9B-snapshot-clone/snapshot-clone
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/ZK9B-snapshot-clone/snapshot-clone
+      #ZK9B-Create-Clone:
+      #  extends: .func_test_template
+      #  script: 
+      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/ZK9B-snapshot-clone/snapshot-clone
+      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/ZK9B-snapshot-clone/snapshot-clone
 
-5O5V-Parent-Vol-Delete:
-  extends: .func_test_template
-  script: 
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/5O5V-Clone-parent-vol-delete/clone-parent-vol-delete
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/5O5V-Clone-parent-vol-delete/clone-parent-vol-delete
+      #5O5V-Parent-Vol-Delete:
+      #  extends: .func_test_template
+      #  script: 
+      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/5O5V-Clone-parent-vol-delete/clone-parent-vol-delete
+      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/5O5V-Clone-parent-vol-delete/clone-parent-vol-delete
 
-ENBK-App-Upgrade:
-  extends: .func_test_template
-  script: 
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/ENBK-Application-Upgrade/application-upgrade
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/ENBK-Application-Upgrade/application-upgrade
+      #ENBK-App-Upgrade:
+      #  extends: .func_test_template
+      #  script: 
+      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/ENBK-Application-Upgrade/application-upgrade
+      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/ENBK-Application-Upgrade/application-upgrade
 
 ZD8F-App-Scaleup:
   extends: .func_test_template
@@ -71,17 +71,17 @@ ZD8F-App-Scaleup:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/ZD8F-Sts-App-replica-scaleup/app-replica-scaleup
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/ZD8F-Sts-App-replica-scaleup/app-replica-scaleup
 
-4E0O-Storage-Scaleup:
-  extends: .func_test_template
-  script: 
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/4E0O-Storage-Volume-scaleup/storage-volume-scaleup
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/4E0O-Storage-Volume-scaleup/storage-volume-scaleup
+      #4E0O-Storage-Scaleup:
+      #  extends: .func_test_template
+      #  script: 
+      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/4E0O-Storage-Volume-scaleup/storage-volume-scaleup
+      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/4E0O-Storage-Volume-scaleup/storage-volume-scaleup
 
-GV2D-Storage-Upgrade:
-  extends: .func_test_template
-  script: 
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/GV2D-Storage-volume-upgrade/storage-volume-upgrade
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/GV2D-Storage-volume-upgrade/storage-volume-upgrade
+      #GV2D-Storage-Upgrade:
+      #  extends: .func_test_template
+      #  script: 
+      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/GV2D-Storage-volume-upgrade/storage-volume-upgrade
+      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/GV2D-Storage-volume-upgrade/storage-volume-upgrade
 
 4ZWU-STS-Vol-Distribute:
   extends: .func_test_template
@@ -101,15 +101,16 @@ OBS2-Memory-Usage:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/OBS2-Memory-Consumption/memory-consumption
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/OBS2-Memory-Consumption/memory-consumption
 
-29O5-Fill-Volume:
-  extends: .func_test_template
-  script: 
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/29O5-Volume-Capacity/volume-capacity
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/29O5-Volume-Capacity/volume-capacity
+      #29O5-Fill-Volume:
+      #  extends: .func_test_template
+      #  script: 
+      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/29O5-Volume-Capacity/volume-capacity
+      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/29O5-Volume-Capacity/volume-capacity
 
 .chaos_test_template:
   image: openebs/openshift-ci:latest
   stage: CHAOS
+  when: always
   dependencies:
     - K9YC-OpenEBS-v0.8.1
 
@@ -119,17 +120,17 @@ OBS2-Memory-Usage:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/1PP5-app-kill/app-kill
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/1PP5-app-kill/app-kill
 
-PG1D-cStor-istgt-Kill:
-  extends: .chaos_test_template
-  script: 
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/PG1D-cstor-pool-istgt-kill/cstor-pool-istgt-kill
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/PG1D-cstor-pool-istgt-kill/cstor-pool-istgt-kill
+      #PG1D-cStor-istgt-Kill:
+      #  extends: .chaos_test_template
+      #  script: 
+      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/PG1D-cstor-pool-istgt-kill/cstor-pool-istgt-kill
+      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/PG1D-cstor-pool-istgt-kill/cstor-pool-istgt-kill
 
-KBM1-cStor-Pool-Kill:
-  extends: .chaos_test_template
-  script: 
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/KBM1-pool-kill/pool-kill
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/KBM1-pool-kill/pool-kill
+      #KBM1-cStor-Pool-Kill:
+      #  extends: .chaos_test_template
+      #  script: 
+      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/KBM1-pool-kill/pool-kill
+      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/KBM1-pool-kill/pool-kill
     
 VZPY-cStor-target-kill:
   extends: .chaos_test_template
@@ -137,107 +138,107 @@ VZPY-cStor-target-kill:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/VZPY-target-kill/target-kill
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/VZPY-target-kill/target-kill
 
-GFL0-Target-n/w-Delay:
-  extends: .chaos_test_template
-  script: 
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/GFL0-target-network-delay/target-network-delay
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/GFL0-target-network-delay/target-network-delay
+      #GFL0-Target-n/w-Delay:
+      #  extends: .chaos_test_template
+      #  script: 
+      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/GFL0-target-network-delay/target-network-delay
+      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/GFL0-target-network-delay/target-network-delay
 
-QCA4-Target-n/w-Loss:
-  extends: .chaos_test_template
-  script: 
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/QCA4-target-network-loss/target-network-loss
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/QCA4-target-network-loss/target-network-loss
+      #QCA4-Target-n/w-Loss:
+      #  extends: .chaos_test_template
+      #  script: 
+      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/QCA4-target-network-loss/target-network-loss
+      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/QCA4-target-network-loss/target-network-loss
 
-340W-Snap-Rebuild-single-replica:
-  extends: .chaos_test_template
-  script: 
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/340W-snap-rebuild-single-rep/snap-rebuild-single-rep
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/340W-snap-rebuild-single-rep/snap-rebuild-single-rep
+      #340W-Snap-Rebuild-single-replica:
+      #  extends: .chaos_test_template
+      #  script: 
+      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/340W-snap-rebuild-single-rep/snap-rebuild-single-rep
+      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/340W-snap-rebuild-single-rep/snap-rebuild-single-rep
 
-QKFK-Snap-Rebuild-multiple-replica:
-  extends: .chaos_test_template
-  script: 
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/QKFK-snap-rebuild-multiple-rep/snap-rebuild-multiple-rep
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/QKFK-snap-rebuild-multiple-rep/snap-rebuild-multiple-rep
+      #QKFK-Snap-Rebuild-multiple-replica:
+      #  extends: .chaos_test_template
+      #  script: 
+      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/QKFK-snap-rebuild-multiple-rep/snap-rebuild-multiple-rep
+      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/QKFK-snap-rebuild-multiple-rep/snap-rebuild-multiple-rep
 
-WQFI-Clone-Rebuild-before-snapshot-rebuild:
-  extends: .chaos_test_template
-  script: 
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/WQFI-clone-pre-snap-rebuild/clone-pre-rebuild
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/WQFI-clone-pre-snap-rebuild/clone-pre-rebuild
+      #WQFI-Clone-Rebuild-before-snapshot-rebuild:
+      #  extends: .chaos_test_template
+      #  script: 
+      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/WQFI-clone-pre-snap-rebuild/clone-pre-rebuild
+      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/WQFI-clone-pre-snap-rebuild/clone-pre-rebuild
 
-VGEA-Clone-Rebuild-during-snapshot-rebuild:
-  extends: .chaos_test_template
-  script: 
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/VGEA-clone-during-snap-rebuild/clone-during-rebuild
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/VGEA-clone-during-snap-rebuild/clone-during-rebuild
+      #VGEA-Clone-Rebuild-during-snapshot-rebuild:
+      #  extends: .chaos_test_template
+      #  script: 
+      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/VGEA-clone-during-snap-rebuild/clone-during-rebuild
+      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/VGEA-clone-during-snap-rebuild/clone-during-rebuild
 
-QURH-Clone-Rebuild-post-snapshot-rebuild:
-  extends: .chaos_test_template
-  script: 
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/UC7-clone-post-snap-rebuild/clone-post-rebuild
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/UC7-clone-post-snap-rebuild/clone-post-rebuild
+      #QURH-Clone-Rebuild-post-snapshot-rebuild:
+      #  extends: .chaos_test_template
+      #  script: 
+      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/UC7-clone-post-snap-rebuild/clone-post-rebuild
+      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/UC7-clone-post-snap-rebuild/clone-post-rebuild
 
-I9VM-Pool-n/w-Loss:
-  extends: .chaos_test_template
-  script: 
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/I9VM-pool-network-loss/pool-network-loss
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/I9VM-pool-network-loss/pool-network-loss
+      #I9VM-Pool-n/w-Loss:
+      #  extends: .chaos_test_template
+      #  script: 
+      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/I9VM-pool-network-loss/pool-network-loss
+      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/I9VM-pool-network-loss/pool-network-loss
 
-8PI6-Pool-n/w-Delay:
-  extends: .chaos_test_template
-  script: 
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/8PI6-pool-network-delay/pool-network-delay
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/8PI6-pool-network-delay/pool-network-delay
+      #8PI6-Pool-n/w-Delay:
+      #  extends: .chaos_test_template
+      #  script: 
+  #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/8PI6-pool-network-delay/pool-network-delay
+  #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/8PI6-pool-network-delay/pool-network-delay
 
-2HXA-pool-mgmt-kill:
-  extends: .chaos_test_template
-  script: 
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/2HXA-cstor-pool-mgmt-kill/cstor-pool-mgmt-kill
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/2HXA-cstor-pool-mgmt-kill/cstor-pool-mgmt-kill
+      #2HXA-pool-mgmt-kill:
+      #  extends: .chaos_test_template
+      #  script: 
+      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/2HXA-cstor-pool-mgmt-kill/cstor-pool-mgmt-kill
+      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/2HXA-cstor-pool-mgmt-kill/cstor-pool-mgmt-kill
 
-RTOH-Kubelet-Crash:
-  extends: .chaos_test_template
-  script: 
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/RTOH-kubelet-down/kubelet-down
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/RTOH-kubelet-down/kubelet-down
+      #RTOH-Kubelet-Crash:
+      #  extends: .chaos_test_template
+      #  script: 
+      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/RTOH-kubelet-down/kubelet-down
+      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/RTOH-kubelet-down/kubelet-down
 
-DQKT-Node-Shutdown:
-  extends: .chaos_test_template
-  script: 
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/DQKT-node-shutdown/node-shutdown
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/DQKT-node-shutdown/node-shutdown
+      #DQKT-Node-Shutdown:
+      #  extends: .chaos_test_template
+      #  script: 
+      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/DQKT-node-shutdown/node-shutdown
+      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/DQKT-node-shutdown/node-shutdown
 
-E92G-Docker-Crash:
-  extends: .chaos_test_template
-  script: 
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/E92G-docker-down/docker-down
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/E92G-docker-down/docker-down
+      #E92G-Docker-Crash:
+      #  extends: .chaos_test_template
+      #  script: 
+      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/E92G-docker-down/docker-down
+      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/E92G-docker-down/docker-down
 
-ZCM2-Memory-pressure:
-  extends: .chaos_test_template
-  script: 
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/ZCM2-memory-pressure/memory-pressure
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/ZCM2-memory-pressure/memory-pressure
+      #ZCM2-Memory-pressure:
+      #  extends: .chaos_test_template
+      #  script: 
+      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/ZCM2-memory-pressure/memory-pressure
+      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/ZCM2-memory-pressure/memory-pressure
 
-XUF7-CPU-Pressure:
-  extends: .chaos_test_template
-  script: 
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/XUF7-cpu-pressure/cpu-pressure
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/XUF7-cpu-pressure/cpu-pressure
+      #XUF7-CPU-Pressure:
+      #  extends: .chaos_test_template
+      #  script: 
+      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/XUF7-cpu-pressure/cpu-pressure
+      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/XUF7-cpu-pressure/cpu-pressure
 
-TGZK-Drain-Node:
-  extends: .chaos_test_template
-  script: 
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/TGZK-drain-node/drain-node
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/TGZK-drain-node/drain-node
+      #TGZK-Drain-Node:
+      #  extends: .chaos_test_template
+      #  script: 
+      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/TGZK-drain-node/drain-node
+      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/TGZK-drain-node/drain-node
 
-BF12-Evict-Node:
-  extends: .chaos_test_template
-  script: 
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/BF12-evict-node/evict-node
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/BF12-evict-node/evict-node
+      #BF12-Evict-Node:
+      #  extends: .chaos_test_template
+      #  script: 
+      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/BF12-evict-node/evict-node
+      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/BF12-evict-node/evict-node
 
 GP95-openebs-Uninstall:
   image: openebs/openshift-ci:latest
