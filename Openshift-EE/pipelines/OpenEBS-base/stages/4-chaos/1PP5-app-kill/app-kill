@@ -32,7 +32,7 @@ echo "Running the litmus test for Busybox Deployment.."
 
 cp apps/busybox/deployers/run_litmus_test.yml busybox_app_kill.yml
 sed -i -e 's/app: busybox-litmus/app: deploy-busybox-app-kill/g' \
--e 's/value: 'app=busybox-sts'/value: 'app=busybox-kill'/g' \
+-e 's/app=busybox-sts/app=busybox-kill/g' \
 -e 's/value: statefulset/value: deployment/g' \
 -e 's/value: app-busybox-ns/value: app-kill/g' busybox_app_kill.yml
 
@@ -78,7 +78,7 @@ cd litmus
 cp apps/busybox/deployers/run_litmus_test.yml deprovision_app_kill.yml
 sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovision-app-kill/g' \
 -e 's/app: busybox-litmus/app: busybox-deprovision-app-kill/g' \
--e 's/value: 'app=busybox-sts'/value: 'app=busybox-app-kill'/g' \
+-e 's/app=busybox-sts/app=busybox-app-kill/g' \
 -e 's/value: statefulset/value: deployment/g' \
 -e 's/value: app-busybox-ns/value: app-kill/g'
 -e 's/value: provision/value: deprovision/g' deprovision_app_kill.yml

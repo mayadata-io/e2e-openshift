@@ -11,7 +11,6 @@ sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-open
 
 node() {
 job_id=$(echo $1)
-job_id=$(echo $1)
 pipeline_id=$(echo $2)
 case_id=OBS2
 
@@ -32,6 +31,7 @@ cd litmus
 echo "Running the litmus test for Busybox Deployment.."
 
 cp apps/busybox/deployers/run_litmus_test.yml busybox_memcheck.yml
+
 sed -i -e 's/app: busybox-litmus/app: deploy-busybox-litmus/g' \
 -e 's/app=busybox-sts/app=busybox-mem/g' \
 -e 's/value: statefulset/value: deployment/g' \
@@ -53,9 +53,11 @@ echo "*******Checking Memory Consumption**********"
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=memcheck-test metadata="")
 echo $test_name
 cd litmus
+
 cp apps/prometheus/functional/memcheck/run_litmus_test.yml memcheck_test.yml
+
 sed -i -e 's/name=prometheus/app=busybox-mem/g' \
--e 's/prometheus-claim/openebs-busybox/g' \	
+-e 's/prometheus-claim/openebs-busybox/g' \
 -e 's/value: app-prometheus/value: mem-check/g' memcheck_test.yml
 
 echo "Running the litmus test for Busybox Deployment Scaleup.."
