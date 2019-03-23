@@ -12,7 +12,7 @@ NRBS-OpenShift-3.10:
   stage: CLUSTER-SETUP
   script:     
     - chmod 755 ./Openshift-EE/pipelines/Prometheus/stages/1-cluster-setup/cluster-state
-    - ./Openshift-EE/pipelines/Prometheus/stages/1-cluster-setup/1-cluster-setup/cluster-state
+    - ./Openshift-EE/pipelines/Prometheus/stages/1-cluster-setup/cluster-state
 
 DQ7H-OpenEBS-v0.8.1:
   image: openebs/openshift-ci:latest
@@ -45,8 +45,8 @@ DQ7H-OpenEBS-v0.8.1:
 3T80-Prometheus-Provision:
   extends: .func_test_template
   script: 
-    - chmod 775 ./Openshift-EE/pipelines/Prometheus/stages/3-functional/QOHC-deploy-Prometheus/Prometheus-provision
-    - ./Openshift-EE/pipelines/Prometheus/stages/3-functional/QOHC-deploy-Prometheus/Prometheus-provision
+    - chmod 775 ./Openshift-EE/pipelines/Prometheus/stages/3-functional/QOHC-deploy-Prometheus/prometheus-provision
+    - ./Openshift-EE/pipelines/Prometheus/stages/3-functional/QOHC-deploy-Prometheus/prometheus-provision
 
 .chaos_test_template:
   image: openebs/openshift-ci:latest
