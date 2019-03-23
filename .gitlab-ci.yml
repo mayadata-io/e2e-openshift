@@ -1,0 +1,82 @@
+## Define the stages & order of execution
+
+stages:
+  - CLUSTER-SETUP
+  - OPENEBS-SETUP
+  - FUNCTIONAL
+  - CHAOS
+  - CLEANUP
+
+NRBS-OpenShift-3.10:
+  image: openebs/openshift-ci:latest
+  stage: CLUSTER-SETUP
+  script:     
+    - chmod 755 ./Openshift-EE/pipelines/Prometheus/stages/1-cluster-setup/1-cluster-setup/cluster-state
+    - ./Openshift-EE/pipelines/Prometheus/stages/1-cluster-setup/1-cluster-setup/cluster-state
+
+DQ7H-OpenEBS-v0.8.1:
+  image: openebs/openshift-ci:latest
+  stage: OPENEBS-SETUP
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/Prometheus/stages/2-setup/LZ8H-openebs-depoy/deploy-openebs
+    - ./Openshift-EE/pipelines/Prometheus/stages/2-setup/LZ8H-openebs-depoy/deploy-openebs
+
+      #BV40-OpenEBS-POLICIES:
+      #image: openebs/openshift-ci:latest
+      # stage: OPENEBS-SETUP
+      #script:
+      #- chmod 775 ./Openshift-EE/pipelines/Prometheus/stages/2-setup/BV40-storage-policies/openebs-sc
+      #- ./Openshift-EE/pipelines/Prometheus/stages/2-setup/BV40-storage-policies/openebs-sc
+  
+75RJ-CSTOR-POOL:
+  image: openebs/openshift-ci:latest
+  stage: OPENEBS-SETUP
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/Prometheus/stages/2-setup/ZB01-create-striped-pool/create-pool
+    - ./Openshift-EE/pipelines/Prometheus/stages/2-setup/ZB01-create-striped-pool/create-pool
+    
+.func_test_template:
+  image: openebs/openshift-ci:latest
+  stage: FUNCTIONAL
+  when: always
+  dependencies:
+    - DQ7H-OpenEBS-v0.8.1
+     
+3T80-Prometheus-Provision:
+  extends: .func_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/Prometheus/stages/3-functional/QOHC-deploy-prometheus/prometheus-provision
+    - ./Openshift-EE/pipelines/Prometheus/stages/3-functional/QOHC-deploy-prometheus/prometheus-provision
+
+.chaos_test_template:
+  image: openebs/openshift-ci:latest
+  stage: CHAOS
+  when: always
+  dependencies:
+    - DQ7H-OpenEBS-v0.8.1
+
+BXAV-SM-Kill:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/Prometheus/stages/4-chaos/T28S-prometheus-pod-failure/pod-failure
+    - ./Openshift-EE/pipelines/Prometheus/stages/4-chaos/BXAV-SM-kill/pod-failure
+
+5CJE-openebs-Uninstall:
+  image: openebs/openshift-ci:latest
+  stage: CLEANUP
+  when: always
+  dependencies:
+    - DQ7H-OpenEBS-v0.8.1
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/Prometheus/stages/5-cleanup/5CJE-openebs-cleanup/openebs-cleanup
+    - ./Openshift-EE/pipelines/Prometheus/stages/5-cleanup/5CJE-openebs-cleanup/openebs-cleanup
+  
+DB1T-cluster-Delete:
+  image: openebs/openshift-ci:latest
+  stage: CLEANUP
+  when: always
+  dependencies:
+    - NRBS-OpenShift-3.10
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/Prometheus/stages/5-cleanup/DB1T-cluster-cleanup/cluster-cleanup
+    - ./Openshift-EE/pipelines/Prometheus/stages/5-cleanup/DB1T-cluster-cleanup/cluster-cleanup

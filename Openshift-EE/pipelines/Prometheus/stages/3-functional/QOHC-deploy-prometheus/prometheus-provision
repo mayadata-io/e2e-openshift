@@ -1,0 +1,5 @@
+#!/bin/bash
+set -x
+
+echo "***Deploying Prometheus Application***"
+sleep 2
