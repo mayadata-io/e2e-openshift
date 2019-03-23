@@ -150,11 +150,11 @@ QCA4-Target-n/w-Loss:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/QCA4-target-network-loss/target-network-loss
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/QCA4-target-network-loss/target-network-loss
 
-      #340W-Snap-Rebuild-single-replica:
-      #  extends: .chaos_test_template
-      #  script: 
-      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/340W-snap-rebuild-single-rep/snap-rebuild-single-rep
-      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/340W-snap-rebuild-single-rep/snap-rebuild-single-rep
+340W-Snap-Rebuild-single-replica:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/340W-snap-rebuild-single-rep/snap-rebuild-single-rep
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/340W-snap-rebuild-single-rep/snap-rebuild-single-rep
 
       #QKFK-Snap-Rebuild-multiple-replica:
       #  extends: .chaos_test_template
