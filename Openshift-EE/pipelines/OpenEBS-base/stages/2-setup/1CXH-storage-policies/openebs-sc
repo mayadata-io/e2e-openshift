@@ -1,8 +1,8 @@
 #!/bin/bash
 set -x
 pod() {
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'git clone https://github.com/openebs/e2e-openshift.git'
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'cd e2e-openshift && git checkout OpenEBS-base && bash Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/1CXH-storage-policies/openebs-sc node '"'$CI_JOB_ID'"''
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/openebs/e2e-openshift.git'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/1CXH-storage-policies/openebs-sc node '"'$CI_JOB_ID'"''
 }
 
 node() {
@@ -12,9 +12,6 @@ current_time=$(eval $time)
 
 present_dir=$(pwd)
 echo $present_dir
-
-# Removing test_id from e2e-result.yml spec for simple mode
-sed -i "s/-<job_id>/ /g" Openshift-EE/utils/e2e-result.yml
 
 #pooling over previous job to complete
 echo "***********Applying openebs-storage-clas********"

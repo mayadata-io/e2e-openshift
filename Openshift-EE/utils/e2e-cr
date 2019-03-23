@@ -6,8 +6,8 @@ job_phase=$(echo $2 | cut -d ":" -f 2)
 time_phase=$(echo $3 |cut -d ":" -f 1)
 test_time=$(echo $3 | cut -d ":" -f2-)
 job_id=$(echo $4 | cut -d ":" -f 2)
-pipeline_id=$(echo $5 | cut ":" -f 2)
-testcase_id=$(echo $6 | cut ":" - f 2)
+pipeline_id=$(echo $5 | cut -d ":" -f 2)
+testcase_id=$(echo $6 | cut -d ":" - f 2)
 test_result=$(echo $7 | cut -d ":" -f2-)
 
 echo "******Creating e2e-result-custom-resource********"

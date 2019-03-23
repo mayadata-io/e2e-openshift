@@ -5,8 +5,8 @@ pod() {
 echo $CI_JOB_ID
 ###clone e2e-openshift-repo
 echo "cloning e2e-openshift repo*************"
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'git clone https://github.com/openebs/e2e-openshift.git'
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'cd e2e-openshift && git checkout OpenEBS-base && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/4ZWU-STS-Volume-Distribution/volume-distribution node '"'$CI_JOB_ID'"''
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/openebs/e2e-openshift.git'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/4ZWU-STS-Volume-Distribution/volume-distribution node '"'$CI_JOB_ID'"''
 }
 
 node() {
@@ -18,9 +18,6 @@ kubectl apply -f Openshift-EE/utils/e2e-crd.yml
 echo "*****Deploying openebs*******"
 bash Openshift-EE/utils/e2e-cr jobname:volume-replica-distribution jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:volume-replica-distribution jobphase:Running init_time:"$current_time"
-
-# Removing test_id from e2e-result.yml spec for simple mode
-#sed -i "s/-<job_id>/ /g" Openshift-EE/utils/result-volume-replica-distribution.yml
 
 kubectl apply -f Openshift-EE/utils/result-volume-replica-distribution.yml
 

@@ -1,9 +1,9 @@
 #!/bin/bash
 set -x
 pod() {
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'git clone https://github.com/openebs/e2e-openshift.git'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/openebs/e2e-openshift.git'
 
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'cd e2e-openshift && git checkout OpenEBS-base && bash Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/HC5P-create-striped-pool/create-pool node '"'$CI_JOB_ID'"''
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/HC5P-create-striped-pool/create-pool node '"'$CI_JOB_ID'"''
 
 }
 
@@ -14,7 +14,6 @@ job_id=$(echo $1)
 time="date"
 current_time=$(eval $time)
 
-sed -i "s/-<job_id>/ /g" Openshift-EE/utils/e2e-result.yml
 #pooling over previous job to complete
 echo "*******Creating cstor-pool**************"
 bash Openshift-EE/utils/pooling jobname:s2-j1-openebs-deploy
