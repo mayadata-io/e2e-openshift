@@ -18,8 +18,8 @@ DQ7H-OpenEBS-v0.8.1:
   image: openebs/openshift-ci:latest
   stage: OPENEBS-SETUP
   script:
-    - chmod 775 ./Openshift-EE/pipelines/Prometheus/stages/2-openebs-setup/LZ8H-openebs-depoy/deploy-openebs
-    - ./Openshift-EE/pipelines/Prometheus/stages/2-openebs-setup/LZ8H-openebs-depoy/deploy-openebs
+    - chmod 775 ./Openshift-EE/pipelines/Prometheus/stages/2-openebs-setup/LZ8H-openebs-deploy/deploy-openebs
+    - ./Openshift-EE/pipelines/Prometheus/stages/2-openebs-setup/LZ8H-openebs-deploy/deploy-openebs
 
       #BV40-OpenEBS-POLICIES:
       #image: openebs/openshift-ci:latest
@@ -33,7 +33,7 @@ DQ7H-OpenEBS-v0.8.1:
   stage: OPENEBS-SETUP
   script:
     - chmod 775 ./Openshift-EE/pipelines/Prometheus/stages/2-openebs-setup/ZB01-create-striped-pool/create-pool
-    - ./Openshift-EE/pipelines/Prometheus/stages2-openebs-setup/ZB01-create-striped-pool/create-pool
+    - ./Openshift-EE/pipelines/Prometheus/stages/2-openebs-setup/ZB01-create-striped-pool/create-pool
     
 .func_test_template:
   image: openebs/openshift-ci:latest
@@ -45,8 +45,8 @@ DQ7H-OpenEBS-v0.8.1:
 3T80-Prometheus-Provision:
   extends: .func_test_template
   script: 
-    - chmod 775 ./Openshift-EE/pipelines/Prometheus/stages/3-functional/QOHC-deploy-Prometheus/prometheus-provision
-    - ./Openshift-EE/pipelines/Prometheus/stages/3-functional/QOHC-deploy-Prometheus/prometheus-provision
+    - chmod 775 ./Openshift-EE/pipelines/Prometheus/stages/3-functional/QOHC-deploy-prometheus/prometheus-provision
+    - ./Openshift-EE/pipelines/Prometheus/stages/3-functional/QOHC-deploy-prometheus/prometheus-provision
 
 .chaos_test_template:
   image: openebs/openshift-ci:latest
