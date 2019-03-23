@@ -1,0 +1,118 @@
+#!/bin/bash
+set -x
+
+pod() {
+echo $CI_JOB_ID
+###clone e2e-openshift-repo
+echo "cloning e2e-openshift repo*************"
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/openebs/e2e-openshift.git'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/2HXA-cstor-volume-mgmt-kill/cstor-volume-mgmt-kill node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"'
+}
+
+node() {
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+case_id=2HXA
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+bash Openshift-EE/utils/e2e-cr jobname:target-mgmt-kill jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:target-mgmt-kill jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+echo "*******Deploying Busybox Application****"
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-mgmt-kill metadata="")
+echo $test_name
+
+cd litmus
+echo "Running the litmus test for Busybox Deployment.."
+
+cp apps/busybox/deployers/run_litmus_test.yml busybox_target_mgmt_kill.yml
+
+sed -i -e 's/app: busybox-litmus/app: deploy-busybox-target-mgmt-kill/g' \
+-e 's/app=busybox-sts/app=target-mgmt-kill/g' \
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/value: openebs-busybox/value: openebs-bb-mgmt-targetkill/g' \
+-e 's/value: app-busybox-ns/value: target-mgmt-kill/g' busybox_target_mgmt_kill.yml
+cat busybox_target_mgmt_kill.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:deploy-busybox-target-mgmt-kill' job=busybox_target_mgmt_kill.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:target-mgmt-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+exit 1;
+fi
+
+echo "*******Performing Cstor pool Management kill**********"
+
+run_id="mgmt";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-target-failure metadata=${run_id})
+echo $test_name
+
+cd litmus
+cp apps/percona/chaos/openebs_target_failure/run_litmus_test.yml run_targetmgmt_kill_test.yml
+
+sed -i -e 's/value: percona-mysql-claim/value: openebs-bb-mgmt-targetkill/g' \
+-e 's/name: openebs-target-failure/name: openebs-target-mgmt-failure/g' \
+-e 's/value: '\''name=percona'\''/value: '\''app=target-mgmt-kill'\''/g' \
+-e 's/value: app-percona-ns/value: target-mgmt-kill/g' run_targetmgmt_kill_test.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' run_targetmgmt_kill_test.yml
+
+echo "Running the litmus test for Busybox Deployment Scaleup.."
+cat run_targetmgmt_kill_test.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-target-mgmt-failure' job=run_targetmgmt_kill_test.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:target-mgmt-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+exit 1;
+fi
+
+echo "********Deprovisioning Busybox Application*******"
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-target-mgmt-kill metadata="")
+echo $test_name
+
+cd litmus
+cp apps/busybox/deployers/run_litmus_test.yml deprovision_target_mgmt_kill.yml
+
+sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovision-mgmt-kill/g' \
+-e 's/app: busybox-litmus/app: busybox-deprovision-mgmt-kill/g' \
+-e 's/app=busybox-sts/app=target-mgmt-kill/g' \
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/value: openebs-busybox/value: openebs-bb-mgmt-targetkill/g' \
+-e 's/value: app-busybox-ns/value: target-mgmt-kill/g' \
+-e 's/value: provision/value: deprovision/g' deprovision_target_mgmt_kill.yml
+
+echo "Running the litmus test for Busybox Deployment.."
+cat deprovision_target_mgmt_kill.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-deprovision-mgmt-kill' job=deprovision_target_mgmt_kill.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:target-mgmt-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+exit 1;
+fi
+
+current_time=$(eval $time)
+bash Openshift-EE/utils/e2e-cr jobname:target-mgmt-kill jobphase:Completed end_time:"$current_time" test_result:Pass jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3
+else
+  pod
+fi

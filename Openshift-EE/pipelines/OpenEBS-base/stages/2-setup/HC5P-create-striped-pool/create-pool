@@ -3,13 +3,15 @@ set -x
 pod() {
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/openebs/e2e-openshift.git'
 
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/HC5P-create-striped-pool/create-pool node '"'$CI_JOB_ID'"''
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/HC5P-create-striped-pool/create-pool node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"'
 
 }
 
 node() {
 
 job_id=$(echo $1)
+pipeline_id=$(echo $2)
+case_id=HC5P
 
 time="date"
 current_time=$(eval $time)
@@ -36,18 +38,26 @@ bash ../Openshift-EE/utils/litmus_job_runner label='app:cstor-disk-pool-provisio
 echo "Dumping state of cluster post job run"; echo ""
 bash ../Openshift-EE/utils/dump_cluster_state;
 
+cd ..
+bash Openshift-EE/utils/event_updater jobname:s2-j2-cstor-pool $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
 #################
 ## GET RESULT  ##
 #################
 
 ## Check the test status & result from the litmus result custom resource
+if [ "$?" != "0" ]; then
+exit 1;
+fi
 
-cd .. && bash Openshift-EE/utils/get_litmus_result ${test_name} s2-j2-cstor-pool
+current_time=$(eval $time)
+bash Openshift-EE/utils/e2e-cr jobname:s2-j2-cstor-pool jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
+
 
 }
 
 if [ "$1" == "node" ];then
-  node $2
+  node $2 $3
 else
   pod
 fi

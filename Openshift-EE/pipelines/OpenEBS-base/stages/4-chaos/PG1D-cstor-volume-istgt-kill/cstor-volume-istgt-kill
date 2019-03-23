@@ -1,0 +1,120 @@
+#!/bin/bash
+set -x
+
+pod() {
+echo $CI_JOB_ID
+###clone e2e-openshift-repo
+echo "cloning e2e-openshift repo*************"
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/openebs/e2e-openshift.git'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/PG1D-cstor-volume-istgt-kill/cstor-volume-istgt-kill node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"'
+}
+
+node() {
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+case_id=PG1D
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+bash Openshift-EE/utils/e2e-cr jobname:target-istgt-kill jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:target-istgt-kill jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+echo "*******Deploying Busybox Application****"
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-istgt-kill metadata="")
+echo $test_name
+
+cd litmus
+echo "Running the litmus test for Busybox Deployment.."
+
+cp apps/busybox/deployers/run_litmus_test.yml busybox_target_istgt_kill.yml
+
+sed -i -e 's/app: busybox-litmus/app: deploy-busybox-target-istgt-kill/g' \
+-e 's/app=busybox-sts/app=target-istgt-kill/g' \
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/value: openebs-busybox/value: openebs-bb-istgt-targetkill/g' \
+-e 's/value: app-busybox-ns/value: target-istgt-kill/g' busybox_target_istgt_kill.yml
+cat busybox_target_istgt_kill.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:deploy-busybox-target-istgt-kill' job=busybox_target_istgt_kill.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:target-istgt-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+exit 1;
+fi
+
+echo "*******Performing Cstor pool Management kill**********"
+
+run_id="istgt";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-target-failure metadata=${run_id})
+echo $test_name
+
+cd litmus
+cp apps/percona/chaos/openebs_target_failure/run_litmus_test.yml run_targetistgt_kill_test.yml
+
+sed -i -e 's/value: percona-mysql-claim/value: openebs-bb-istgt-targetkill/g' \
+-e 's/name: openebs-target-failure/name: openebs-target-istgt-failure/g' \
+-e 's/target-zrepl-kill/target-kill/g' \
+-e 's/cstor-volume-mgmt/cstor-istgt/g' \
+-e 's/value: '\''name=percona'\''/value: '\''app=target-istgt-kill'\''/g' \
+-e 's/value: app-percona-ns/value: target-istgt-kill/g' run_targetistgt_kill_test.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' run_targetistgt_kill_test.yml
+
+echo "Running the litmus test for Busybox Deployment Scaleup.."
+cat run_targetistgt_kill_test.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-target-istgt-failure' job=run_targetistgt_kill_test.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:target-istgt-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+exit 1;
+fi
+
+echo "********Deprovisioning Busybox Application*******"
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-target-istgt-kill metadata="")
+echo $test_name
+
+cd litmus
+cp apps/busybox/deployers/run_litmus_test.yml deprovision_target_istgt_kill.yml
+
+sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovision-istgt-kill/g' \
+-e 's/app: busybox-litmus/app: busybox-deprovision-istgt-kill/g' \
+-e 's/app=busybox-sts/app=target-istgt-kill/g' \
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/value: openebs-busybox/value: openebs-bb-istgt-targetkill/g' \
+-e 's/value: app-busybox-ns/value: target-istgt-kill/g' \
+-e 's/value: provision/value: deprovision/g' deprovision_target_istgt_kill.yml
+
+echo "Running the litmus test for Busybox Deployment.."
+cat deprovision_target_istgt_kill.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-deprovision-istgt-kill' job=deprovision_target_istgt_kill.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:target-istgt-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+exit 1;
+fi
+
+current_time=$(eval $time)
+bash Openshift-EE/utils/e2e-cr jobname:target-istgt-kill jobphase:Completed end_time:"$current_time" test_result:Pass jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3
+else
+  pod
+fi
