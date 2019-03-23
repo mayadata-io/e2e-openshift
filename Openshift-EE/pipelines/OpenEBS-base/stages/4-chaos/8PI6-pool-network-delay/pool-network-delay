@@ -55,7 +55,7 @@ test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-cstor-po
 echo $test_name
 
 cd litmus
-cp apps/percona/chaos/openebs_pool_network/run_litmus_test run_pooldelay_test.yml
+cp apps/percona/chaos/openebs_pool_network/run_litmus_test.yml run_pooldelay_test.yml
 
 sed -i -e 's/value: percona-mysql-claim/value: openebs-bb-pooldelay/g' \
 -e 's/value: '\''name=percona'\''/value: '\''app=pool-delay'\''/g' \
@@ -65,7 +65,7 @@ sed -i -e 's/value: percona-mysql-claim/value: openebs-bb-pooldelay/g' \
 echo "Running the litmus test for Busybox Deployment Scaleup.."
 cat run_pooldelay_test.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-pool-network' job=run_targetkill_test.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-pool-network' job=run_pooldelay_test.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:pool-network-delay $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"

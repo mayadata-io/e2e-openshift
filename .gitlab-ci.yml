@@ -120,17 +120,17 @@ OBS2-Memory-Usage:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/1PP5-app-kill/app-kill
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/1PP5-app-kill/app-kill
 
-      #PG1D-cStor-istgt-Kill:
-      #  extends: .chaos_test_template
-      #  script: 
-      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/PG1D-cstor-pool-istgt-kill/cstor-pool-istgt-kill
-      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/PG1D-cstor-pool-istgt-kill/cstor-pool-istgt-kill
+PG1D-cStor-istgt-Kill:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/PG1D-cstor-volume-istgt-kill/cstor-volume-istgt-kill
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/PG1D-cstor-volume-istgt-kill/cstor-volume-istgt-kill
 
-      #KBM1-cStor-Pool-Kill:
-      #  extends: .chaos_test_template
-      #  script: 
-      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/KBM1-pool-kill/pool-kill
-      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/KBM1-pool-kill/pool-kill
+KBM1-cStor-Pool-Kill:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/KBM1-cstor-pool-kill/cstor-pool-kill
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/KBM1-cstor-pool-kill/cstor-pool-kill
     
 VZPY-cStor-target-kill:
   extends: .chaos_test_template
@@ -192,11 +192,11 @@ QCA4-Target-n/w-Loss:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/8PI6-pool-network-delay/pool-network-delay
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/8PI6-pool-network-delay/pool-network-delay
 
-      #2HXA-pool-mgmt-kill:
-      #  extends: .chaos_test_template
-      #  script: 
-      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/2HXA-cstor-pool-mgmt-kill/cstor-pool-mgmt-kill
-      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/2HXA-cstor-pool-mgmt-kill/cstor-pool-mgmt-kill
+2HXA-volume-mgmt-kill:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/2HXA-cstor-volume-mgmt-kill/cstor-volume-mgmt-kill
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/2HXA-cstor-volume-mgmt-kill/cstor-volume-mgmt-kill
 
       #RTOH-Kubelet-Crash:
       #  extends: .chaos_test_template
