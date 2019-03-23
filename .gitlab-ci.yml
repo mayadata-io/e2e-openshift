@@ -11,7 +11,7 @@ NRBS-OpenShift-3.10:
   image: openebs/openshift-ci:latest
   stage: CLUSTER-SETUP
   script:     
-    - chmod 755 ./Openshift-EE/pipelines/Prometheus/stages/1-cluster-setup/1-cluster-setup/cluster-state
+    - chmod 755 ./Openshift-EE/pipelines/Prometheus/stages/1-cluster-setup/cluster-state
     - ./Openshift-EE/pipelines/Prometheus/stages/1-cluster-setup/1-cluster-setup/cluster-state
 
 DQ7H-OpenEBS-v0.8.1:
@@ -45,8 +45,8 @@ DQ7H-OpenEBS-v0.8.1:
 3T80-Prometheus-Provision:
   extends: .func_test_template
   script: 
-    - chmod 775 ./Openshift-EE/pipelines/Prometheus/stages/3-functional/QOHC-deploy-prometheus/prometheus-provision
-    - ./Openshift-EE/pipelines/Prometheus/stages/3-functional/QOHC-deploy-prometheus/prometheus-provision
+    - chmod 775 ./Openshift-EE/pipelines/Prometheus/stages/3-functional/QOHC-deploy-Prometheus/Prometheus-provision
+    - ./Openshift-EE/pipelines/Prometheus/stages/3-functional/QOHC-deploy-Prometheus/Prometheus-provision
 
 .chaos_test_template:
   image: openebs/openshift-ci:latest
@@ -55,11 +55,11 @@ DQ7H-OpenEBS-v0.8.1:
   dependencies:
     - DQ7H-OpenEBS-v0.8.1
 
-BXAV-SM-Kill:
+BXAV-POD-Kill:
   extends: .chaos_test_template
   script: 
     - chmod 775 ./Openshift-EE/pipelines/Prometheus/stages/4-chaos/T28S-prometheus-pod-failure/pod-failure
-    - ./Openshift-EE/pipelines/Prometheus/stages/4-chaos/BXAV-SM-kill/pod-failure
+    - ./Openshift-EE/pipelines/Prometheus/stages/4-chaos/T28S-prometheus-pod-failure/pod-failure
 
 5CJE-openebs-Uninstall:
   image: openebs/openshift-ci:latest
@@ -68,8 +68,8 @@ BXAV-SM-Kill:
   dependencies:
     - DQ7H-OpenEBS-v0.8.1
   script:
-    - chmod 775 ./Openshift-EE/pipelines/Prometheus/stages/5-cleanup/5CJE-openebs-cleanup/openebs-cleanup
-    - ./Openshift-EE/pipelines/Prometheus/stages/5-cleanup/5CJE-openebs-cleanup/openebs-cleanup
+    - chmod 775 ./Openshift-EE/pipelines/Prometheus/stages/5-cleanup/7OQT-openebs-cleanup/openebs-cleanup
+    - ./Openshift-EE/pipelines/Prometheus/stages/5-cleanup/7OQT-openebs-cleanup/openebs-cleanup
   
 DB1T-cluster-Delete:
   image: openebs/openshift-ci:latest
@@ -78,5 +78,5 @@ DB1T-cluster-Delete:
   dependencies:
     - NRBS-OpenShift-3.10
   script:
-    - chmod 775 ./Openshift-EE/pipelines/Prometheus/stages/5-cleanup/DB1T-cluster-cleanup/cluster-cleanup
-    - ./Openshift-EE/pipelines/Prometheus/stages/5-cleanup/DB1T-cluster-cleanup/cluster-cleanup
+    - chmod 775 ./Openshift-EE/pipelines/Prometheus/stages/5-cleanup/5HRX-cluster-cleanup/cluster-cleanup
+    - ./Openshift-EE/pipelines/Prometheus/stages/5-cleanup/5HRX-cluster-cleanup/cluster-cleanup
