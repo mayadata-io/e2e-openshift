@@ -1,63 +1,113 @@
 #!/bin/bash
 set -x
 
-
 pod() {
 echo $CI_JOB_ID
 ###clone e2e-openshift-repo
 echo "cloning e2e-openshift repo*************"
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'git clone https://github.com/openebs/e2e-openshift.git'
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'cd e2e-openshift && git checkout OpenEBS-base && bash Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/8PI6-pool-network-delay/pool-network-delay node '"'$CI_JOB_ID'"''
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/openebs/e2e-openshift.git'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/8PI6-pool-network-delay/pool-network-delay node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"'
 }
 
 node() {
 job_id=$(echo $1)
-echo $job_id
-echo "*********Applying e2e-crd***********"
-kubectl apply -f Openshift-EE/utils/e2e-crd.yml
-
-echo "****Creating e2e-crd********"
-cat Openshift-EE/utils/e2e-result.yml > pool-network-delay-result.yml
-sed -i -e "s/<test-phase>/Running/g" -e "s/<test-name>/pool-network-delay/g" -e"s/<job_id>/$job_id/g" pool-network-delay-result.yml
+pipeline_id=$(echo $2)
+case_id=8PI6
 
 time="date"
 current_time=$(eval $time)
-sed -i -e "s/<test-init>/$current_time/g" -e "s/<openebs-id>/0.8.1/g" pool-network-delay-result.yml
-kubectl apply -f pool-network-delay-result.yml
-cat pool-network-delay-result.yml
 
-echo "*******Deploying Application****"
-sleep 5
-echo "      Application-Deployment: Pass" >> pool-network-delay-result.yml
-cat pool-network-delay-result.yml
-kubectl apply -f pool-network-delay-result.yml
+present_dir=$(pwd)
+echo $present_dir
 
-echo "*******Generating load**********"
-sleep 5
-echo "      Application-Loadgen: Pass" >> pool-network-delay-result.yml
-cat pool-network-delay-result.yml
-kubectl apply -f pool-network-delay-result.yml
+bash Openshift-EE/utils/e2e-cr jobname:pool-network-delay jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:pool-network-delay jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
-echo "*******Inducing pool network delay************"
-sleep 5
-echo "      pool-network-delay: Fail" >> pool-network-delay-result.yml
-cat pool-network-delay-result.yml
-kubectl apply -f pool-network-delay-result.yml
+echo "*******Deploying Busybox Application****"
 
-echo "*******Deprovisioning Application******"
-sleep 5
-echo "      Application-Deprovisioning: Pass" >> pool-network-delay-result.yml
-cat pool-network-delay-result.yml
-kubectl apply -f pool-network-delay-result.yml
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-pool-delay metadata="")
+echo $test_name
+
+cd litmus
+echo "Running the litmus test for Busybox Deployment.."
+
+cp apps/busybox/deployers/run_litmus_test.yml busybox_pool_delay.yml
+
+sed -i -e 's/app: busybox-litmus/app: deploy-busybox-pool-delay/g' \
+-e 's/app=busybox-sts/app=pool-delay/g' \
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/value: openebs-busybox/value: openebs-bb-pooldelay/g' \
+-e 's/value: app-busybox-ns/value: pool-delay/g' busybox_pool_delay.yml
+cat busybox_pool_delay.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:deploy-busybox-pool-delay' job=busybox_pool_delay.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:pool-network-delay $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+exit 1;
+fi
+
+echo "*******Performing network delay in cStor Pool**********"
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-cstor-pool-network-delay metadata="")
+echo $test_name
+
+cd litmus
+cp apps/percona/chaos/openebs_pool_network/run_litmus_test run_pooldelay_test.yml
+
+sed -i -e 's/value: percona-mysql-claim/value: openebs-bb-pooldelay/g' \
+-e 's/value: '\''name=percona'\''/value: '\''app=pool-delay'\''/g' \
+-e 's/value: '\''enable'\''/value: '\'""\''/g' \
+-e 's/value: app-percona-ns/value: pool-delay/g' run_pooldelay_test.yml
+
+echo "Running the litmus test for Busybox Deployment Scaleup.."
+cat run_pooldelay_test.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-pool-network' job=run_targetkill_test.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:pool-network-delay $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+exit 1;
+fi
+
+echo "********Deprovisioning Busybox Application*******"
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-pool-delay metadata="")
+echo $test_name
+
+cd litmus
+cp apps/busybox/deployers/run_litmus_test.yml deprovision_pool_delay.yml
+
+sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovision-pool-delay/g' \
+-e 's/app: busybox-litmus/app: busybox-deprovision-pool-delay/g' \
+-e 's/app=busybox-sts/app=pool-delay/g' \
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/value: openebs-busybox/value: openebs-bb-pooldelay/g' \
+-e 's/value: app-busybox-ns/value: pool-delay/g' \
+-e 's/value: provision/value: deprovision/g' deprovision_pool_delay.yml
+
+echo "Running the litmus test for Busybox Deployment.."
+cat deprovision_pool_delay.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-deprovision-pool-delay' job=deprovision_pool_delay.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:pool-network-delay $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+exit 1;
+fi
 
 current_time=$(eval $time)
-sed -i -e "s/<test-finish>/$current_time/g" pool-network-delay-result.yml
-sed -i -e "s/<test-result>/Fail/g" pool-network-delay-result.yml
-cat pool-network-delay-result.yml
+bash Openshift-EE/utils/e2e-cr jobname:pool-network-delay jobphase:Completed end_time:"$current_time" test_result:Pass jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 }
 
 if [ "$1" == "node" ];then
-  node $2
+  node $2 $3
 else
   pod
 fi

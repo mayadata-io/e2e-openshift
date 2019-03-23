@@ -138,17 +138,17 @@ VZPY-cStor-target-kill:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/VZPY-target-kill/target-kill
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/VZPY-target-kill/target-kill
 
-      #GFL0-Target-n/w-Delay:
-      #  extends: .chaos_test_template
-      #  script: 
-      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/GFL0-target-network-delay/target-network-delay
-      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/GFL0-target-network-delay/target-network-delay
+GFL0-Target-n/w-Delay:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/GFL0-target-network-delay/target-network-delay
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/GFL0-target-network-delay/target-network-delay
 
-      #QCA4-Target-n/w-Loss:
-      #  extends: .chaos_test_template
-      #  script: 
-      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/QCA4-target-network-loss/target-network-loss
-      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/QCA4-target-network-loss/target-network-loss
+QCA4-Target-n/w-Loss:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/QCA4-target-network-loss/target-network-loss
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/QCA4-target-network-loss/target-network-loss
 
       #340W-Snap-Rebuild-single-replica:
       #  extends: .chaos_test_template
@@ -186,11 +186,11 @@ VZPY-cStor-target-kill:
       #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/I9VM-pool-network-loss/pool-network-loss
       #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/I9VM-pool-network-loss/pool-network-loss
 
-      #8PI6-Pool-n/w-Delay:
-      #  extends: .chaos_test_template
-      #  script: 
-  #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/8PI6-pool-network-delay/pool-network-delay
-  #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/8PI6-pool-network-delay/pool-network-delay
+8PI6-Pool-n/w-Delay:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/8PI6-pool-network-delay/pool-network-delay
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/8PI6-pool-network-delay/pool-network-delay
 
       #2HXA-pool-mgmt-kill:
       #  extends: .chaos_test_template

@@ -42,13 +42,19 @@ fi
 sed -i "s/<openebs-id>/0.8.1/g" result-$job_name.yml
 
 # Update the gitlab job id in result yaml
-sed -i "s/<job-id>/$job_id/g" result-$job_name.yml
+if [ ! -z "$test_result" ];then
+  sed -i "s/<job-id>/$job_id/g" result-$job_name.yml
+fi
 
 # Update the Gitlab pipeline id in result yaml
-sed -i "s/<pipeline-id>/$pipeline_id/g" result-$job_name.yml
+if [ ! -z "$test_result" ];then
+  sed -i "s/<pipeline-id>/$pipeline_id/g" result-$job_name.yml
+fi
 
 # Update the test case id in result yaml
-sed -i "s/<case-id>/$testcase_id/g" result-$job_name.yml
+if [ ! -z "$test_result" ];then
+  sed -i "s/<case-id>/$testcase_id/g" result-$job_name.yml
+fi
 
 cat result-$job_name.yml
 

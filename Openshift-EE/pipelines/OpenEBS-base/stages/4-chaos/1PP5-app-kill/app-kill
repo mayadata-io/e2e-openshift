@@ -57,7 +57,7 @@ echo $test_name
 cd litmus
 cp apps/jenkins/chaos/app_pod_failure/run_litmus_test.yml appkill.yml
 
-sed -i -e 's/app=jenkins-app/app=openebs-bb-appkill/g' \
+sed -i -e 's/app=jenkins-app/app=app-kill/g' \
 -e 's/value: app-jenkins-ns/value: app-kill/g' appkill.yml
 
 echo "Running the litmus test for Busybox Deployment application pod kill.."
@@ -101,7 +101,7 @@ exit 1;
 fi
 
 current_time=$(eval $time)
-bash Openshift-EE/utils/e2e-cr jobname:target-kill jobphase:Completed end_time:"$current_time" test_result:Pass jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:app-kill jobphase:Completed end_time:"$current_time" test_result:Pass jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 }
 
 if [ "$1" == "node" ];then
