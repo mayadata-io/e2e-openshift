@@ -20,8 +20,8 @@ current_time=$(eval $time)
 present_dir=$(pwd)
 echo $present_dir
 
-bash Openshift-EE/utils/e2e-cr jobname:app-kill jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
-bash Openshift-EE/utils/e2e-cr jobname:app-kill jobphase:Running init_time:"$current_time"
+bash Openshift-EE/utils/e2e-cr jobname:app-kill jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:app-kill jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 echo "*******Deploying Busybox Application****"
 
@@ -101,7 +101,7 @@ bash Openshift-EE/utils/event_updater jobname:app-kill $test_name jobid:"$job_id
 #fi
 
 current_time=$(eval $time)
-bash Openshift-EE/utils/e2e-cr jobname:app-kill jobphase:Completed end_time:"$current_time" test_result:Pass jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:app-kill jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
 }
 
 if [ "$1" == "node" ];then

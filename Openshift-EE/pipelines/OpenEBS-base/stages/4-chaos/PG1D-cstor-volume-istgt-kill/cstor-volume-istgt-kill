@@ -110,7 +110,7 @@ bash Openshift-EE/utils/event_updater jobname:target-istgt-kill $test_name jobid
 #fi
 
 current_time=$(eval $time)
-bash Openshift-EE/utils/e2e-cr jobname:target-istgt-kill jobphase:Completed end_time:"$current_time" test_result:Pass jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:target-istgt-kill jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
 }
 
 if [ "$1" == "node" ];then

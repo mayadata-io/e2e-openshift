@@ -100,7 +100,7 @@ bash Openshift-EE/utils/event_updater jobname:snap-rebuild-single-rep $test_name
 #fi
 
 current_time=$(eval $time)
-bash Openshift-EE/utils/e2e-cr jobname:snap-rebuild-single-rep jobphase:Completed end_time:"$current_time" test_result:Pass jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:snap-rebuild-single-rep jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
 }
 
 if [ "$1" == "node" ];then
