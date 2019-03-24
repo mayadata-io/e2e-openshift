@@ -1,0 +1,119 @@
+#!/bin/bash
+set -x
+
+pod() {
+echo $CI_JOB_ID
+###clone e2e-openshift-repo
+echo "cloning e2e-openshift repo*************"
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/openebs/e2e-openshift.git'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/72WM-cstor-pool-delete/cstor-pool-delete node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"'
+}
+
+node() {
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+case_id=72WM
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+bash Openshift-EE/utils/e2e-cr jobname:pool-delete jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:pool-delete jobphase:Running init_time:"$current_time"
+
+echo "*******Deploying Busybox Application****"
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-pool-delete metadata="")
+echo $test_name
+
+cd litmus
+echo "Running the litmus test for Busybox Deployment.."
+
+cp apps/busybox/deployers/run_litmus_test.yml busybox_pool_delete.yml
+
+sed -i -e 's/app: busybox-litmus/app: deploy-busybox-pool-delete/g' \
+-e 's/app=busybox-sts/app=pool-delete/g' \
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/value: openebs-busybox/value: openebs-bb-pooldelete/g' \
+-e 's/value: app-busybox-ns/value: pool-delete/g' busybox_pool_delete.yml
+cat busybox_pool_delete.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:deploy-busybox-pool-delete' job=busybox_pool_delete.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:pool-delete $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+exit 1;
+fi
+
+echo "*******Performing cStor Pool delete**********"
+
+run_id="delete";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-pool-failure metadata=${run_id})
+echo $test_name
+
+cd litmus
+cp apps/percona/chaos/openebs_pool_failure/run_litmus_test.yml pooldelete.yml
+
+sed -i -e 's/value: percona-mysql-claim/value: openebs-bb-pooldelete/g' \
+-e 's/name: openebs-pool-failure/name: openebs-pool-delete/g' \
+-e 's/value: '\''name=percona'\''/value: '\''app=delete-kill'\''/g' \
+-e 's/enable//g' \
+-e 's/value: app-percona-ns/value: pool-delete/g' pooldelete.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' pooldelete.yml
+
+echo "Running the litmus test for Busybox Deployment application pod kill.."
+cat pooldelete.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-pool-delete' job=pooldelete.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:pool-delete $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+exit 1;
+fi
+
+echo "********Deprovisioning Busybox Application*******"
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-pool-delete metadata="")
+echo $test_name
+
+cd litmus
+cp apps/busybox/deployers/run_litmus_test.yml deprovision_pool_delete.yml
+
+sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovision-pool-delete/g' \
+-e 's/app: busybox-litmus/app: busybox-deprovision-pool-delete/g' \
+-e 's/app=busybox-sts/app=pool-delete/g' \
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/value: openebs-busybox/value: openebs-bb-pooldelete/g' \
+-e 's/value: app-busybox-ns/value: pool-delete/g' \
+-e 's/value: provision/value: deprovision/g' deprovision_pool_delete.yml
+
+echo "Running the litmus test for Busybox Deployment.."
+cat deprovision_pool_delete.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-deprovision-pool-delete' job=deprovision_pool_delete.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:pool-delete $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+exit 1;
+fi
+
+current_time=$(eval $time)
+bash Openshift-EE/utils/e2e-cr jobname:pool-delete jobphase:Completed end_time:"$current_time" test_result:Pass jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3
+else
+  pod
+fi
