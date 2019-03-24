@@ -59,7 +59,7 @@ cp apps/percona/chaos/openebs_pool_failure/run_litmus_test.yml pooldelete.yml
 
 sed -i -e 's/value: percona-mysql-claim/value: openebs-bb-pooldelete/g' \
 -e 's/name: openebs-pool-failure/name: openebs-pool-delete/g' \
--e 's/value: '\''name=percona'\''/value: '\''app=delete-kill'\''/g' \
+-e 's/value: '\''name=percona'\''/value: '\''app=pool-delete'\''/g' \
 -e 's/enable//g' \
 -e 's/value: app-percona-ns/value: pool-delete/g' pooldelete.yml
 
@@ -104,9 +104,9 @@ cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:pool-delete $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
-if [ "$?" != "0" ]; then
-exit 1;
-fi
+#if [ "$?" != "0" ]; then
+#exit 1;
+#fi
 
 current_time=$(eval $time)
 bash Openshift-EE/utils/e2e-cr jobname:pool-delete jobphase:Completed end_time:"$current_time" test_result:Pass jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"

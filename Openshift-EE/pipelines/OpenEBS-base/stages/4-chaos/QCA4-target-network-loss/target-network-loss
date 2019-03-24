@@ -70,9 +70,9 @@ cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:target-loss $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
-if [ "$?" != "0" ]; then
-exit 1;
-fi
+#if [ "$?" != "0" ]; then
+#exit 1;
+#fi
 
 echo "********Deprovisioning Busybox Application*******"
 
