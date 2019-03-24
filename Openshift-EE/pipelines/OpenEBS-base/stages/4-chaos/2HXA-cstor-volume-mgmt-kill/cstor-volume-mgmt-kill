@@ -37,7 +37,7 @@ sed -i -e 's/app: busybox-litmus/app: deploy-busybox-target-mgmt-kill/g' \
 -e 's/app=busybox-sts/app=target-mgmt-kill/g' \
 -e 's/value: statefulset/value: deployment/g' \
 -e 's/value: openebs-busybox/value: openebs-bb-mgmt-targetkill/g' \
--e 's/value: app-busybox-ns/value: target-mgmt-kill/g' busybox_target_mgmt_kill.yml
+-e 's/value: app-busybox-ns/value: mgmt-kill/g' busybox_target_mgmt_kill.yml
 cat busybox_target_mgmt_kill.yml
 
 bash ../Openshift-EE/utils/litmus_job_runner label='app:deploy-busybox-target-mgmt-kill' job=busybox_target_mgmt_kill.yml
@@ -60,7 +60,7 @@ cp apps/percona/chaos/openebs_target_failure/run_litmus_test.yml run_targetmgmt_
 sed -i -e 's/value: percona-mysql-claim/value: openebs-bb-mgmt-targetkill/g' \
 -e 's/name: openebs-target-failure/name: openebs-target-mgmt-failure/g' \
 -e 's/value: '\''name=percona'\''/value: '\''app=target-mgmt-kill'\''/g' \
--e 's/value: app-percona-ns/value: target-mgmt-kill/g' run_targetmgmt_kill_test.yml
+-e 's/value: app-percona-ns/value: mgmt-kill/g' run_targetmgmt_kill_test.yml
 
 sed -i '/command:/i \
           - name: RUN_ID\
@@ -81,7 +81,7 @@ fi
 
 echo "********Deprovisioning Busybox Application*******"
 
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-target-mgmt-kill metadata="")
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-mgmt-kill metadata="")
 echo $test_name
 
 cd litmus
@@ -92,7 +92,7 @@ sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovisi
 -e 's/app=busybox-sts/app=target-mgmt-kill/g' \
 -e 's/value: statefulset/value: deployment/g' \
 -e 's/value: openebs-busybox/value: openebs-bb-mgmt-targetkill/g' \
--e 's/value: app-busybox-ns/value: target-mgmt-kill/g' \
+-e 's/value: app-busybox-ns/value: mgmt-kill/g' \
 -e 's/value: provision/value: deprovision/g' deprovision_target_mgmt_kill.yml
 
 echo "Running the litmus test for Busybox Deployment.."

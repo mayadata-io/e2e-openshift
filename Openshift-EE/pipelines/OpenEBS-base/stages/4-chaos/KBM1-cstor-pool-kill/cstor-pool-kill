@@ -1,63 +1,118 @@
 #!/bin/bash
 set -x
 
-
 pod() {
 echo $CI_JOB_ID
 ###clone e2e-openshift-repo
 echo "cloning e2e-openshift repo*************"
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'git clone https://github.com/openebs/e2e-openshift.git'
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'cd e2e-openshift && git checkout OpenEBS-base && bash Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/KBM1-pool-kill/pool-kill node '"'$CI_JOB_ID'"''
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/openebs/e2e-openshift.git'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/KBM1-cstor-pool-kill/cstor-pool-kill node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"'
 }
 
 node() {
 job_id=$(echo $1)
-echo $job_id
-echo "*********Applying e2e-crd***********"
-kubectl apply -f Openshift-EE/utils/e2e-crd.yml
-
-echo "****Creating e2e-crd********"
-cat Openshift-EE/utils/e2e-result.yml > pool-kill-result.yml
-sed -i -e "s/<test-phase>/Running/g" -e "s/<test-name>/pool-kill/g" -e"s/<job_id>/$job_id/g" pool-kill-result.yml
+pipeline_id=$(echo $2)
+case_id=KBM1
 
 time="date"
 current_time=$(eval $time)
-sed -i -e "s/<test-init>/$current_time/g" -e "s/<openebs-id>/0.8.1/g" pool-kill-result.yml
-kubectl apply -f pool-kill-result.yml
-cat pool-kill-result.yml
 
-echo "*******Deploying Application****"
-sleep 5
-echo "      Application-Deployment: Pass" >> pool-kill-result.yml
-cat pool-kill-result.yml
-kubectl apply -f pool-kill-result.yml
+present_dir=$(pwd)
+echo $present_dir
 
-echo "*******Generating load**********"
-sleep 5
-echo "      Application-Loadgen: Pass" >> pool-kill-result.yml
-cat pool-kill-result.yml
-kubectl apply -f pool-kill-result.yml
+bash Openshift-EE/utils/e2e-cr jobname:pool-kill jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:pool-kill jobphase:Running init_time:"$current_time"
 
-echo "*******Killing cstor-pool************"
-sleep 5
-echo "      pool-kill: Fail" >> pool-kill-result.yml
-cat pool-kill-result.yml
-kubectl apply -f pool-kill-result.yml
+echo "*******Deploying Busybox Application****"
 
-echo "*******Deprovisioning Application******"
-sleep 5
-echo "      Application-Deprovisioning: Pass" >> pool-kill-result.yml
-cat pool-kill-result.yml
-kubectl apply -f pool-kill-result.yml
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-pool-kill metadata="")
+echo $test_name
+
+cd litmus
+echo "Running the litmus test for Busybox Deployment.."
+
+cp apps/busybox/deployers/run_litmus_test.yml busybox_pool_kill.yml
+
+sed -i -e 's/app: busybox-litmus/app: deploy-busybox-pool-kill/g' \
+-e 's/app=busybox-sts/app=pool-kill/g' \
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/value: openebs-busybox/value: openebs-bb-poolkill/g' \
+-e 's/value: app-busybox-ns/value: pool-kill/g' busybox_pool_kill.yml
+cat busybox_pool_kill.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:deploy-busybox-pool-kill' job=busybox_pool_kill.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:pool-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+exit 1;
+fi
+
+echo "*******Performing cStor Pool kill**********"
+
+run_id="delete";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-pool-failure metadata=${run_id})
+echo $test_name
+
+cd litmus
+cp apps/percona/chaos/openebs_pool_failure/run_litmus_test.yml poolkill.yml
+
+sed -i -e 's/value: percona-mysql-claim/value: openebs-bb-poolkill/g' \
+-e 's/value: '\''name=percona'\''/value: '\''app=pool-kill'\''/g' \
+-e 's/enable//g' \
+-e 's/value: app-percona-ns/value: pool-kill/g' poolkill.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' poolkill.yml
+
+echo "Running the litmus test for Busybox Deployment application pod kill.."
+cat poolkill.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-pool-failure' job=poolkill.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:pool-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+exit 1;
+fi
+
+echo "********Deprovisioning Busybox Application*******"
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-pool-kill metadata="")
+echo $test_name
+
+cd litmus
+cp apps/busybox/deployers/run_litmus_test.yml deprovision_pool_kill.yml
+
+sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovision-pool-kill/g' \
+-e 's/app: busybox-litmus/app: busybox-deprovision-pool-kill/g' \
+-e 's/app=busybox-sts/app=pool-kill/g' \
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/value: openebs-busybox/value: openebs-bb-poolkill/g' \
+-e 's/value: app-busybox-ns/value: pool-kill/g' \
+-e 's/value: provision/value: deprovision/g' deprovision_pool_kill.yml
+
+echo "Running the litmus test for Busybox Deployment.."
+cat deprovision_pool_kill.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-deprovision-pool-kill' job=deprovision_pool_kill.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:pool-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+exit 1;
+fi
 
 current_time=$(eval $time)
-sed -i -e "s/<test-finish>/$current_time/g" pool-kill-result.yml
-sed -i -e "s/<test-result>/Fail/g" pool-kill-result.yml
-cat pool-kill-result.yml
+bash Openshift-EE/utils/e2e-cr jobname:pool-kill jobphase:Completed end_time:"$current_time" test_result:Pass jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 }
 
 if [ "$1" == "node" ];then
-  node $2
+  node $2 $3
 else
   pod
 fi

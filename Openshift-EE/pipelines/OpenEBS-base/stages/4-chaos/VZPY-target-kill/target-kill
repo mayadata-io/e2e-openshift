@@ -59,7 +59,7 @@ cp apps/percona/chaos/openebs_target_failure/run_litmus_test.yml run_targetkill_
 
 sed -i -e 's/value: percona-mysql-claim/value: openebs-bb-targetkill/g' \
 -e 's/value: '\''name=percona'\''/value: '\''app=target-kill'\''/g' \
--e 's/target-zrepl-kill/target-kill/g' \
+-e 's/target-zrepl-kill/target-delete/g' \
 -e 's/value: app-percona-ns/value: target-kill/g' run_targetkill_test.yml
 
 sed -i '/command:/i \
