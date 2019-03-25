@@ -11,29 +11,29 @@ stages:
   image: openebs/openshift-ci:latest
   stage: CLUSTER-SETUP
   script:     
-    - chmod 755 ./Openshift-EE/pipelines/MongoDB/stages/1-cluster-setup/3OLN-cluster-state/cluster-state
-    - ./Openshift-EE/pipelines/MongoDB/stages/1-cluster-setup/3OLN-cluster-state/cluster-state
+    - chmod 755 ./Openshift-EE/pipelines/mongodb/stages/1-cluster-setup/3OLN-cluster-state/cluster-state
+    - ./Openshift-EE/pipelines/mongodb/stages/1-cluster-setup/3OLN-cluster-state/cluster-state
 
 Y5YL-OpenEBS-v0.8.1:
   image: openebs/openshift-ci:latest
   stage: OPENEBS-SETUP
   script:
-    - chmod 775 ./Openshift-EE/pipelines/MongoDB/stages/2-setup/Y5YL-openebs-deploy/deploy-openebs
-    - ./Openshift-EE/pipelines/MongoDB/stages/2-setup/Y5YL-openebs-deploy/deploy-openebs
+    - chmod 775 ./Openshift-EE/pipelines/mongodb/stages/2-setup/Y5YL-openebs-deploy/deploy-openebs
+    - ./Openshift-EE/pipelines/mongodb/stages/2-setup/Y5YL-openebs-deploy/deploy-openebs
 
 AWVX-OpenEBS-POLICIES:
   image: openebs/openshift-ci:latest
   stage: OPENEBS-SETUP
   script:
-    - chmod 775 ./Openshift-EE/pipelines/MongoDB/stages/2-setup/AWVX-storage-policies/openebs-sc
-    - ./Openshift-EE/pipelines/MongoDB/stages/2-setup/AWVX-storage-policies/openebs-sc
+    - chmod 775 ./Openshift-EE/pipelines/mongodb/stages/2-setup/AWVX-storage-policies/openebs-sc
+    - ./Openshift-EE/pipelines/mongodb/stages/2-setup/AWVX-storage-policies/openebs-sc
   
 6ZG4-CSTOR-POOL:
   image: openebs/openshift-ci:latest
   stage: OPENEBS-SETUP
   script:
-    - chmod 775 ./Openshift-EE/pipelines/MongoDB/stages/2-setup/6ZG4-create-striped-pool/create-pool
-    - ./Openshift-EE/pipelines/MongoDB/stages/2-setup/6ZG4-create-striped-pool/create-pool
+    - chmod 775 ./Openshift-EE/pipelines/mongodb/stages/2-setup/6ZG4-create-striped-pool/create-pool
+    - ./Openshift-EE/pipelines/mongodb/stages/2-setup/6ZG4-create-striped-pool/create-pool
     
 .func_test_template:
   image: openebs/openshift-ci:latest
@@ -42,11 +42,11 @@ AWVX-OpenEBS-POLICIES:
   dependencies:
     - Y5YL-OpenEBS-v0.8.1
      
-ZPRM-MongoDB-Provision:
+ZPRM-mongodb-Provision:
   extends: .func_test_template
   script: 
-    - chmod 775 ./Openshift-EE/pipelines/MongoDB/stages/3-functional/ZPRM-deploy-mongodb/deploy-mongodb
-    - ./Openshift-EE/pipelines/MongoDB/stages/3-functional/ZPRM-deploy-mongodb/deploy-mongodb
+    - chmod 775 ./Openshift-EE/pipelines/mongodb/stages/3-functional/ZPRM-deploy-mongodb/deploy-mongodb
+    - ./Openshift-EE/pipelines/mongodb/stages/3-functional/ZPRM-deploy-mongodb/deploy-mongodb
 
 .chaos_test_template:
   image: openebs/openshift-ci:latest
@@ -58,8 +58,8 @@ ZPRM-MongoDB-Provision:
 62F1-App-pod-kill:
   extends: .chaos_test_template
   script: 
-    - chmod 775 ./Openshift-EE/pipelines/MongoDB/stages/4-chaos/62F1-mongodb-pod-failure/app-pod-kill
-    - ./Openshift-EE/pipelines/MongoDB/stages/4-chaos/62F1-mongodb-pod-failure/app-pod-kill
+    - chmod 775 ./Openshift-EE/pipelines/mongodb/stages/4-chaos/62F1-mongodb-pod-failure/app-pod-kill
+    - ./Openshift-EE/pipelines/mongodb/stages/4-chaos/62F1-mongodb-pod-failure/app-pod-kill
 
 NUTL-openebs-Uninstall:
   image: openebs/openshift-ci:latest
@@ -68,8 +68,8 @@ NUTL-openebs-Uninstall:
   dependencies:
     - Y5YL-OpenEBS-v0.8.1
   script:
-    - chmod 775 ./Openshift-EE/pipelines/MongoDB/stages/5-cleanup/NUTL-openebs-cleanup/openebs-cleanup
-    - ./Openshift-EE/pipelines/MongoDB/stages/5-cleanup/NUTL-openebs-cleanup/openebs-cleanup
+    - chmod 775 ./Openshift-EE/pipelines/mongodb/stages/5-cleanup/NUTL-openebs-cleanup/openebs-cleanup
+    - ./Openshift-EE/pipelines/mongodb/stages/5-cleanup/NUTL-openebs-cleanup/openebs-cleanup
   
 L1ZC-cluster-Delete:
   image: openebs/openshift-ci:latest
@@ -78,5 +78,5 @@ L1ZC-cluster-Delete:
   dependencies:
     - 3OLN-OpenShift-3.10
   script:
-    - chmod 775 ./Openshift-EE/pipelines/MongoDB/stages/5-cleanup/L1ZC-cluster-cleanup/cluster-cleanup
-    - ./Openshift-EE/pipelines/MongoDB/stages/5-cleanup/L1ZC-cluster-cleanup/cluster-cleanup
+    - chmod 775 ./Openshift-EE/pipelines/mongodb/stages/5-cleanup/L1ZC-cluster-cleanup/cluster-cleanup
+    - ./Openshift-EE/pipelines/mongodb/stages/5-cleanup/L1ZC-cluster-cleanup/cluster-cleanup
