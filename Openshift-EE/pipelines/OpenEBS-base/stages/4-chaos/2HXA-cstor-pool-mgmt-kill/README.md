@@ -3,7 +3,7 @@
 #### Description
 Induce failure on cstor-pool-mgmt container in cstor-pool pod and check if it doesn't affect the application availability.
 
-#### Prerequisites\r
+#### Prerequisites
 - OpenShift Cluster should be created and have the dependencies installed.
 - cStor based storage pool should have been created.
 - OpenEBS storage class should be created with the desired storage pool claim.
