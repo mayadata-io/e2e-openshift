@@ -1,0 +1,82 @@
+## Define the stages & order of execution
+
+stages:
+  - CLUSTER-SETUP
+  - OPENEBS-SETUP
+  - FUNCTIONAL
+  - CHAOS
+  - CLEANUP
+
+C538-OpenShift-3.10:
+  image: openebs/openshift-ci:latest
+  stage: CLUSTER-SETUP
+  script:     
+    - chmod 755 ./Openshift-EE/pipelines/Cassandra/stages/1-cluster-setup/C538-cluster-state/cluster-state
+    - ./Openshift-EE/pipelines/Cassandra/stages/1-cluster-setup/C538-cluster-state/cluster-state
+
+SKLV-OpenEBS-v0.8.1:
+  image: openebs/openshift-ci:latest
+  stage: OPENEBS-SETUP
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/2-setup/SKLV-openebs-deploy/deploy-openebs
+    - ./Openshift-EE/pipelines/Cassandra/stages/2-setup/SKLV-openebs-deploy/deploy-openebs
+
+HNN7-OpenEBS-POLICIES:
+  image: openebs/openshift-ci:latest
+  stage: OPENEBS-SETUP
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/2-setup/HNN7-storage-policies/openebs-sc
+    - ./Openshift-EE/pipelines/Cassandra/stages/2-setup/HNN7-storage-policies/openebs-sc
+  
+OJEF-CSTOR-POOL:
+  image: openebs/openshift-ci:latest
+  stage: OPENEBS-SETUP
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/2-setup/OJEF-create-striped-pool/create-pool
+    - ./Openshift-EE/pipelines/Cassandra/stages/2-setup/OJEF-create-striped-pool/create-pool
+    
+.func_test_template:
+  image: openebs/openshift-ci:latest
+  stage: FUNCTIONAL
+  when: always
+  dependencies:
+    - SKLV-OpenEBS-v0.8.1
+     
+FRYG-Cassandra-Provision:
+  extends: .func_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/3-functional/FRYG-deploy-cassandra/cassandra-deploy
+    - ./Openshift-EE/pipelines/Cassandra/stages/3-functional/FRYG-deploy-cassandra/cassandra-deploy
+
+.chaos_test_template:
+  image: openebs/openshift-ci:latest
+  stage: CHAOS
+  when: always
+  dependencies:
+    - SKLV-OpenEBS-v0.8.1
+
+RJKZ-App-pod-kill:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/RJKZ-cassandra-pod-failure/app-pod-kill
+    - ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/RJKZ-cassandra-pod-failure/app-pod-kill
+
+WWDM-openebs-Uninstall:
+  image: openebs/openshift-ci:latest
+  stage: CLEANUP
+  when: always
+  dependencies:
+    - SKLV-OpenEBS-v0.8.1
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/5-cleanup/WWDM-openebs-cleanup/openebs-cleanup
+    - ./Openshift-EE/pipelines/Cassandra/stages/5-cleanup/WWDM-openebs-cleanup/openebs-cleanup
+  
+M14G-cluster-Delete:
+  image: openebs/openshift-ci:latest
+  stage: CLEANUP
+  when: always
+  dependencies:
+    - C538-OpenShift-3.10
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/5-cleanup/M14G-cluster-cleanup/cluster-cleanup
+    - ./Openshift-EE/pipelines/Cassandra/stages/5-cleanup/M14G-cluster-cleanup/cluster-cleanup
