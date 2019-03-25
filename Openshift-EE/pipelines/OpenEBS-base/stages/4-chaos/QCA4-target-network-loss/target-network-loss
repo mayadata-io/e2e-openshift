@@ -100,9 +100,16 @@ cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:target-loss $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
-#if [ "$?" != "0" ]; then
-#exit 1;
-#fi
+rc_val=$(echo $?)
+test_case_id="QCA4-$pipeline_id"
+
+gittoken=$(echo "$github_token")
+testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+python3 Openshift-EE/utils/result/result_update.py $test_case_id QCA4 4-chaos "Induce cstor target network loss and check if it gets recovered successfully" $testResult $gittoken
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
 
 current_time=$(eval $time)
 bash Openshift-EE/utils/e2e-cr jobname:target-loss jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass

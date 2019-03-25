@@ -105,9 +105,16 @@ cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:target-mgmt-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
-#if [ "$?" != "0" ]; then
-#exit 1;
-#fi
+rc_val=$(echo $?)
+test_case_id="2HXA-$pipeline_id"
+
+gittoken=$(echo "$github_token")
+testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+python3 Openshift-EE/utils/result/result_update.py $test_case_id 2HXA 4-chaos "Induce failure on cstor-pool-mgmt container in cstor-pool pod and check if it doesn't affect the application availability" $testResult $gittoken
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
 
 current_time=$(eval $time)
 bash Openshift-EE/utils/e2e-cr jobname:target-mgmt-kill jobphase:Completed end_time:"$current_time" test_result:Pass jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass

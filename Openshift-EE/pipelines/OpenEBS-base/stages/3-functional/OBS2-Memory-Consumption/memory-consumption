@@ -94,7 +94,14 @@ cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:memory-consumption $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
-if [ "$?" != "0" ]; then
+rc_val=$(echo $?)
+test_case_id="OBS2-$pipeline_id"
+
+gittoken=$(echo "$github_token")
+testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+python3 Openshift-EE/utils/result/result_update.py $test_case_id OBS2 3-functional "Check if the memory consumption doesn't cross the desired threshold for known workload" $testResult $gittoken
+
+if [ "$rc_val" != "0" ]; then
 exit 1;
 fi
 
