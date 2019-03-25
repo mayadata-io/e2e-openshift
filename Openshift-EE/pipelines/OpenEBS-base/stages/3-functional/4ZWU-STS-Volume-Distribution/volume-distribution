@@ -49,7 +49,7 @@ fi
 #################
 rc_val=$(echo $?)
 test_case_id="4ZWU-$pipeline_id"
-
+source ~/.profile
 gittoken=$(echo "$github_token")
 testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
 python3 Openshift-EE/utils/result/result_update.py $test_case_id 4ZWU 3-functional "Check if the storage volume replicas are distributed across the storage pools in case of statefulset deployment" $testResult $gittoken

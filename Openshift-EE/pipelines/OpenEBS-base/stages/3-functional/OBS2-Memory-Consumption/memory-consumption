@@ -96,7 +96,7 @@ bash Openshift-EE/utils/event_updater jobname:memory-consumption $test_name jobi
 
 rc_val=$(echo $?)
 test_case_id="OBS2-$pipeline_id"
-
+source ~/.profile
 gittoken=$(echo "$github_token")
 testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
 python3 Openshift-EE/utils/result/result_update.py $test_case_id OBS2 3-functional "Check if the memory consumption doesn't cross the desired threshold for known workload" $testResult $gittoken

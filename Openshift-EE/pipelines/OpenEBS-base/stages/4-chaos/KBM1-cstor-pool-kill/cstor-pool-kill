@@ -107,7 +107,7 @@ bash Openshift-EE/utils/event_updater jobname:pool-kill $test_name jobid:"$job_i
 
 rc_val=$(echo $?)
 test_case_id="KBM1-$pipeline_id"
-
+source ~/.profile
 gittoken=$(echo "$github_token")
 testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
 python3 Openshift-EE/utils/result/result_update.py $test_case_id KBM1 4-chaos "Induce failure on cStor pool container(cstor-pool) and check if it is recovered successfully and verify that the application is not impacted" $testResult $gittoken

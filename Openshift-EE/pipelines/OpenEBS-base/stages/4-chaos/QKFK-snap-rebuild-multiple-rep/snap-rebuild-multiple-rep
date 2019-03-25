@@ -99,7 +99,7 @@ bash Openshift-EE/utils/event_updater jobname:snap-rebuild-multiple-rep $test_na
 
 rc_val=$(echo $?)
 test_case_id="QKFK-$pipeline_id"
-
+source ~/.profile
 gittoken=$(echo "$github_token")
 testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
 python3 Openshift-EE/utils/result/result_update.py $test_case_id QKFK 4-chaos "Check if the snapshot cannot be rebuilt when the quorum condition is not met" $testResult $gittoken

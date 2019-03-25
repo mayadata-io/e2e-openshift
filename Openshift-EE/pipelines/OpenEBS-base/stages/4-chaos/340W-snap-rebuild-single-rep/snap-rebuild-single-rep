@@ -99,7 +99,7 @@ bash Openshift-EE/utils/event_updater jobname:snap-rebuild-single-rep $test_name
 
 rc_val=$(echo $?)
 test_case_id="340W-$pipeline_id"
-
+source ~/.profile
 gittoken=$(echo "$github_token")
 testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
 python3 Openshift-EE/utils/result/result_update.py $test_case_id 340W 4-chaos "Check if the snapshot can be rebuilt after loss and recovery of single replica" $testResult $gittoken

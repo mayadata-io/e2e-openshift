@@ -102,7 +102,7 @@ bash Openshift-EE/utils/event_updater jobname:target-loss $test_name jobid:"$job
 
 rc_val=$(echo $?)
 test_case_id="QCA4-$pipeline_id"
-
+source ~/.profile
 gittoken=$(echo "$github_token")
 testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
 python3 Openshift-EE/utils/result/result_update.py $test_case_id QCA4 4-chaos "Induce cstor target network loss and check if it gets recovered successfully" $testResult $gittoken
