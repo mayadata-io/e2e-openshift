@@ -1,4 +1,4 @@
-### Verify applicaton availablity post node is evicted due to disk-pressure taint.
+### Verify applicaton availablity when node is evicted due to disk-pressure taint.
 
 #### Description
 Evict node due to disk-pressure taint and check if application is rescheduled and verify its availability.
