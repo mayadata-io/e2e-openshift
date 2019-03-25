@@ -1,0 +1,5 @@
+#!/bin/bash
+set -x
+
+echo "***Setting up the cluser***"
+sleep 2

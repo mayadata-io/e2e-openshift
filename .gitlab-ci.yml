@@ -1,0 +1,82 @@
+## Define the stages & order of execution
+
+stages:
+  - CLUSTER-SETUP
+  - OPENEBS-SETUP
+  - FUNCTIONAL
+  - CHAOS
+  - CLEANUP
+
+5MVN-OpenShift-3.10:
+  image: openebs/openshift-ci:latest
+  stage: CLUSTER-SETUP
+  script:     
+    - chmod 755 ./Openshift-EE/pipelines/GitLab/stages/1-cluster-setup/5MVN-cluster-setup/cluster-state
+    - ./Openshift-EE/pipelines/GitLab/stages/1-cluster-setup/5MVN-cluster-setup/cluster-state
+
+OD9K-OpenEBS-v0.8.1:
+  image: openebs/openshift-ci:latest
+  stage: OPENEBS-SETUP
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/2-setup/OD9K-openebs-depoy/deploy-openebs
+    - ./Openshift-EE/pipelines/GitLab/stages/2-setup/OD9K-openebs-depoy/deploy-openebs
+
+KJV1-OpenEBS-POLICIES:
+  image: openebs/openshift-ci:latest
+  stage: OPENEBS-SETUP
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/2-setup/KJV1-storage-policies/openebs-sc
+    - ./Openshift-EE/pipelines/GitLab/stages/2-setup/KJV1-storage-policies/openebs-sc
+  
+75RJ-CSTOR-POOL:
+  image: openebs/openshift-ci:latest
+  stage: OPENEBS-SETUP
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/2-setup/75RJ-create-striped-pool/create-pool
+    - ./Openshift-EE/pipelines/GitLab/stages/2-setup/75RJ-create-striped-pool/create-pool
+    
+.func_test_template:
+  image: openebs/openshift-ci:latest
+  stage: FUNCTIONAL
+  when: always
+  dependencies:
+    - OD9K-OpenEBS-v0.8.1
+     
+BQKZ-GitLab-Provision:
+  extends: .func_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/3-functional/BQKZ-deploy-gitlab/deploy-gitlab
+    - ./Openshift-EE/pipelines/GitLab/stages/3-functional/BQKZ-deploy-gitlab/deploy-gitlab
+
+.chaos_test_template:
+  image: openebs/openshift-ci:latest
+  stage: CHAOS
+  when: always
+  dependencies:
+    - OD9K-OpenEBS-v0.8.1
+
+XMSV-App-Kill:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/4-chaos/XMSV-gitlab-pod-failure/gitlab-pod-kill
+    - ./Openshift-EE/pipelines/GitLab/stages/4-chaos/XMSV-gitlab-pod-failure/gitlab-pod-kill
+
+LSCQ-openebs-Uninstall:
+  image: openebs/openshift-ci:latest
+  stage: CLEANUP
+  when: always
+  dependencies:
+    - OD9K-OpenEBS-v0.8.1
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/5-cleanup/LSCQ-openebs-cleanup/openebs-cleanup
+    - ./Openshift-EE/pipelines/GitLab/stages/5-cleanup/LSCQ-openebs-cleanup/openebs-cleanup
+  
+DNMY-cluster-Delete:
+  image: openebs/openshift-ci:latest
+  stage: CLEANUP
+  when: always
+  dependencies:
+    - 5MVN-OpenShift-3.10
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/5-cleanup/DNMY-cluster-cleanup/cluster-cleanup
+    - ./Openshift-EE/pipelines/GitLab/stages/5-cleanup/DNMY-cluster-cleanup/cluster-cleanup
