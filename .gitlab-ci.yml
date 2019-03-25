@@ -18,8 +18,8 @@ E16S-OpenEBS-v0.8.1:
   image: openebs/openshift-ci:latest
   stage: OPENEBS-SETUP
   script:
-    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/2-setup/E16S-openebs-depoy/deploy-openebs
-    - ./Openshift-EE/pipelines/ElasticSearch/stages/2-setup/E16S-openebs-depoy/deploy-openebs
+    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/2-setup/E16S-openebs-deploy/deploy-openebs
+    - ./Openshift-EE/pipelines/ElasticSearch/stages/2-setup/E16S-openebs-deploy/deploy-openebs
 
 LY12-OpenEBS-POLICIES:
   image: openebs/openshift-ci:latest
