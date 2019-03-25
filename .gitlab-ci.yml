@@ -1,0 +1,82 @@
+## Define the stages & order of execution
+
+stages:
+  - CLUSTER-SETUP
+  - OPENEBS-SETUP
+  - FUNCTIONAL
+  - CHAOS
+  - CLEANUP
+
+3OLN-OpenShift-3.10:
+  image: openebs/openshift-ci:latest
+  stage: CLUSTER-SETUP
+  script:     
+    - chmod 755 ./Openshift-EE/pipelines/MongoDB/stages/1-cluster-setup/3OLN-cluster-state/cluster-state
+    - ./Openshift-EE/pipelines/MongoDB/stages/1-cluster-setup/3OLN-cluster-state/cluster-state
+
+Y5YL-OpenEBS-v0.8.1:
+  image: openebs/openshift-ci:latest
+  stage: OPENEBS-SETUP
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/MongoDB/stages/2-setup/Y5YL-openebs-deploy/deploy-openebs
+    - ./Openshift-EE/pipelines/MongoDB/stages/2-setup/Y5YL-openebs-deploy/deploy-openebs
+
+AWVX-OpenEBS-POLICIES:
+  image: openebs/openshift-ci:latest
+  stage: OPENEBS-SETUP
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/MongoDB/stages/2-setup/AWVX-storage-policies/openebs-sc
+    - ./Openshift-EE/pipelines/MongoDB/stages/2-setup/AWVX-storage-policies/openebs-sc
+  
+6ZG4-CSTOR-POOL:
+  image: openebs/openshift-ci:latest
+  stage: OPENEBS-SETUP
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/MongoDB/stages/2-setup/6ZG4-create-striped-pool/create-pool
+    - ./Openshift-EE/pipelines/MongoDB/stages/2-setup/6ZG4-create-striped-pool/create-pool
+    
+.func_test_template:
+  image: openebs/openshift-ci:latest
+  stage: FUNCTIONAL
+  when: always
+  dependencies:
+    - Y5YL-OpenEBS-v0.8.1
+     
+ZPRM-MongoDB-Provision:
+  extends: .func_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/MongoDB/stages/3-functional/ZPRM-deploy-mongodb/deploy-mongodb
+    - ./Openshift-EE/pipelines/MongoDB/stages/3-functional/ZPRM-deploy-mongodb/deploy-mongodb
+
+.chaos_test_template:
+  image: openebs/openshift-ci:latest
+  stage: CHAOS
+  when: always
+  dependencies:
+    - Y5YL-OpenEBS-v0.8.1
+
+62F1-App-pod-kill:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/MongoDB/stages/4-chaos/62F1-mongodb-pod-failure/app-pod-kill
+    - ./Openshift-EE/pipelines/MongoDB/stages/4-chaos/62F1-mongodb-pod-failure/app-pod-kill
+
+NUTL-openebs-Uninstall:
+  image: openebs/openshift-ci:latest
+  stage: CLEANUP
+  when: always
+  dependencies:
+    - Y5YL-OpenEBS-v0.8.1
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/MongoDB/stages/5-cleanup/NUTL-openebs-cleanup/openebs-cleanup
+    - ./Openshift-EE/pipelines/MongoDB/stages/5-cleanup/NUTL-openebs-cleanup/openebs-cleanup
+  
+L1ZC-cluster-Delete:
+  image: openebs/openshift-ci:latest
+  stage: CLEANUP
+  when: always
+  dependencies:
+    - 3OLN-OpenShift-3.10
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/MongoDB/stages/5-cleanup/L1ZC-cluster-cleanup/cluster-cleanup
+    - ./Openshift-EE/pipelines/MongoDB/stages/5-cleanup/L1ZC-cluster-cleanup/cluster-cleanup
