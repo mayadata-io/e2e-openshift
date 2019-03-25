@@ -33,11 +33,13 @@ file_content=str(file.decoded_content)
 file_content = re.sub(r'\\n','\\n',file_content)		
 file_content = file_content.strip("b\'\'")
 
+
+content_list = file_content.split('\n')
 # updating result's table if it is already there
-if file_content.find("Test Result")>0:
-    content_list= file_content.split('\n')
+if file_content.find('|')>0:
     new_job = '|     {}                    |  {}           | {}  |'.format(test_id,test_desc,test_result)
-    content_list.insert(2,new_job)
+    index = content_list.index(' | Test ID |   Test Description               | Test Result   |')
+    content_list.insert(index+2,new_job)
     string = ('\n').join(content_list)
     
 # creating result's table for first entry 
@@ -45,7 +47,9 @@ else:
     string =           ' | Test ID |   Test Description               | Test Result   |\n'
     string = string + (' |---------|---------------------------| --------------|\n')
     string = string + (' |    {}   |  {}           |  {}     |\n'.format(test_id,test_desc,test_result))
-
+    index = len(content_list)-1
+    content_list.insert(index,string)
+    string = ('\n').join(content_list)
 
 # commit changes
 commit_message = "new job result update"
