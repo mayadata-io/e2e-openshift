@@ -15,8 +15,4 @@ This job that will create the storage classes with the properties supported by O
 - The job should be capable of creating OpenEBS storage classes.
 - Check if the OpenEBS storage classes are created using kubectl command `kubectl get sc`
 
- | Test ID |   Test Description               | Test Result   |
- |---------|---------------------------| --------------|
- |    1CXH-605   |  Create K8s storage classes adhering the policies supported by OpenEBS           |  Pass     |
-
 #### Test Result
