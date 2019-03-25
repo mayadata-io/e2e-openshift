@@ -12,3 +12,5 @@ The test goal is to ensure that the storage volume replicas are distributed acro
 - Deploy statefulset application using OpenEBS storage class with single storage replica and multiple application replicas.
 - Check if the application is deployed successfully.
 - Check if the cstor storage volume replicas are distributed across the pool pods created in multiple nodes.
+
+#### Test Result
