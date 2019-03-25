@@ -8,10 +8,15 @@ Induce cstor target pod kill and check if it doesn't affect the application avai
 - cStor based storage pool should have been created.
 - OpenEBS storage class should be created with the desired storage pool claim.
 
-#### Procedure\r
+#### Procedure
 - Deploy statefulset application consuming OpenEBS Volume.
 - Check if the application is deployed successfully.
 - Induce cstor target pod kill and verify if application is running successfully.
 - Deprovision statefulset application.
 
 #### Test Result
+ | Test ID |   Test Description               | Test Result   |
+ |---------|---------------------------| --------------|
+ |    VZPY-605   |  Induce failure on cstor-target pod and check if it gets scheduled immediately and the application is available           |  Fail     |
+
+
