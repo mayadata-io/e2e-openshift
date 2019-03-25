@@ -36,6 +36,7 @@ cp apps/busybox/deployers/run_litmus_test.yml busybox_app_kill.yml
 sed -i -e 's/app: busybox-litmus/app: deploy-busybox-app-kill/g' \
 -e 's/app=busybox-sts/app=app-kill/g' \
 -e 's/value: statefulset/value: deployment/g' \
+-e 's/value: openebs-cstor-sparse/value: openebs-cstor-disk/g' \
 -e 's/value: openebs-busybox/value: openebs-bb-appkill/g' \
 -e 's/value: app-busybox-ns/value: app-kill/g' busybox_app_kill.yml
 cat busybox_app_kill.yml
@@ -85,6 +86,7 @@ sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovisi
 -e 's/app=busybox-sts/app=app-kill/g' \
 -e 's/value: statefulset/value: deployment/g' \
 -e 's/value: openebs-busybox/value: openebs-bb-appkill/g' \
+-e 's/value: openebs-cstor-sparse/value: openebs-cstor-disk/g' \
 -e 's/value: app-busybox-ns/value: app-kill/g' \
 -e 's/value: provision/value: deprovision/g' deprovision_app_kill.yml
 

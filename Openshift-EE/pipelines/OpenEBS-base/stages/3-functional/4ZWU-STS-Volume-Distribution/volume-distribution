@@ -6,20 +6,18 @@ echo $CI_JOB_ID
 ###clone e2e-openshift-repo
 echo "cloning e2e-openshift repo*************"
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/openebs/e2e-openshift.git'
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/4ZWU-STS-Volume-Distribution/volume-distribution node '"'$CI_JOB_ID'"''
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/4ZWU-STS-Volume-Distribution/volume-distribution node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"'
 }
 
 node() {
 job_id=$(echo $1)
+pipeline_id=$(echo $2)
+case_id=4ZWU
 time="date"
 current_time=$(eval $time)
-echo "*********Applying e2e-crd***********"
-kubectl apply -f Openshift-EE/utils/e2e-crd.yml
-echo "*****Deploying openebs*******"
-bash Openshift-EE/utils/e2e-cr jobname:volume-replica-distribution jobphase:Waiting
-bash Openshift-EE/utils/e2e-cr jobname:volume-replica-distribution jobphase:Running init_time:"$current_time"
 
-kubectl apply -f Openshift-EE/utils/result-volume-replica-distribution.yml
+bash Openshift-EE/utils/e2e-cr jobname:volume-replica-distribution jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:volume-replica-distribution jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=replica-distribution metadata="")
 echo $test_name
@@ -29,6 +27,7 @@ cd litmus
 echo "Running the litmus test.."
 run_test=apps/busybox/functional/volume-distribution/run_litmus_test.yml
 sed -i -e 's/app: busybox-statefulset-litmus/app: busybox-vol-distribute/g' \
+-e 's/value: openebs-cstor-sparse/value: openebs-cstor-disk/g' \
 -e 's/value: 'app=busybox-sts'/value: 'app=busybox'/g' \
 -e 's/value: app-busybox-ns/value: busybox/g' $run_test
 cat $run_test
@@ -36,19 +35,27 @@ cat $run_test
 bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-vol-distribute' job=$run_test
 
 echo "Dumping state of cluster post job run"; echo ""
-bash ../Openshift-EE/utils/dump_cluster_state;
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+
+bash Openshift-EE/utils/event_updater jobname:volume-replica-distribution $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+exit 1;
+fi
 
 #################
 ## GET RESULT  ##
 #################
 
 ## Check the test status & result from the litmus result custom resource
+current_time=$(eval $time)
+bash Openshift-EE/utils/e2e-cr jobname:volume-replica-distribution jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
 
-cd .. && bash Openshift-EE/utils/get_litmus_result ${test_name} volume-replica-distribution
 }
 
 if [ "$1" == "node" ];then
-  node $2
+  node $2 $3
 else
   pod
 fi

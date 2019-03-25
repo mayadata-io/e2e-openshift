@@ -36,6 +36,7 @@ cp apps/busybox/deployers/run_litmus_test.yml busybox_target_delay.yml
 sed -i -e 's/app: busybox-litmus/app: deploy-busybox-target-delay/g' \
 -e 's/app=busybox-sts/app=target-delay/g' \
 -e 's/value: statefulset/value: deployment/g' \
+-e 's/value: openebs-cstor-sparse/value: openebs-cstor-disk/g' \
 -e 's/value: openebs-busybox/value: openebs-bb-targetdelay/g' \
 -e 's/value: app-busybox-ns/value: target-delay/g' busybox_target_delay.yml
 cat busybox_target_delay.yml
@@ -85,6 +86,7 @@ sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovisi
 -e 's/app: busybox-litmus/app: busybox-deprovision-target-delay/g' \
 -e 's/app=busybox-sts/app=target-delay/g' \
 -e 's/value: statefulset/value: deployment/g' \
+-e 's/value: openebs-cstor-sparse/value: openebs-cstor-disk/g' \
 -e 's/value: openebs-busybox/value: openebs-bb-targetdelay/g' \
 -e 's/value: app-busybox-ns/value: target-delay/g' \
 -e 's/value: provision/value: deprovision/g' deprovision_target_delay.yml
