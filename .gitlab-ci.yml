@@ -1,0 +1,82 @@
+## Define the stages & order of execution
+
+stages:
+  - CLUSTER-SETUP
+  - OPENEBS-SETUP
+  - FUNCTIONAL
+  - CHAOS
+  - CLEANUP
+
+IOWW-OpenShift-3.10:
+  image: openebs/openshift-ci:latest
+  stage: CLUSTER-SETUP
+  script:     
+    - chmod 755 ./Openshift-EE/pipelines/ElasticSearch/stages/1-cluster-setup/IOWW-cluster-state/cluster-state
+    - ./Openshift-EE/pipelines/ElasticSearch/stages/1-cluster-setup/IOWW-cluster-state/cluster-state
+
+E16S-OpenEBS-v0.8.1:
+  image: openebs/openshift-ci:latest
+  stage: OPENEBS-SETUP
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/2-setup/E16S-openebs-depoy/deploy-openebs
+    - ./Openshift-EE/pipelines/ElasticSearch/stages/2-setup/E16S-openebs-depoy/deploy-openebs
+
+LY12-OpenEBS-POLICIES:
+  image: openebs/openshift-ci:latest
+  stage: OPENEBS-SETUP
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/2-setup/LY12-storage-policies/openebs-sc
+    - ./Openshift-EE/pipelines/ElasticSearch/stages/2-setup/LY12-storage-policies/openebs-sc
+  
+II1Z-CSTOR-POOL:
+  image: openebs/openshift-ci:latest
+  stage: OPENEBS-SETUP
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/2-setup/II1Z-create-striped-pool/cstor-pool
+    - ./Openshift-EE/pipelines/ElasticSearch/stages/2-setup/II1Z-create-striped-pool/cstor-pool
+    
+.func_test_template:
+  image: openebs/openshift-ci:latest
+  stage: FUNCTIONAL
+  when: always
+  dependencies:
+    - E16S-OpenEBS-v0.8.1
+     
+QQ9F-ElasticSearch-Provision:
+  extends: .func_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/3-functional/QQ9F-deploy-elasticsearch/deploy-elasticsearch
+    - ./Openshift-EE/pipelines/ElasticSearch/stages/3-functional/QQ9F-deploy-elasticsearch/deploy-elasticsearch
+
+.chaos_test_template:
+  image: openebs/openshift-ci:latest
+  stage: CHAOS
+  when: always
+  dependencies:
+    - E16S-OpenEBS-v0.8.1
+
+401P-App-pod-failure:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/401P-elasticsearch-pod-failure/app-pod-kill
+    - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/401P-elasticsearch-pod-failure/app-pod-kill
+
+78NG-openebs-Uninstall:
+  image: openebs/openshift-ci:latest
+  stage: CLEANUP
+  when: always
+  dependencies:
+    - E16S-OpenEBS-v0.8.1
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/5-cleanup/78NG-openebs-cleanup/openebs-cleanup
+    - ./Openshift-EE/pipelines/ElasticSearch/stages/5-cleanup/78NG-openebs-cleanup/openebs-cleanup
+  
+638K-cluster-Delete:
+  image: openebs/openshift-ci:latest
+  stage: CLEANUP
+  when: always
+  dependencies:
+    - IOWW-OpenShift-3.10
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/5-cleanup/638K-cluster-cleanup/cluster-delete
+    - ./Openshift-EE/pipelines/ElasticSearch/stages/5-cleanup/638K-cluster-cleanup/cluster-delete
