@@ -17,5 +17,6 @@ Make sure that the application replicas can be scaled by updating its correspond
 #### Test Result
  | Test ID |   Test Description               | Test Result   |
  |---------|---------------------------| --------------|
+|     ZD8F-605                    |  Scale the statefulset application replicas and verify the ring configuration           | Pass  |
  |    ZD8F-605   |  Scale the statefulset application replicas and verify the ring configuration           |  Pass     |
 
