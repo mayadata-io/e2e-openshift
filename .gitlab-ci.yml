@@ -11,8 +11,8 @@ stages:
   image: openebs/openshift-ci:latest
   stage: CLUSTER-SETUP
   script:     
-    - chmod 755 ./Openshift-EE/pipelines/GitLab/stages/1-cluster-setup/5MVN-cluster-setup/cluster-state
-    - ./Openshift-EE/pipelines/GitLab/stages/1-cluster-setup/5MVN-cluster-setup/cluster-state
+    - chmod 755 ./Openshift-EE/pipelines/GitLab/stages/1-cluster-setup/5MVN-cluster-state/cluster-state
+    - ./Openshift-EE/pipelines/GitLab/stages/1-cluster-setup/5MVN-cluster-state/cluster-state
 
 OD9K-OpenEBS-v0.8.1:
   image: openebs/openshift-ci:latest
@@ -78,5 +78,5 @@ DNMY-cluster-Delete:
   dependencies:
     - 5MVN-OpenShift-3.10
   script:
-    - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/5-cleanup/DNMY-cluster-cleanup/cluster-cleanup
-    - ./Openshift-EE/pipelines/GitLab/stages/5-cleanup/DNMY-cluster-cleanup/cluster-cleanup
+    - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/5-cleanup/DNMY-cluster-cleanup/cluster-delete
+    - ./Openshift-EE/pipelines/GitLab/stages/5-cleanup/DNMY-cluster-cleanup/cluster-delete
