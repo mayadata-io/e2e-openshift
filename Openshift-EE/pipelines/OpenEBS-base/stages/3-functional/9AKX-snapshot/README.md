@@ -16,7 +16,4 @@ The goal of this test is to enure that the volume snapshot can be created succes
 
 #### Test Result
 
- 
- | Test ID |   Test Description               | Test Result   |
- |---------|---------------------------| --------------|
- |    9873   |  snapshot-Demo           |  pass     |
+
