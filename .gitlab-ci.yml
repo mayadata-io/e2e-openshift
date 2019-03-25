@@ -192,11 +192,11 @@ QKFK-Snap-Rebuild-multiple-replica:
       #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/I9VM-pool-network-loss/pool-network-loss
       #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/I9VM-pool-network-loss/pool-network-loss
 
-8PI6-Pool-n/w-Delay:
-  extends: .chaos_test_template
-  script: 
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/8PI6-pool-network-delay/pool-network-delay
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/8PI6-pool-network-delay/pool-network-delay
+      #8PI6-Pool-n/w-Delay:
+      #  extends: .chaos_test_template
+      #  script: 
+      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/8PI6-pool-network-delay/pool-network-delay
+      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/8PI6-pool-network-delay/pool-network-delay
 
 2HXA-volume-mgmt-kill:
   extends: .chaos_test_template
@@ -246,15 +246,15 @@ QKFK-Snap-Rebuild-multiple-replica:
       #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/BF12-evict-node/evict-node
       #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/BF12-evict-node/evict-node
 
-GP95-openebs-Uninstall:
-  image: openebs/openshift-ci:latest
-  stage: CLEANUP
-  when: always
-  dependencies:
-    - K9YC-OpenEBS
-  script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/5-cleanup/GP95-openebs-cleanup/openebs-cleanup
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/5-cleanup/GP95-openebs-cleanup/openebs-cleanup
+      #GP95-openebs-Uninstall:
+      #  image: openebs/openshift-ci:latest
+      #  stage: CLEANUP
+      #  when: always
+      #  dependencies:
+      #    - K9YC-OpenEBS
+      #  script:
+      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/5-cleanup/GP95-openebs-cleanup/openebs-cleanup
+      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/5-cleanup/GP95-openebs-cleanup/openebs-cleanup
   
 4SMQ-cluster-Delete:
   image: openebs/openshift-ci:latest

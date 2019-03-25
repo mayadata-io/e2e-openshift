@@ -134,7 +134,7 @@ bash Openshift-EE/utils/event_updater jobname:snapshot-clone $test_name jobid:"$
 #fi
 
 current_time=$(eval $time)
-bash Openshift-EE/utils/e2e-cr jobname:snapshot jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
+bash Openshift-EE/utils/e2e-cr jobname:snapshot-clone jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
 }
 
 if [ "$1" == "node" ];then
