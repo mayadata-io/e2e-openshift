@@ -1,8 +1,10 @@
-# Test cases for functional stage of OpenEBS-base pipeline
+### Goal of this stage
 
-## Test cases matrix:
+The goal of this gitlab stage is to carry out OpenEBS data and control plane functionality tests in OpenShift Cluster test bed.
 
-The test cases in the functional stage are as follows:
+### Test cases matrix:
+
+The test cases covered in the functional stage are as follows:
 
 | S.No | TID  | Test case description                                        |
 | ---- | ---- | ------------------------------------------------------------ |
