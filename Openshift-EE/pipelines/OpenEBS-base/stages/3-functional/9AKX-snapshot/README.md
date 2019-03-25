@@ -1,5 +1,6 @@
 ### Creating volume snapshot
 
+|     9873                    |  snapshot-Demo-test           | pass  |
 |     9873                    |  snapshot-Demo           | pass  |
 #### Description
 The goal of this test is to enure that the volume snapshot can be created successfully.
