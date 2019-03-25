@@ -47,7 +47,7 @@ else:
     string =           ' | Test ID |   Test Description               | Test Result   |\n'
     string = string + (' |---------|---------------------------| --------------|\n')
     string = string + (' |    {}   |  {}           |  {}     |\n'.format(test_id,test_desc,test_result))
-    index = len(content_list)-1
+    index = len(content_list)
     content_list.insert(index,string)
     string = ('\n').join(content_list)
 
