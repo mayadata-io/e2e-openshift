@@ -1,4 +1,8 @@
-## Test Cases in OpenEBS-Setup Stage
+### Goal of this stage
+
+The gaol of this gitlab stage is to deploy OpenEBS components in OpenShift cluster and create the storage pools.
+
+### Test Cases in OpenEBS-Setup Stage
 
 The test cases in OpenEBS-Setup stage are as follows:
 
