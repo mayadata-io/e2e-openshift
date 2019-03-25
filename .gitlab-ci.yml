@@ -18,8 +18,8 @@ OD9K-OpenEBS-v0.8.1:
   image: openebs/openshift-ci:latest
   stage: OPENEBS-SETUP
   script:
-    - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/2-setup/OD9K-openebs-depoy/deploy-openebs
-    - ./Openshift-EE/pipelines/GitLab/stages/2-setup/OD9K-openebs-depoy/deploy-openebs
+    - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/2-setup/OD9K-openebs-deploy/deploy-openebs
+    - ./Openshift-EE/pipelines/GitLab/stages/2-setup/OD9K-openebs-deploy/deploy-openebs
 
 KJV1-OpenEBS-POLICIES:
   image: openebs/openshift-ci:latest
