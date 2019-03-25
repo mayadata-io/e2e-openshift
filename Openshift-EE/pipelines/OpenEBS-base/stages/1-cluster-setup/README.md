@@ -1,6 +1,6 @@
 ### Goal of this stage
 
-The goal of this gitlab stage is to bring up OpenShift cluster and to get it ready for carrying out the OpenEBS data and control plane tests.
+The goal of this gitlab stage is to bring up OpenShift cluster and to get it ready for carrying out OpenEBS data and control plane tests.
 
 The test cases in cluster-setup stage are as follows.
 
