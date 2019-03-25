@@ -12,10 +12,11 @@ Induce cstor target pod kill and check if it doesn't affect the application avai
 - Deploy statefulset application consuming OpenEBS Volume.
 - Check if the application is deployed successfully.
 - Induce cstor target pod kill and verify if application is running successfully.
-- Deprovision statefulset application.\r
+- Deprovision statefulset application.
 
 #### Test Result
  | Test ID |   Test Description               | Test Result   |
  |---------|---------------------------| --------------|
  |    VZPY-605   |  Induce failure on cstor-target pod and check if it gets scheduled immediately and the application is available           |  Fail     |
+
 
