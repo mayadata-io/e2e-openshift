@@ -16,6 +16,7 @@ This job will configure OpenEBS on the OpenShift cluster enterprise cluster and 
 #### Test Result
  | Test ID |   Test Description               | Test Result   |
  |---------|---------------------------| --------------|
+|     K9YC-605                    |  Deploy OpenEBS in OpenShift-EE-3.10 Cluster           | Pass  |
 |     K9YC-604                    |  Deploy OpenEBS in OpenShift-EE-3.10 Cluster           | Pass  |
 |     K9YC-591                    |  OpenEBS-Deployment-Demo-1           | Pass  |
  |    K9YC-588   |  OpenEBS-Deployment-Demo           |  Pass     |
