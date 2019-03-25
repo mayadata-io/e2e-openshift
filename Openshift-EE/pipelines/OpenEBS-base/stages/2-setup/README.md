@@ -1,6 +1,6 @@
 ### Goal of this stage
 
-The gaol of this gitlab stage is to deploy OpenEBS components in OpenShift cluster and create the storage pools.
+The goal of this gitlab stage is to deploy OpenEBS components in OpenShift cluster and create the storage pools.
 
 ### Test Cases in OpenEBS-Setup Stage
 
