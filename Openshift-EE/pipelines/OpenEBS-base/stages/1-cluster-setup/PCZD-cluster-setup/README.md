@@ -2,23 +2,19 @@
 
 #### Description
 
-This job will configure OpenShift-3.10 enterprise cluster and check if it is healthy for carrying out the e2e tests.
+The admin should be able to use this job to configure OpenShift-3.10 enterprise cluster in vSphere based virtual machines and check if it is healthy for carrying out e2e tests.
 
 #### Prerequisites
 
-OpenShift Cluster should be created and have the dependencies installed.
+- OpenShift Cluster should be created and have the dependencies installed.
 
 #### Procedure
 
 - The job should be capable of creating OpenShift 3.10 cluster with one master and 4 nodes configuraion. 
-- Check if the OpenShift cluster is ready using kubectl command ```kubectl get nodes```
+- The test should check if the OpenShift cluster is ready using kubectl command ```kubectl get nodes```
 
-#### 
+#### Expected result
+
+- Cluster should be configured successfully. All the nodes should be in `ready` state.
 
 #### Test Result
-
-
- | Test ID |   Test Description               | Test Result   |
- |---------|---------------------------| --------------|
- |    2XHC   |  test description10           |  FAIL     |
-
