@@ -15,11 +15,5 @@ Make sure that the application replicas can be scaled by updating its correspond
 - Check if the new app pod is created and the ring is formed.
 
 #### Test Result
- | Test ID |   Test Description               | Test Result   |
- |---------|---------------------------| --------------|
-|     10862                    |  Scale the statefulset application replicas and verify the ring configuration           | Fail  |
-|     ZD8F-613                    |  Scale the statefulset application replicas and verify the ring configuration           | Pass  |
-|     ZD8F-605                    |  Scale the statefulset application replicas and verify the ring configuration-test           | Pass  |
-|     ZD8F-605                    |  Scale the statefulset application replicas and verify the ring configuration           | Pass  |
- |    ZD8F-605   |  Scale the statefulset application replicas and verify the ring configuration           |  Pass     |
+
 
