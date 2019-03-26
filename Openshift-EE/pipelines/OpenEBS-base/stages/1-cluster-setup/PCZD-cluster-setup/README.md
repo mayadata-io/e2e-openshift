@@ -2,7 +2,7 @@
 
 #### Description
 
-This stage includes the job that will configure OpenShift-3.10 enterprise cluster and check if it is healthy for carrying out the e2e tests.
+This job will configure OpenShift-3.10 enterprise cluster and check if it is healthy for carrying out the e2e tests.
 
 #### Prerequisites
 
