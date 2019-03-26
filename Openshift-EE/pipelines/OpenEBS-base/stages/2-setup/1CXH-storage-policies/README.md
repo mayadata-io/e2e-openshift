@@ -2,7 +2,7 @@
 
 #### Description
 
-This job will create the storage classes with the properties supported by OpenEBS.
+This job will create storage classes with the properties supported by OpenEBS.
 
 #### Prerequisites
 
