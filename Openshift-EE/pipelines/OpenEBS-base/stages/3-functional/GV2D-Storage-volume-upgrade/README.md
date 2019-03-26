@@ -18,10 +18,3 @@ The goal of this to ensure that the cstor pool and volume deployment upgrade pro
 
 #### Test Result 
  
- 
- | Test ID |   Test Description               | Test Result   |
- |---------|---------------------------| --------------|
-|     1CXH                    |  this is a job description3           | pass  |
-|     1CXH                    |  this is a job description2           | FAIL  |
-|     1CXH                    |  this is a job description4           | PASS  |
- |    1CXH   |  this is a job description2           |  FAIL     |
