@@ -6,13 +6,17 @@ echo $CI_JOB_ID
 ###clone e2e-openshift-repo
 echo "cloning e2e-openshift repo*************"
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/openebs/e2e-openshift.git'
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/OBS2-Memory-Consumption/memory-consumption node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/OBS2-Memory-Consumption/memory-consumption node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
 }
 
 node() {
 job_id=$(echo $1)
 pipeline_id=$(echo $2)
+commit_id=$(echo $3)
 case_id=OBS2
+
+source ~/.profile
+gittoken=$(echo "$github_token")
 
 time="date"
 current_time=$(eval $time)
@@ -45,6 +49,7 @@ bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:memory-consumption $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id OBS2 3-functional "Check if the memory consumption doesn't cross the desired threshold for known workload" Pass $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 
@@ -69,6 +74,7 @@ bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:memory-consumption $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id OBS2 3-functional "Check if the memory consumption doesn't cross the desired threshold for known workload" Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 
@@ -95,22 +101,21 @@ bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:memory-consumption $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 rc_val=$(echo $?)
-test_case_id="OBS2-$pipeline_id"
-source ~/.profile
-gittoken=$(echo "$github_token")
-testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
-python3 Openshift-EE/utils/result/result_update.py $test_case_id OBS2 3-functional "Check if the memory consumption doesn't cross the desired threshold for known workload" $testResult $gittoken
 
-if [ "$rc_val" != "0" ]; then
-exit 1;
-fi
+# testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+
+
+# if [ "$rc_val" != "0" ]; then
+# exit 1;
+# fi
 
 current_time=$(eval $time)
 bash Openshift-EE/utils/e2e-cr jobname:memory-consumption jobphase:Completed end_time:"$current_time" test_result:Pass jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+python3 Openshift-EE/utils/result/result_update.py $job_id OBS2 3-functional "Check if the memory consumption doesn't cross the desired threshold for known workload" Pass $pipeline_id "$current_time" $commit_id $gittoken
 }
 
 if [ "$1" == "node" ];then
-  node $2 $3
+  node $2 $3 $4
 else
   pod
 fi
