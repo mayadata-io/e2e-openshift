@@ -6,7 +6,7 @@ The admin should be able to use this job to configure OpenShift-3.10 enterprise 
 
 #### Prerequisites
 
-- OpenShift Cluster should be created and have the dependencies installed.
+- The host machines should be created and have the dependencies installed.
 
 #### Procedure
 
