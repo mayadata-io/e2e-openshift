@@ -15,7 +15,4 @@ The goal of this test is to enure that the volume snapshot can be created succes
 - Check if the snapshot is created successfully in all the associated storage pool pods.
 
 #### Test Result
- | Test ID |   Test Description               | Test Result   |
- |---------|---------------------------| --------------|
- |    9AKX-   |  Verify if the snapshot can be created for persistent volume           |  Fail     |
 
