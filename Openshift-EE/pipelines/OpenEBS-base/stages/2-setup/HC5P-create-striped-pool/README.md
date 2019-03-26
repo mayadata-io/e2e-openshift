@@ -15,8 +15,4 @@ This job that will create OpenEBS cStor based storage pool.
 - Check if the cStor pool is created using kubectl command `kubectl get spc`
 
 #### Test Result
- | Test ID |   Test Description               | Test Result   |
- |---------|---------------------------| --------------|
-|     HC5P-626                    |  Create cStor based Striped storage pool on disks.           | Pass  |
- |    HC5P-613   |  Create cStor based Striped storage pool on disks.           |  Pass     |
 
