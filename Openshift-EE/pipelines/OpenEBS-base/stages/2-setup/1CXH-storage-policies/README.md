@@ -18,8 +18,3 @@ This job will create the storage classes with the properties supported by OpenEB
 
 #### Test Result
 
- | Test ID |   Test Description               | Test Result   |
- |---------|---------------------------| --------------|
-|     1CXH-626                    |  Create K8s storage classes adhering the policies supported by OpenEBS           | Pass  |
-|     1CXH-613                    |  Create K8s storage classes adhering the policies supported by OpenEBS           | Pass  |
- |    1CXH-605   |  Create K8s storage classes adhering the policies supported by OpenEBS           |  Pass     |
