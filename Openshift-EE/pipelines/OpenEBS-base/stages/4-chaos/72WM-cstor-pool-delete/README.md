@@ -15,6 +15,4 @@ Simulate cStor pool pod failure by deleting it and check if it doesn't affect th
 - Deprovision statefulset application.
 
 #### Test Result
- | Test ID |   Test Description               | Test Result   |
- |---------|---------------------------| --------------|
- |    72WM-605   |  cstor-pool-delete           |  Fail     |
+

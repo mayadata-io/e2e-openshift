@@ -16,7 +16,4 @@ Ensure that the volume can be created successfully using its snapshot.
 - Check if the cloned volume is bound and can be usable.
 
 #### Test Result
- | Test ID |   Test Description               | Test Result   |
- |---------|---------------------------| --------------|
- |    ZK9B-   |  Check if the clone can be created using volume snapshot           |  Fail     |
 

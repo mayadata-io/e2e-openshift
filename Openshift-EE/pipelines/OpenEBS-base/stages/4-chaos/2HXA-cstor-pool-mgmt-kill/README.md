@@ -15,7 +15,3 @@ Induce failure on cstor-pool-mgmt container in cstor-pool pod and check if it do
 - Deprovision statefulset application.
 
 #### Test Result
- | Test ID |   Test Description               | Test Result   |
- |---------|---------------------------| --------------|
- |    2HXA-605   |  Induce failure on cstor-pool-mgmt container in cstor-pool pod and check if it doesn't affect the application availability           |  Fail     |
-

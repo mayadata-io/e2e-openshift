@@ -14,7 +14,5 @@ Ensure the data integrity in openebs volume using fio.
 - Check if the target is recovered and ensure data integrity using fio
 
 #### Test Result
- | Test ID |   Test Description               | Test Result   |
- |---------|---------------------------| --------------|
- |    QDLO-   |  Ensure the data integrity in openebs volume using fio           |  Pass     |
+
 
