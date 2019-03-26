@@ -13,8 +13,12 @@ This job will create the storage classes with the properties supported by OpenEB
 #### Procedure
 
 - The job should be capable of creating OpenEBS storage classes.
-- Update the storage classes template with the storagepoolclaim name.
-- Check if the OpenEBS storage classes are created using kubectl command `kubectl get sc`
+- Storage classes template should be updated with the storagepoolclaim name.
+- The test should check if the OpenEBS storage classes are created using kubectl command `kubectl get sc`
+
+#### Expected result
+
+- Storage classes should be created successfully. 
 
 #### Test Result
 
