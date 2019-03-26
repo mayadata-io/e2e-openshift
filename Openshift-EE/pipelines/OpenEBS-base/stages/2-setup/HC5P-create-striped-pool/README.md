@@ -12,7 +12,12 @@ This job that will create OpenEBS cStor based storage pool.
 #### Procedure
 
 - The job should be capable of creating SPC using disks.
-- Check if the cStor pool is created using kubectl command `kubectl get spc`
+- The test should check if the cStor pool is created using kubectl command `kubectl get spc`
+
+#### Expected result
+
+- SPC should be created successfully.
+- cStor pool pods should be running according to the maxpool count set.
 
 #### Test Result
 
