@@ -17,5 +17,6 @@ The test goal is to ensure that the application runs seamlessly on inducing the 
 #### Test Result
  | Test ID |   Test Description               | Test Result   |
  |---------|---------------------------| --------------|
+|     1PP5-613                    |  Induce application pod failure and check if it is recovered successfully           | Fail  |
  |    1PP5-605   |  Induce application pod failure and check if it is recovered successfully           |  Fail     |
 
