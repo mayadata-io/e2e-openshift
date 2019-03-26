@@ -1,4 +1,4 @@
-### Verify applicaton availablity when node is shutdown ungracefully.\r
+### Verify application availablity when node is shutdown ungracefully.\r
 \r
 #### Description\r
 Induce ungracefull node shutdown and check if application is rescheduled and verify its availability.\r
