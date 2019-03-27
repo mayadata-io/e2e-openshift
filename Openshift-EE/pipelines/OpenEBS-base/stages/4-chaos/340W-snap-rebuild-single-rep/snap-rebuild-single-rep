@@ -113,6 +113,7 @@ rc_val=$(echo $?)
 
 current_time=$(eval $time)
 bash Openshift-EE/utils/e2e-cr jobname:snap-rebuild-single-rep jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
+
 python3 Openshift-EE/utils/result/result_update.py $job_id 340W 4-chaos "Check if the snapshot can be rebuilt after loss and recovery of single replica" Pass $pipeline_id "$current_time" $commit_id $gittoken
 
 }

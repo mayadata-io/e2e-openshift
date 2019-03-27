@@ -51,7 +51,7 @@ bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:target-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 if [ "$?" != "0" ]; then
-python3 Openshift-EE/utils/result/result_update.py $job_id VZPY 4-chaos "Induce failure on cstor-target pod and check if it gets scheduled immediately and the application is available" Fail $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id VZPY 4-chaos "Induce failure on cstor-target pod and check if it gets scheduled immediately and the application is available" Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 
@@ -82,7 +82,7 @@ bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:target-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 if [ "$?" != "0" ]; then
-python3 Openshift-EE/utils/result/result_update.py $job_id VZPY 4-chaos "Induce failure on cstor-target pod and check if it gets scheduled immediately and the application is available" Fail $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id VZPY 4-chaos "Induce failure on cstor-target pod and check if it gets scheduled immediately and the application is available" Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 
@@ -122,7 +122,7 @@ rc_val=$(echo $?)
 
 current_time=$(eval $time)
 bash Openshift-EE/utils/e2e-cr jobname:target-kill jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
-python3 Openshift-EE/utils/result/result_update.py $job_id VZPY 4-chaos "Induce failure on cstor-target pod and check if it gets scheduled immediately and the application is available" Pass $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id VZPY 4-chaos "Induce failure on cstor-target pod and check if it gets scheduled immediately and the application is available" Pass $pipeline_id "$current_time" $commit_id $gittoken
 
 }
 

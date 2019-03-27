@@ -93,10 +93,7 @@ bash Openshift-EE/utils/event_updater jobname:app-replica-scaleup $test_name job
 
 rc_val=$(echo $?)
 
-
 # testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
-
-
 # if [ "$rc_val" != "0" ]; then
 # exit 1;
 # fi

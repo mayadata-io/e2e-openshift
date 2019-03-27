@@ -49,7 +49,7 @@ bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:memory-consumption $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 if [ "$?" != "0" ]; then
-python3 Openshift-EE/utils/result/result_update.py $job_id OBS2 3-functional "Check if the memory consumption doesn't cross the desired threshold for known workload" Pass $pipeline_id "$current_time" $commit_id $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id OBS2 3-functional "Check if the memory consumption doesn't cross the desired threshold for known workload" Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 
