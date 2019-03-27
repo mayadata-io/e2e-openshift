@@ -26,23 +26,25 @@ echo "Checking for the number of nodes in ready state***************************
 ready_nodes=$(sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 kubectl get nodes | grep Ready | wc -l)
 
 git_token=$(sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'cat ~/.profile | grep github_token | cut -d= -f2')
-gittoken=echo $git_token | tr -d '"'
+gittoken=$(echo $git_token | tr -d '"')
 
 if [ "$ready_nodes" -eq 6 ]; then
 echo "Number of nodes in ready state is $ready_nodes"
 echo "******Cluster is in Healthy state****"
+
 echo "*************Dumping cluster state********"
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 kubectl get nodes
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 kubectl get pod --all-namespaces
+
 echo "cloning e2e-openshift repo*************"
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/openebs/e2e-openshift.git'
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip 'python3 e2e-openshift/Openshift-EE/utils/result/result_update.py '"'$CI_JOB_ID'"' PCZD 1-cluster-setup "Configure OpenShift cluster" Pass '"'$CI_PIPELINE_ID'"' "$current_time" '"'$CI_COMMIT_SHA'"' $gittoken'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'python3 e2e-openshift/Openshift-EE/utils/result/result_update.py '"'$CI_JOB_ID'"' PCZD 1-cluster-setup "Configure OpenShift cluster" Pass '"'$CI_PIPELINE_ID'"' '"'$current_time'"' '"'$CI_COMMIT_SHA'"' '"'$gittoken'"''
 else
 echo "All nodes are not ready"
 echo "******Cluster is in Unhealthy state*******"
 echo "cloning e2e-openshift repo*************"
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/openebs/e2e-openshift.git'
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip 'python3 e2e-openshift/Openshift-EE/utils/result/result_update.py '"'$CI_JOB_ID'"' PCZD 1-cluster-setup "Configure OpenShift cluster" Fail '"'$CI_PIPELINE_ID'"' "$current_time" '"'$CI_COMMIT_SHA'"' $gittoken'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'python3 e2e-openshift/Openshift-EE/utils/result/result_update.py '"'$CI_JOB_ID'"' PCZD 1-cluster-setup "Configure OpenShift cluster" Fail '"'$CI_PIPELINE_ID'"' '"'$current_time'"' '"'$CI_COMMIT_SHA'"' '"'$gittoken'"''
 exit;
 fi
 
@@ -52,8 +54,8 @@ fi
 #sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'mkdir infra && echo "$node_name" >> infra/node_name'
 
 echo "********Disabling Selinux on nodes********"
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'ssh root@10.23.1.11 setenforce 0'
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'ssh root@10.23.1.12 setenforce 0'
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'ssh root@10.23.1.13 setenforce 0'
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'ssh root@10.23.1.14 setenforce 0'
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'ssh root@10.23.1.15 setenforce 0'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'ssh root@10.23.1.11 setenforce 0'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'ssh root@10.23.1.12 setenforce 0'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'ssh root@10.23.1.13 setenforce 0'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'ssh root@10.23.1.14 setenforce 0'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'ssh root@10.23.1.15 setenforce 0'

@@ -34,6 +34,8 @@ echo $test_name
 cd litmus
 echo "Running the litmus test for Busybox Deployment.."
 cp apps/busybox/deployers/run_litmus_test.yml deploy_run_test.yml
+sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
+-e 's/value: openebs-cstor-sparse/value: cstor-disk-standalone/g' deploy_run_test.yml
 cat deploy_run_test.yml
 
 bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-litmus' job=deploy_run_test.yml
