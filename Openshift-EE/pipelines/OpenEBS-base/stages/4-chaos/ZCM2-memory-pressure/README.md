@@ -1,4 +1,4 @@
-### ZCM2-Verify applicatIon availablity when node is freezed due to memory-pressure.
+### ZCM2-Verify application availablity when node is freezed due to memory-pressure.
 
 #### Description
 
