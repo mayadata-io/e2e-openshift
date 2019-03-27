@@ -1,22 +1,27 @@
-### Verify applicaton availablity post cstor target pod kill.
+### VZPY-Verify application availablity post cstor target pod kill.
 
 #### Description
-Induce cstor target pod kill and check if it doesn't affect the application availability.
+
+This test kills the cstor target pod and check if it doesn't affect the application availability.
 
 #### Prerequisites
+
 - OpenShift Cluster should be created and have the dependencies installed.
 - cStor based storage pool should have been created.
 - OpenEBS storage class should be created with the desired storage pool claim.
 
 #### Procedure
-- Deploy statefulset application consuming OpenEBS Volume.
-- Check if the application is deployed successfully.
-- Induce cstor target pod kill and verify if application is running successfully.
-- Deprovision statefulset application.
+
+- This job triggers the litmus experiments which kills the cstor target pod and check if the application is not impacted.
+- The litmus experiment receives the necessary parameters in form of pod environmental variables and updates the manifest files accordingly.
+- It deploys statefulset application consuming OpenEBS Volume and check if the application is deployed successfully.
+- Then, it kills the cstor target pod and verify if the application is running successfully.
+- Finally, it deprovisions the statefulset application and update the result.
+
+#### Expected result
+
+- Application should be running successfully.
 
 #### Test Result
- | Test ID |   Test Description               | Test Result   |
- |---------|---------------------------| --------------|
- |    VZPY-605   |  Induce failure on cstor-target pod and check if it gets scheduled immediately and the application is available           |  Fail     |
-
+ 
 
