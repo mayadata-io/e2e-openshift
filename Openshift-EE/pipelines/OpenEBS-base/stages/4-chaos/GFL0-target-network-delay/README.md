@@ -14,7 +14,7 @@ This test induces network delay on cstor-target conatiner and check if it doesn'
 - This job triggers the litmus experiments which induces packet delay on cstor-target container in cStor pool pod.
 - The litmus experiment receives the necessary parameters in form of pod environmental variables and updates the manifest files accordingly.
 - It deploys statefulset application consuming OpenEBS Volume and check if the application is deployed successfully.
-- Then, it induces network delay in cstor-target conatainer and verify if the application is running successfully.
+- Then, it induces network delay in cstor-target container and verify if the application is running successfully.
 - Finally, it deprovisions the statefulset application and update the result.
 
 #### Expected result
