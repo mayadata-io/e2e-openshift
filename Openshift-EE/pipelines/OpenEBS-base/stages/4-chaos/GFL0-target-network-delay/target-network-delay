@@ -51,7 +51,7 @@ bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:target-network-delay $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 if [ "$?" != "0" ]; then
-python3 Openshift-EE/utils/result/result_update.py $job_id GFL0 4-chaos "Induce delay in cstor target pod network and verify if the application is not impacted" Fail $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id GFL0 4-chaos "Induce delay in cstor target pod network and verify if the application is not impacted" Fail $testResult $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 
@@ -76,7 +76,7 @@ bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:target-network-delay $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 if [ "$?" != "0" ]; then
-python3 Openshift-EE/utils/result/result_update.py $job_id GFL0 4-chaos "Induce delay in cstor target pod network and verify if the application is not impacted" Fail $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id GFL0 4-chaos "Induce delay in cstor target pod network and verify if the application is not impacted" Fail $testResult $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 
@@ -116,7 +116,7 @@ rc_val=$(echo $?)
 
 current_time=$(eval $time)
 bash Openshift-EE/utils/e2e-cr jobname:target-network-delay jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
-python3 Openshift-EE/utils/result/result_update.py $job_id GFL0 4-chaos "Induce delay in cstor target pod network and verify if the application is not impacted" Pass $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id GFL0 4-chaos "Induce delay in cstor target pod network and verify if the application is not impacted" Pass $testResult $pipeline_id "$current_time" $commit_id $gittoken
 
 }
 

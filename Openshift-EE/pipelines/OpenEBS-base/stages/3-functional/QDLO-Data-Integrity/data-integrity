@@ -32,6 +32,7 @@ test_name=$(bash Openshift-EE/utils/generate_test_name testcase=fio-data-integri
 echo $test_name
 cd litmus
 echo "Running the litmus test for Busybox Deployment.."
+sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' apps/fio/tests/data-integrity/run_litmus_test.yml
 run_test=apps/fio/tests/data-integrity/run_litmus_test.yml
 sed -i -e 's/value: openebs-standard/value: openebs-cstor-sparse/g' $run_test
 

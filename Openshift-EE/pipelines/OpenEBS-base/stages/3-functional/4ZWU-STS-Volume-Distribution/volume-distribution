@@ -25,6 +25,7 @@ echo $test_name
 echo "*******Deploying Application and Check the statefulset storage volume distributed************"
 cd litmus
 echo "Running the litmus test.."
+sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' apps/busybox/functional/volume-distribution/run_litmus_test.yml
 run_test=apps/busybox/functional/volume-distribution/run_litmus_test.yml
 sed -i -e 's/app: busybox-statefulset-litmus/app: busybox-vol-distribute/g' \
 -e 's/value: openebs-cstor-sparse/value: openebs-cstor-disk/g' \
@@ -52,7 +53,7 @@ test_case_id="4ZWU-$pipeline_id"
 source ~/.profile
 gittoken=$(echo "$github_token")
 testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
-python3 Openshift-EE/utils/result/result_update.py $test_case_id 4ZWU 3-functional "Check if the storage volume replicas are distributed across the storage pools in case of statefulset deployment" $testResult $gittoken
+python3 Openshift-EE/utils/result/result_update.py $test_case_id 4ZWU 3-functional "Check if the storage volume replicas are distributed across the storage pools in case of statefulset deployment" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 
 if [ "$rc_val" != "0" ]; then
 exit 1;

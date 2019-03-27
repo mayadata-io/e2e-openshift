@@ -1,6 +1,9 @@
 #!/bin/bash
 set -x
 
+time="date"
+current_time=$(eval $time)
+
 echo "***Checking the cluster is Engaged or not*"
 
 state="sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'ls | grep e2e-openshift'"

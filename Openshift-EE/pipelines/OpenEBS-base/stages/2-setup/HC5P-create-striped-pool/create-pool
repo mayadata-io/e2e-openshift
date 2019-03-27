@@ -28,6 +28,7 @@ cd litmus
 ## RUNNER MAIN ##
 #################
 echo "Running the litmus test.."
+sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' providers/cstor/cstor-disk-pool/run_litmus_test.yml
 
 run_test=providers/cstor/cstor-disk-pool/run_litmus_test.yml
 
@@ -45,13 +46,13 @@ bash Openshift-EE/utils/event_updater jobname:s2-j2-cstor-pool $test_name jobid:
 ## GET RESULT  ##
 #################
 rc_val=$(echo $?)
-test_case_id="HC5P-$pipeline_id"
+
 
 ## Check the test status & result from the litmus result custom resource
 source ~/.profile
 gittoken=$(echo "$github_token")
 testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
-python3 Openshift-EE/utils/result/result_update.py $test_case_id HC5P 2-setup "Create cStor based Striped storage pool on disks." $testResult $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id HC5P 2-setup "Create cStor based Striped storage pool on disks." $testResult $pipeline_id "$current_time" $commit_id $gittoken
 
 if [ "$rc_val" != "0" ]; then
 exit 1;

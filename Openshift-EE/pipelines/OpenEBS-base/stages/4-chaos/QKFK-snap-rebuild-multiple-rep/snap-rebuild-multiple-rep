@@ -51,7 +51,7 @@ bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:snap-rebuild-multiple-rep $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 if [ "$?" != "0" ]; then
-python3 Openshift-EE/utils/result/result_update.py $job_id QKFK 4-chaos "Check if the snapshot cannot be rebuilt when the quorum condition is not met" Fail $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id QKFK 4-chaos "Check if the snapshot cannot be rebuilt when the quorum condition is not met" Fail $testResult $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 
@@ -74,7 +74,7 @@ bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:snap-rebuild-multiple-rep $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 if [ "$?" != "0" ]; then
-python3 Openshift-EE/utils/result/result_update.py $job_id QKFK 4-chaos "Check if the snapshot cannot be rebuilt when the quorum condition is not met" Fail $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id QKFK 4-chaos "Check if the snapshot cannot be rebuilt when the quorum condition is not met" Fail $testResult $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 
@@ -114,7 +114,7 @@ rc_val=$(echo $?)
 
 current_time=$(eval $time)
 bash Openshift-EE/utils/e2e-cr jobname:snap-rebuild-multiple-rep jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
-python3 Openshift-EE/utils/result/result_update.py $job_id QKFK 4-chaos "Check if the snapshot cannot be rebuilt when the quorum condition is not met" Pass $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id QKFK 4-chaos "Check if the snapshot cannot be rebuilt when the quorum condition is not met" Pass $testResult $pipeline_id "$current_time" $commit_id $gittoken
 
 }
 

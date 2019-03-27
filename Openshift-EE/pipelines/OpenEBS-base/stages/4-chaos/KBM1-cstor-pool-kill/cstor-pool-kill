@@ -51,7 +51,7 @@ bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:pool-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 if [ "$?" != "0" ]; then
-python3 Openshift-EE/utils/result/result_update.py $job_id KBM1 4-chaos "Induce failure on cStor pool container(cstor-pool) and check if it is recovered successfully and verify that the application is not impacted" Fail $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id KBM1 4-chaos "Induce failure on cStor pool container(cstor-pool) and check if it is recovered successfully and verify that the application is not impacted" Fail $testResult $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 
@@ -82,7 +82,7 @@ bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:pool-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 if [ "$?" != "0" ]; then
-python3 Openshift-EE/utils/result/result_update.py $job_id KBM1 4-chaos "Induce failure on cStor pool container(cstor-pool) and check if it is recovered successfully and verify that the application is not impacted" Fail $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id KBM1 4-chaos "Induce failure on cStor pool container(cstor-pool) and check if it is recovered successfully and verify that the application is not impacted" Fail $testResult $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 

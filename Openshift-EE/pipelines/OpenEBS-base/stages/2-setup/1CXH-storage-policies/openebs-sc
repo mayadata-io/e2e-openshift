@@ -26,7 +26,7 @@ echo $test_name
 
 cd litmus
 echo "Running the litmus test.."
-
+sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' providers/cstor-storage-policies/run_litmus_test.yml
 run_test=providers/cstor-storage-policies/run_litmus_test.yml
 
 cat $run_test
@@ -42,19 +42,19 @@ bash Openshift-EE/utils/event_updater jobname:s2-j3-policies $test_name jobid:"$
 ## GET RESULT  ##
 #################
 rc_val=$(echo $?)
-test_case_id="1CXH-$pipeline_id"
+
 ## Check the test status & result from the litmus result custom resource
 source ~/.profile
 gittoken=$(echo "$github_token")
 testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
-python3 Openshift-EE/utils/result/result_update.py $test_case_id 1CXH 2-setup "Create K8s storage classes adhering the policies supported by OpenEBS" $testResult $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id 1CXH 2-setup "Create K8s storage classes adhering the policies supported by OpenEBS" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 
 if [ "$rc_val" != "0" ]; then
 exit 1;
 fi
 
 current_time=$(eval $time)
-bash Openshift-EE/utils/e2e-cr jobname:s2-j3-policies jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
+bash Openshift-EE/utils/e2e-cr jobname:s2-j3-policies jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass 
 
 }
 
