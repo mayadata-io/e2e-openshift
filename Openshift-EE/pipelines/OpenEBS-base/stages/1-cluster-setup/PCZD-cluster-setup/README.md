@@ -2,7 +2,7 @@
 
 #### Description
 
-The administrator should be able to use this job to configure OpenShift-3.10 enterprise cluster in vSphere based virtual machines and check if it is healthy for carrying out e2e tests.
+The Administrator should be able to use this job to configure OpenShift-3.10 enterprise cluster in vSphere based virtual machines and check if it is healthy for carrying out e2e tests.
 
 #### Prerequisites
 
