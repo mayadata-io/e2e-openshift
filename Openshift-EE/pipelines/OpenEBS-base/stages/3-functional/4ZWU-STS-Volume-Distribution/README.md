@@ -17,4 +17,9 @@ The test goal is to ensure that the storage volume replicas are distributed acro
 - The preceding litmus experiment verifies if the cstor storage volume replicas are distributed across the pool pods created in multiple nodes.
 - Finally, the litmus experiment deletes the application deployed and verifies if the volume is deleted successfully.
 
+#### Expected result
+
+- The busybox statefulset application should be created successfully with single storage replica.
+- The storage volume replicas should be scattered across different cstor pools in the cluster.
+
 #### Test Result
