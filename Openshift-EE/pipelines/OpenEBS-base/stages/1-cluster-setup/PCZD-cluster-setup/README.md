@@ -1,4 +1,4 @@
-### PCZD- OpenShift Cluster setup.
+### PCZD-Setting up OpenShift enterprise cluster.
 
 #### Description
 
