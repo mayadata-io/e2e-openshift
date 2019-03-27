@@ -38,6 +38,7 @@ HC5P-CSTOR-POOL:
 .func_test_template:
   image: openebs/openshift-ci:latest
   stage: FUNCTIONAL
+  when: always
   dependencies:
     - K9YC-OpenEBS
      
