@@ -1,17 +1,25 @@
-### Verify applicaton availablity post cstor-pool network delay.
+### 8PI6-Verify application availablity post cstor-pool network delay.
 
 #### Description
-Induce network delay on cstor-pool conatiner and check if it doesn't affect the application availability.
+
+This test induces network delay on cstor-pool container and check if it doesn't affect the application availability.
 
 #### Prerequisites
+
 - OpenShift Cluster should be created and have the dependencies installed.
 - cStor based storage pool should have been created.
 - OpenEBS storage class should be created with the desired storage pool claim.
 
 #### Procedure
-- Deploy statefulset application consuming OpenEBS Volume.
-- Check if the application is deployed successfully.
-- Induce cstor-pool conatiner network delay and verify if application is running successfully.
-- Deprovision statefulset application.
+
+- This job triggers the litmus experiments which induces network delay on cStor pool pod.
+- The litmus experiment receives the necessary parameters in form of pod environmental variables and updates the manifest files accordingly.
+- It deploys statefulset application consuming OpenEBS Volume and check if the application is deployed successfully.
+- Then, it induces network delay in cstor-pool container and verifies if the application is running successfully.
+- Finally, it deprovisions statefulset application and update the result.
+
+#### Expected result
+
+- Application should be running successfully.
 
 #### Test Result
