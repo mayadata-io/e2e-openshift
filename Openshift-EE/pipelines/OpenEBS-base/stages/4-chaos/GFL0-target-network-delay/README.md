@@ -1,22 +1,25 @@
-"### Verify applicaton availablity post cstor-target network delay.\r
-\r
-#### Description\r
-Induce network delay on cstor-target conatiner and check if it doesn't affect the application availability.\r
-\r
-#### Prerequisites\r
-- OpenShift Cluster should be created and have the dependencies installed.\r
-- cStor based storage pool should have been created.\r
-- OpenEBS storage class should be created with the desired storage pool claim.\r
-\r
-#### Procedure\r
-- Deploy statefulset application consuming OpenEBS Volume.\r
-- Check if the application is deployed successfully.\r
-- Induce cstor-target conatiner network delay and verify if application is running successfully.\r
-- Deprovision statefulset application.\r
-\r
-#### Test Result\r
- | Test ID |   Test Description               | Test Result   |
- |---------|---------------------------| --------------|
- |    GFL0-605   |  Induce delay in cstor target pod network and verify if the application is not impacted           |  Fail     |
+### GFL0-Verify application availablity post cstor-target network delay.
 
-"
+#### Description
+This test induces network delay on cstor-target conatiner and check if it doesn't affect the application availability.
+
+#### Prerequisites
+
+- OpenShift Cluster should be created and have the dependencies installed.
+- cStor based storage pool should have been created.
+- OpenEBS storage class should be created with the desired storage pool claim.
+
+#### Procedure
+
+- This job triggers the litmus experiments which induces packet delay on cstor-target container in cStor pool pod.
+- The litmus experiment receives the necessary parameters in form of pod environmental variables and updates the manifest files accordingly.
+- It deploys statefulset application consuming OpenEBS Volume and check if the application is deployed successfully.
+- Then, it induces network delay in cstor-target conatainer and verify if the application is running successfully.
+- Finally, it deprovisions the statefulset application and update the result.
+
+#### Expected result
+
+- Application should be running successfully.
+
+#### Test Result
+
