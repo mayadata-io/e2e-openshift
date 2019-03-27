@@ -1,4 +1,6 @@
 
+### OBS2-Memory consumption
+
 #### Description
 
 This test ensures that the memory consumption doesn't exceed the threshold value for a known workload.
