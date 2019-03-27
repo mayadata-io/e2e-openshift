@@ -10,7 +10,7 @@ The goal of this test is to enure that the volume snapshot can be created succes
 
 #### Procedure
 
-- This job triggers the litmus experiments which checks if the snapshot
+- This job triggers the litmus experiments which checks if the snapshot can be created successfully.
 - The litmus experiment receives the necessary parameters in form of pod environmental variables and updates the manifest files accordingly.
 - The first litmus experiment deploys busybox application.
 - The next litmus experiment updates the snapshot template with the pvc and namespace values.
