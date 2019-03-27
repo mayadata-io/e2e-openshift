@@ -8,9 +8,9 @@ job_dir_name = sys.argv[2].lower()
 stage = sys.argv[3] 
 test_desc = sys.argv[4]
 test_result = sys.argv[5]
-pipeline_id = sys.argv[6]
+pipeline_id = "\'"+str(sys.argv[6])+"\'"
 time_stamp = sys.argv[7]
-commit_sha = sys.argv[8]
+commit_sha = "\'"+str(sys.argv[8])+"\'"
 token = sys.argv[9]
 
 #url
