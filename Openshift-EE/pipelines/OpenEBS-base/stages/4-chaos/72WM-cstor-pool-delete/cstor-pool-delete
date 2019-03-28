@@ -66,6 +66,7 @@ cp apps/percona/chaos/openebs_pool_failure/run_litmus_test.yml pooldelete.yml
 sed -i -e 's/value: percona-mysql-claim/value: openebs-bb-pooldelete/g' \
 -e 's/name: openebs-pool-failure/name: openebs-pool-delete/g' \
 -e 's/value: '\''name=percona'\''/value: '\''app=pool-delete'\''/g' \
+-e 's/pool-kill/pool-delete/g' \
 -e 's/enable//g' \
 -e 's/value: app-percona-ns/value: pool-delete/g' pooldelete.yml
 
