@@ -37,6 +37,8 @@ bash Openshift-EE/utils/e2e-cr jobname:s2-j1-openebs-deploy jobphase:Running ini
 bash Openshift-EE/utils/e2e-cr jobname:s2-j3-policies jobphase:Waiting 
 bash Openshift-EE/utils/e2e-cr jobname:s2-j2-cstor-pool jobphase:Waiting 
 
+source ~/.profile
+
 git clone -b $INFRA_BRANCH https://github.com/openebs/e2e-infrastructure.git
 cd e2e-infrastructure/env
 
