@@ -23,9 +23,8 @@ current_time=$(eval $time)
 
 present_dir=$(pwd)
 echo $present_dir
-
-bash Openshift-EE/utils/e2e-cr jobname:pool-kill jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
-bash Openshift-EE/utils/e2e-cr jobname:pool-kill jobphase:Running init_time:"$current_time"
+bash Openshift-EE/utils/pooling jobname:pool-delete
+bash Openshift-EE/utils/e2e-cr jobname:pool-kill jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 echo "*******Deploying Busybox Application****"
 

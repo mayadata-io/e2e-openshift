@@ -39,6 +39,7 @@ cp apps/busybox/deployers/run_litmus_test.yml busybox_memcheck.yml
 sed -i -e 's/app: busybox-litmus/app: deploy-busybox-litmus/g' \
 -e 's/app=busybox-sts/app=busybox-mem/g' \
 -e 's/value: statefulset/value: deployment/g' \
+-e 's/value: openebs-cstor-sparse/value: openebs-cstor-disk/g' \
 -e 's/value: app-busybox-ns/value: mem-check/g' busybox_memcheck.yml
 
 cat busybox_memcheck.yml
@@ -89,6 +90,7 @@ sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-mem-check
 -e 's/app: busybox-litmus/app: busybox-deprovision-mem-check/g' \
 -e 's/app=busybox-sts/app=busybox-mem/g' \
 -e 's/value: statefulset/value: deployment/g' \
+-e 's/value: openebs-cstor-sparse/value: openebs-cstor-disk/g' \
 -e 's/value: app-busybox-ns/value: mem-check/g' \
 -e 's/value: provision/value: deprovision/g' deprovision_mem_check.yml
 

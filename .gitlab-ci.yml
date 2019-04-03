@@ -54,11 +54,11 @@ ZK9B-Create-Clone:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/ZK9B-snapshot-clone/snapshot-clone
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/ZK9B-snapshot-clone/snapshot-clone
 
-      #5O5V-Parent-Vol-Delete:
-      #  extends: .func_test_template
-      #  script: 
-      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/5O5V-Clone-parent-vol-delete/clone-parent-vol-delete
-      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/5O5V-Clone-parent-vol-delete/clone-parent-vol-delete
+5O5V-Parent-Vol-Delete:
+  extends: .func_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/5O5V-Clone-parent-vol-delete/clone-parent-vol-delete
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/5O5V-Clone-parent-vol-delete/clone-parent-vol-delete
 
       #ENBK-App-Upgrade:
       #  extends: .func_test_template

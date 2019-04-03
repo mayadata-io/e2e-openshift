@@ -5,58 +5,63 @@ pod() {
 echo $CI_JOB_ID
 ###clone e2e-openshift-repo
 echo "cloning e2e-openshift repo*************"
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'git clone https://github.com/openebs/e2e-openshift.git'
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'cd e2e-openshift && git checkout OpenEBS-base && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/5O5V-Clone-parent-vol-delete/clone-parent-vol-delete node '"'$CI_JOB_ID'"''
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/openebs/e2e-openshift.git'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/5O5V-Clone-parent-vol-delete/clone-parent-vol-delete node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
 }
 
 node() {
 job_id=$(echo $1)
-echo "*********Applying e2e-crd***********"
-kubectl apply -f Openshift-EE/utils/e2e-crd.yml
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
 
-echo "****Creating e2e-crd********"
-cat Openshift-EE/utils/e2e-result.yml > clone-parent-vol-delete-$job_id.yml
-sed -i -e "s/<test-phase>/Running/g" -e "s/<test-name>/Clone-parent-volume-delete/g" -e"s/<job_id>/$job_id/g" clone-parent-vol-delete-$job_id.yml
+source ~/.profile
+
+gittoken=$(echo "$github_token")
+case_id=5O5V
 
 time="date"
 current_time=$(eval $time)
-sed -i -e "s/<test-init>/$current_time/g" -e "s/<openebs-id>/0.8.1/g" clone-parent-vol-delete-$job_id.yml
-kubectl apply -f clone-parent-vol-delete-$job_id.yml
-cat clone-parent-vol-delete-$job_id.yml
 
-echo "*******Deploying Application****"
-sleep 5
-echo "      Application-Deployment: Pass" >> clone-parent-vol-delete-$job_id.yml
-cat clone-parent-vol-delete-$job_id.yml
-kubectl apply -f clone-parent-vol-delete-$job_id.yml
+present_dir=$(pwd)
+echo $present_dir
 
-echo "*******Generating load**********"
-sleep 5
-echo "      Application-Loadgen: Pass" >> clone-parent-vol-delete-$job_id.yml
-cat clone-parent-vol-delete-$job_id.yml
-kubectl apply -f clone-parent-vol-delete-$job_id.yml
+bash Openshift-EE/utils/pooling jobname:snapshot-clone
+bash Openshift-EE/utils/e2e-cr jobname:clone-parent-volume-delete jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
-echo "*******Deleting parent volume that has clone************"
-sleep 5
-echo "      clone-parent-vol-delete: Fail" >> clone-parent-vol-delete-$job_id.yml
-cat clone-parent-vol-delete-$job_id.yml
-kubectl apply -f clone-parent-vol-delete-$job_id.yml
+#
+echo "*******Taking clone of BusyBox snapshot application**********"
 
-echo "*******Deprovisioning Application******"
-sleep 5
-echo "      Application-Deprovisioning: Pass" >> clone-parent-vol-delete-$job_id.yml
-cat clone-parent-vol-delete-$job_id.yml
-kubectl apply -f clone-parent-vol-delete-$job_id.yml
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=delete-parent-volume metadata="")
+echo $test_name
+
+cd litmus
+cp experiments/functional/restrict-parent-volume-deletion/run_litmus_test.yml run_parent_vol_test.yml
+
+sed -i -e 's/value: openebs-busybox/value: busybox-snapshot/g' \
+-e 's/value: app-busybox-ns/value: busybox-snap/g' run_parent_vol_test.yml
+
+echo "Running the litmus test for Busybox Deployment Clone.."
+cat run_parent_vol_test.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:litmus-delete-parent-volume' job=run_parent_vol_test.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:clone-parent-volume-delete $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id 5O5V 3-functional "Check if the clone can be created using volume snapshot" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
 
 current_time=$(eval $time)
-sed -i -e "s/<test-finish>/$current_time/g" clone-parent-vol-delete-$job_id.yml
-sed -i -e "s/<test-result>/Fail/g" clone-parent-vol-delete-$job_id.yml
-sed -i -e "s/Running/Completed/g" clone-parent-vol-delete-$job_id.yml
-cat clone-parent-vol-delete-$job_id.yml
+bash Openshift-EE/utils/e2e-cr jobname:clone-parent-volume-delete jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
+
+python3 Openshift-EE/utils/result/result_update.py $job_id 5O5V 3-functional "Check if the clone can be created using volume snapshot" Pass $pipeline_id "$current_time" $commit_id $gittoken
+
 }
 
 if [ "$1" == "node" ];then
-  node $2
+  node $2 $3 $4
 else
   pod
 fi
