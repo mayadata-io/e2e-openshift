@@ -23,67 +23,67 @@ current_time=$(eval $time)
 present_dir=$(pwd)
 echo $present_dir
 
-bash Openshift-EE/utils/e2e-cr jobname:snapshot-clone jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:snapshot jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:snapshot-clone jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
-echo "*******Deploying Busybox Application****"
+# echo "*******Deploying Busybox Application****"
 
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-snap-clone metadata="")
-echo $test_name
+# test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-snap-clone metadata="")
+# echo $test_name
 
-cd litmus
-echo "Running the litmus test for Busybox Deployment.."
-cp apps/busybox/deployers/run_litmus_test.yml deploy_snap_clone_test.yml
+# cd litmus
+# echo "Running the litmus test for Busybox Deployment.."
+# cp apps/busybox/deployers/run_litmus_test.yml deploy_snap_clone_test.yml
 
-sed -i -e 's/app: busybox-litmus/app: deploy-busybox-snap-clone/g' \
--e 's/app=busybox-sts/app=busybox-clone/g' \
--e 's/value: statefulset/value: deployment/g' \
--e 's/value: openebs-busybox/value: snapshot-clone/g' \
--e 's/value: app-busybox-ns/value: snap-clone/g' deploy_snap_clone_test.yml
+# sed -i -e 's/app: busybox-litmus/app: deploy-busybox-snap-clone/g' \
+# -e 's/app=busybox-sts/app=busybox-clone/g' \
+# -e 's/value: statefulset/value: deployment/g' \
+# -e 's/value: openebs-busybox/value: snapshot-clone/g' \
+# -e 's/value: app-busybox-ns/value: snap-clone/g' deploy_snap_clone_test.yml
 
-cat deploy_snap_clone_test.yml
+# cat deploy_snap_clone_test.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:deploy-busybox-snap-clone' job=deploy_snap_clone_test.yml
-cd ..
-bash Openshift-EE/utils/dump_cluster_state;
-bash Openshift-EE/utils/event_updater jobname:snapshot-clone $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+# bash ../Openshift-EE/utils/litmus_job_runner label='app:deploy-busybox-snap-clone' job=deploy_snap_clone_test.yml
+# cd ..
+# bash Openshift-EE/utils/dump_cluster_state;
+# bash Openshift-EE/utils/event_updater jobname:snapshot-clone $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
-if [ "$?" != "0" ]; then
-python3 Openshift-EE/utils/result/result_update.py $job_id ZK9B 3-functional "Check if the clone can be created using volume snapshot" Fail $pipeline_id "$current_time" $commit_id $gittoken
-exit 1;
-fi
+# if [ "$?" != "0" ]; then
+# python3 Openshift-EE/utils/result/result_update.py $job_id ZK9B 3-functional "Check if the clone can be created using volume snapshot" Fail $pipeline_id "$current_time" $commit_id $gittoken
+# exit 1;
+# fi
 
-echo "*******Taking snapshot of BusyBox application**********"
+# echo "*******Taking snapshot of BusyBox application**********"
 
-run_id="clone";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=create-snapshot metadata=${run_id})
-echo $test_name
+# run_id="clone";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=create-snapshot metadata=${run_id})
+# echo $test_name
 
-cd litmus
-cp experiments/functional/snapshot-creation/run_litmus_test.yml run_snap_clone_test.yml
+# cd litmus
+# cp experiments/functional/snapshot-creation/run_litmus_test.yml run_snap_clone_test.yml
 
-sed -i -e 's/value: openebs-busybox/value: snapshot-clone/g' \
--e 's/app: snapshot-litmus/app: snapshot-clone-litmus/g' \
--e 's/value: snapshot-busybox/value: snap-clone-busybox/g' \
--e 's/value: openebs-cstor-sparse/value: openebs-cstor-disk/g' \
--e 's/value: app-busybox-ns/value: snap-clone/g' run_snap_clone_test.yml
+# sed -i -e 's/value: openebs-busybox/value: snapshot-clone/g' \
+# -e 's/app: snapshot-litmus/app: snapshot-clone-litmus/g' \
+# -e 's/value: snapshot-busybox/value: snap-clone-busybox/g' \
+# -e 's/value: openebs-cstor-sparse/value: openebs-cstor-disk/g' \
+# -e 's/value: app-busybox-ns/value: snap-clone/g' run_snap_clone_test.yml
 
-sed -i '/command:/i \
-          - name: RUN_ID\
-            value: '"$run_id"'\
-' run_snap_clone_test.yml
+# sed -i '/command:/i \
+#           - name: RUN_ID\
+#             value: '"$run_id"'\
+# ' run_snap_clone_test.yml
 
-echo "Running the litmus test for Busybox Deployment Snapshot.."
-cat run_snap_clone_test.yml
+# echo "Running the litmus test for Busybox Deployment Snapshot.."
+# cat run_snap_clone_test.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:snapshot-clone-litmus' job=run_snap_clone_test.yml
-cd ..
-bash Openshift-EE/utils/dump_cluster_state;
-bash Openshift-EE/utils/event_updater jobname:snapshot-clone $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+# bash ../Openshift-EE/utils/litmus_job_runner label='app:snapshot-clone-litmus' job=run_snap_clone_test.yml
+# cd ..
+# bash Openshift-EE/utils/dump_cluster_state;
+# bash Openshift-EE/utils/event_updater jobname:snapshot-clone $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
-if [ "$?" != "0" ]; then
-python3 Openshift-EE/utils/result/result_update.py $job_id ZK9B 3-functional "Check if the clone can be created using volume snapshot" Fail $pipeline_id "$current_time" $commit_id $gittoken
-exit 1;
-fi
+# if [ "$?" != "0" ]; then
+# python3 Openshift-EE/utils/result/result_update.py $job_id ZK9B 3-functional "Check if the clone can be created using volume snapshot" Fail $pipeline_id "$current_time" $commit_id $gittoken
+# exit 1;
+# fi
 
 echo "*******Taking clone of BusyBox snapshot application**********"
 
@@ -93,9 +93,8 @@ echo $test_name
 cd litmus
 cp experiments/functional/clone-creation/run_litmus_test.yml run_clone_test.yml
 
-sed -i -e 's/value: openebs-busybox/value: snapshot-clone/g' \
--e 's/value: snapshot-busybox/value: snap-clone-busybox/g' \
--e 's/value: app-busybox-ns/value: snap-clone/g' run_clone_test.yml
+sed -i -e 's/value: openebs-busybox/value: busybox-snapshot/g' \
+-e 's/value: app-busybox-ns/value: busybox-snap/g' run_clone_test.yml
 
 echo "Running the litmus test for Busybox Deployment Clone.."
 cat run_clone_test.yml
@@ -110,32 +109,32 @@ python3 Openshift-EE/utils/result/result_update.py $job_id ZK9B 3-functional "Ch
 exit 1;
 fi
 
-echo "********Deprovisioning Busybox Application*******"
+# echo "********Deprovisioning Busybox Application*******"
 
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-snap-clone metadata="")
-echo $test_name
+# test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-snap-clone metadata="")
+# echo $test_name
 
-cd litmus
-cp apps/busybox/deployers/run_litmus_test.yml deprovision_clone.yml
+# cd litmus
+# cp apps/busybox/deployers/run_litmus_test.yml deprovision_clone.yml
 
-sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovision-clone/g' \
--e 's/app: busybox-litmus/app: busybox-deprovision-clone/g' \
--e 's/value: openebs-cstor-sparse/value: openebs-cstor-disk/g' \
--e 's/value: statefulset/value: deployment/g' \
--e 's/app=busybox-sts/app=busybox-clone/g' \
--e 's/value: openebs-busybox/value: snapshot-clone/g' \
--e 's/value: app-busybox-ns/value: snap-clone/g' \
--e 's/value: provision/value: deprovision/g' deprovision_clone.yml
+# sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovision-clone/g' \
+# -e 's/app: busybox-litmus/app: busybox-deprovision-clone/g' \
+# -e 's/value: openebs-cstor-sparse/value: openebs-cstor-disk/g' \
+# -e 's/value: statefulset/value: deployment/g' \
+# -e 's/app=busybox-sts/app=busybox-clone/g' \
+# -e 's/value: openebs-busybox/value: snapshot-clone/g' \
+# -e 's/value: app-busybox-ns/value: snap-clone/g' \
+# -e 's/value: provision/value: deprovision/g' deprovision_clone.yml
 
-echo "Running the litmus test for Busybox Deployment Scaleup.."
-cat deprovision_clone.yml
+# echo "Running the litmus test for Busybox Deployment Scaleup.."
+# cat deprovision_clone.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-deprovision-clone' job=deprovision_clone.yml
-cd ..
-bash Openshift-EE/utils/dump_cluster_state;
-bash Openshift-EE/utils/event_updater jobname:snapshot-clone $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+# bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-deprovision-clone' job=deprovision_clone.yml
+# cd ..
+# bash Openshift-EE/utils/dump_cluster_state;
+# bash Openshift-EE/utils/event_updater jobname:snapshot-clone $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
-rc_val=$(echo $?)
+# rc_val=$(echo $?)
 
 
 # testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
@@ -156,3 +155,4 @@ if [ "$1" == "node" ];then
 else
   pod
 fi
+

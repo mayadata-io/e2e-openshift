@@ -83,6 +83,7 @@ cp apps/busybox/deployers/run_litmus_test.yml deprovision_scaleup.yml
 
 sed -i -e 's/generateName: litmus-busybox-deploy/generateName: litmus-busybox-deprovision/g' \
 -e 's/app: busybox-litmus/app: busybox-deprovision-litmus/g' \
+-e 's/value: openebs-cstor-sparse/value: cstor-disk-standalone/g' \
 -e 's/value: provision/value: deprovision/g' deprovision_scaleup.yml
 
 echo "Running the litmus test for Busybox Deployment Scaleup.."

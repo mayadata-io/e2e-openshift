@@ -26,6 +26,8 @@ echo $present_dir
 
 bash Openshift-EE/utils/e2e-cr jobname:snapshot jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:snapshot jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:snapshot-clone jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:clone-parent-volume-delete jobphase:Waiting
 
 echo "*******Deploying Busybox Application****"
 
@@ -80,33 +82,33 @@ python3 Openshift-EE/utils/result/result_update.py $job_id 9AKX 3-functional "Ve
 exit 1;
 fi
 
-echo "********Deprovisioning Busybox Application*******"
+#echo "********Deprovisioning Busybox Application*******"
 
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-busybox-snap metadata="")
-echo $test_name
+#test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-busybox-snap metadata="")
+#echo $test_name
 
-cd litmus
-cp apps/busybox/deployers/run_litmus_test.yml deprovision_snap.yml
+#cd litmus
+#cp apps/busybox/deployers/run_litmus_test.yml deprovision_snap.yml
 
-sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovision-snap/g' \
--e 's/app: busybox-litmus/app: busybox-deprovision-snap/g' \
--e 's/value: statefulset/value: deployment/g' \
--e 's/app=busybox-sts/app=busybox-snap/g' \
--e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
--e 's/value: openebs-cstor-sparse/value: openebs-cstor-disk/g' \
--e 's/value: openebs-busybox/value: busybox-snapshot/g' \
--e 's/value: app-busybox-ns/value: busybox-snap/g' \
--e 's/value: provision/value: deprovision/g' deprovision_snap.yml
+#sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovision-snap/g' \
+#-e 's/app: busybox-litmus/app: busybox-deprovision-snap/g' \
+#-e 's/value: statefulset/value: deployment/g' \
+#-e 's/app=busybox-sts/app=busybox-snap/g' \
+#-e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
+#-e 's/value: openebs-cstor-sparse/value: openebs-cstor-disk/g' \
+#-e 's/value: openebs-busybox/value: busybox-snapshot/g' \
+#-e 's/value: app-busybox-ns/value: busybox-snap/g' \
+#-e 's/value: provision/value: deprovision/g' deprovision_snap.yml
 
-echo "Running the litmus test for Busybox Deployment Scaleup.."
-cat deprovision_snap.yml
+#echo "Running the litmus test for Busybox Deployment Scaleup.."
+#cat deprovision_snap.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-deprovision-snap' job=deprovision_snap.yml
-cd ..
-bash Openshift-EE/utils/dump_cluster_state;
-bash Openshift-EE/utils/event_updater jobname:snapshot $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+#bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-deprovision-snap' job=deprovision_snap.yml
+#cd ..
+#bash Openshift-EE/utils/dump_cluster_state;
+#bash Openshift-EE/utils/event_updater jobname:snapshot $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
-rc_val=$(echo $?)
+#rc_val=$(echo $?)
 
 # testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
 # if [ "$rc_val" != "0" ]; then
@@ -115,6 +117,7 @@ rc_val=$(echo $?)
 
 current_time=$(eval $time)
 bash Openshift-EE/utils/e2e-cr jobname:snapshot jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
+
 python3 Openshift-EE/utils/result/result_update.py $job_id 9AKX 3-functional "Verify if the snapshot can be created for persistent volume" Pass $pipeline_id "$current_time" $commit_id $gittoken
 }
 
