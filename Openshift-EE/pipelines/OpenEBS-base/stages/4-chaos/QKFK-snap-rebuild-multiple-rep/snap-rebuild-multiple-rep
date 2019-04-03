@@ -24,7 +24,7 @@ current_time=$(eval $time)
 present_dir=$(pwd)
 echo $present_dir
 
-bash Openshift-EE/utils/e2e-cr jobname:snap-rebuild-multiple-rep jobphase:Waiting
+bash Openshift-EE/utils/pooling jobname:snap-rebuild-single-rep
 bash Openshift-EE/utils/e2e-cr jobname:snap-rebuild-multiple-rep jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 echo "*******Deploying Busybox Application****"
