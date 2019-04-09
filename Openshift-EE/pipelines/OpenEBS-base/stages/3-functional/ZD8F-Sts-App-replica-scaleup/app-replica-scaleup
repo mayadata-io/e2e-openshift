@@ -35,6 +35,7 @@ cd litmus
 echo "Running the litmus test for Busybox Deployment.."
 cp apps/busybox/deployers/run_litmus_test.yml deploy_run_test.yml
 sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
+-e 's/value: '\''app=busybox-sts'\''/value: '\''app=busybox-scale'\''/g' \
 -e 's/value: openebs-cstor-sparse/value: cstor-disk-standalone/g' deploy_run_test.yml
 cat deploy_run_test.yml
 
@@ -57,7 +58,7 @@ cd litmus
 cp apps/cassandra/functional/scale_replicas/run_litmus_test.yml run_scaleup_test.yml
 
 sed -i -e 's/app: cassandra-scaleup-litmus/app: busybox-scaleup-litmus/g' \
--e 's/value: '\''app=cassandra'\''/value: '\''app=busybox-sts'\''/g' \
+-e 's/value: '\''app=cassandra'\''/value: '\''app=busybox-scale'\''/g' \
 -e 's/value: app-cass-ns/value: app-busybox-ns/g' run_scaleup_test.yml
 
 echo "Running the litmus test for Busybox Deployment Scaleup.."
@@ -83,6 +84,7 @@ cp apps/busybox/deployers/run_litmus_test.yml deprovision_scaleup.yml
 
 sed -i -e 's/generateName: litmus-busybox-deploy/generateName: litmus-busybox-deprovision/g' \
 -e 's/app: busybox-litmus/app: busybox-deprovision-litmus/g' \
+-e 's/value: '\''app=busybox-sts'\''/value: '\''app=busybox-scale'\''/g' \
 -e 's/value: openebs-cstor-sparse/value: cstor-disk-standalone/g' \
 -e 's/value: provision/value: deprovision/g' deprovision_scaleup.yml
 
