@@ -64,7 +64,7 @@ cd litmus
 cp experiments/functional/app-target-affinity/run_litmus_test.yml run_affinity_test.yml
 
 sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
--e 's/value: '\''app=busybox-sts'\''/value: '\''app=target-affinity'\''/g' \
+-e 's/value: app=busybox-sts/value: app=target-affinity/g' \
 -e 's/value: app-busybox-ns/value: target-affinity/g' run_affinity_test.yml
 
 cat run_affinity_test.yml
