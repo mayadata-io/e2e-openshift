@@ -23,29 +23,25 @@ current_time=$(eval $time)
 present_dir=$(pwd)
 echo $present_dir
 
-bash Openshift-EE/utils/e2e-cr jobname:app-replica-scaleup jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
-bash Openshift-EE/utils/e2e-cr jobname:app-replica-scaleup jobphase:Running
+bash Openshift-EE/utils/e2e-cr jobname:app-replica-scaleup-jiva jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:app-replica-scaleup-jiva jobphase:Running
 
 echo "*******Deploying Busybox-sts Application****"
 
-run_id="jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-app-scale metadata=${run_id}) #change
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-app-scale-jiva metadata="") 
 echo $test_name
 
 cd litmus
 echo "Running the litmus test for Busybox Deployment.."
 cp apps/busybox/deployers/run_litmus_test.yml deploy_run_test_jiva.yml
+
 sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
--e 's/value: app-busybox-ns/value: app-scale-jiva/g' \  #namespace of application
--e 's/app: busybox-litmus/app: busybox-litmus-jiva/g' \ #litmus_job_label
--e 's/value: '\''app=busybox-sts'\''/value: '\''app=busybox-scale-jiva'\''/g' \ #application label
+-e 's/value: app-busybox-ns/value: app-scale-jiva/g' \
+-e 's/app: busybox-litmus/app: busybox-litmus-jiva/g' \
+-e 's/value: '\''app=busybox-sts'\''/value: '\''app=busybox-scale-jiva'\''/g' \
 -e 's/value: openebs-cstor-sparse/value: openebs-jiva-default/g' deploy_run_test_jiva.yml
 
-sed -i '/command:/i \
-          - name: RUN_ID\
-            value: '"$run_id"'\
-' deploy_run_test_jiva.yml
-
-cat deploy_run_test.yml
+cat deploy_run_test_jiva.yml
 
 bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-litmus-jiva' job=deploy_run_test_jiva.yml
 cd ..
@@ -65,8 +61,8 @@ echo $test_name
 cd litmus
 cp apps/cassandra/functional/scale_replicas/run_litmus_test.yml run_scaleup_test_jiva.yml
 
-sed -i -e 's/app: cassandra-scaleup-litmus/app: scaleup-litmus-jiva/g' \  #application label
--e 's/value: '\''app=cassandra'\''/value: '\''app=busybox-scale-jiva'\''/g' \ #litmus job label
+sed -i -e 's/app: cassandra-scaleup-litmus/app: scaleup-litmus-jiva/g' \
+-e 's/value: '\''app=cassandra'\''/value: '\''app=busybox-scale-jiva'\''/g' \
 -e 's/value: app-cass-ns/value:app-scale-jiva/g' run_scaleup_test_jiva.yml
 
 sed -i '/command:/i \
@@ -75,7 +71,7 @@ sed -i '/command:/i \
 ' run_scaleup_test_jiva.yml
 
 echo "Running the litmus test for Busybox Deployment Scaleup.."
-cat run_scaleup_test.yml
+cat run_scaleup_test_jiva.yml
 
 bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-scale-jiva' job=run_scaleup_test_jiva.yml
 cd ..
@@ -89,26 +85,22 @@ fi
 
 echo "********Deprovisioning Busybox Application*******"
 
-run_id="jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-app-scale metadata=${run_id})
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-app-scale-jiva metadata="")
 echo $test_name
 
 cd litmus
 cp apps/busybox/deployers/run_litmus_test.yml deprovision_scaleup_jiva.yml
 
 sed -i -e 's/generateName: litmus-busybox-deploy/generateName: litmus-busybox-deprovision/g' \
--e 's/value: app-busybox-ns/value: app-scale-jiva/g' \  #namespace of application 
--e 's/app: busybox-litmus/app: busybox-deprovision-litmus-jiva/g' \ #litmus job label
--e 's/value: '\''app=busybox-sts'\''/value: '\''app=busybox-scale-jiva'\''/g' \ #application label
+-e 's/value: app-busybox-ns/value: app-scale-jiva/g' \
+-e 's/app: busybox-litmus/app: busybox-deprovision-litmus-jiva/g' \
+-e 's/value: '\''app=busybox-sts'\''/value: '\''app=busybox-scale-jiva'\''/g' \
 -e 's/value: openebs-cstor-sparse/value: openebs-jiva-default/g' \
 -e 's/value: provision/value: deprovision/g' deprovision_scaleup_jiva.yml
 
-sed -i '/command:/i \
-          - name: RUN_ID\
-            value: '"$run_id"'\
-' deprovision_scaleup_jiva.yml
 
 echo "Running the litmus test for Busybox Deployment Scaleup.."
-cat deprovision_scaleup.yml
+cat deprovision_scaleup_jiva.yml
 
 bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-deprovision-litmus-jiva' job=deprovision_scaleup_jiva.yml
 cd ..

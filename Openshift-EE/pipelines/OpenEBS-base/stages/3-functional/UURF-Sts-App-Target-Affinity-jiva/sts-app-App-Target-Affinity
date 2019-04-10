@@ -1,0 +1,131 @@
+#!/bin/bash
+set -x
+
+pod() {
+echo $CI_JOB_ID
+###clone e2e-openshift-repo
+echo "cloning e2e-openshift repo*************"
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/openebs/e2e-openshift.git'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UURF-Sts-App-Target-Affinity/sts-app-target-affinity node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+}
+
+node() {
+source ~/.profile
+gittoken=$(echo "$github_token")
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+case_id=UURF
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+bash Openshift-EE/utils/e2e-cr jobname:sts-app-target-affinity-jiva jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:sts-app-target-affinity-jiva jobphase:Running
+
+echo "*******Deploying Busybox-sts Application****"
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-target-affinity-jiva metadata="")
+echo $test_name
+
+cd litmus
+echo "Running the litmus test for Busybox Deployment.."
+cp apps/busybox/deployers/run_litmus_test.yml deploy_affinity_test_jiva.yml
+
+sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
+-e 's/app: busybox-litmus/app: busybox-litmus-target-jiva/g' \
+-e 's/value: '\''app=busybox-sts'\''/value: '\''app=target-affinity-jiva'\''/g' \
+-e 's/value: app-busybox-ns/value: target-affinity-jiva/g' \
+-e 's/value: openebs-busybox/value: busybox-target-affinity-jiva/g' \
+-e 's/value: openebs-cstor-sparse/value: openebs-jiva-default/g' deploy_affinity_test_jiva.yml
+
+
+cat deploy_affinity_test_jiva.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-litmus-target-jiva' job=deploy_affinity_test_jiva.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:sts-app-target-affinity-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id UURF 3-functional "Checking Application and target scheduled on same Node" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+echo "*******Checking Application and Target Pod Affinity **********"
+
+run_id="jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=app-target-affinity metadata=${run_id})
+echo $test_name
+
+cd litmus
+cp experiments/functional/app-target-affinity/run_litmus_test.yml run_affinity_test_jiva.yml
+
+sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
+-e 's/app: litmus-affinity/app: litmus-affinity-jiva/g' \
+-e 's/value: '\''app=busybox-sts'\''/value: '\''app=target-affinity-jiva'\''/g' \
+-e 's/value: app-busybox-ns/value: target-affinity-jiva/g' run_affinity_test_jiva.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' run_affinity_test_jiva.yml
+
+cat run_affinity_test_jiva.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:litmus-affinity-jiva' job=run_affinity_test_jiva.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:sts-app-target-affinity-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id UURF 3-functional "Checking Application and target scheduled on same Node" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+echo "********Deprovisioning Busybox Application*******"
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-target-affinity-jiva metadata="")
+echo $test_name
+
+cd litmus
+cp apps/busybox/deployers/run_litmus_test.yml deprovision_affinity_jiva.yml
+
+sed -i -e 's/generateName: litmus-busybox-deploy/generateName: litmus-busybox-deprovision/g' \
+-e 's/app: busybox-litmus/app: busybox-deprovision-affinity/g' \
+-e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
+-e 's/value: '\''app=busybox-sts'\''/value: '\''app=target-affinity-jiva'\''/g' \
+-e 's/value: app-busybox-ns/value: target-affinity-jiva/g' \
+-e 's/app: busybox-litmus/app: busybox-deprovision-affinity-jiva/g' \
+-e 's/value: openebs-busybox/value: busybox-target-affinity-jiva/g' \
+-e 's/value: openebs-cstor-sparse/value: openebs-jiva-default/g' \
+-e 's/value: provision/value: deprovision/g' deprovision_affinity_jiva.yml
+
+
+echo "Running the litmus test for Busybox Deployment.."
+cat deprovision_affinity_jiva.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-deprovision-affinity-jiva' job=deprovision_affinity_jiva.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:sts-app-target-affinity-jiva  $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+
+# testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+# if [ "$rc_val" != "0" ]; then
+# exit 1;
+# fi
+
+current_time=$(eval $time)
+bash Openshift-EE/utils/e2e-cr jobname:sts-app-target-affinity-jiva  jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
+python3 Openshift-EE/utils/result/result_update.py $job_id UURF 3-functional "Checking Application and target scheduled on same Node" Pass $pipeline_id "$current_time" $commit_id $gittoken
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4
+else
+  pod
+fi
