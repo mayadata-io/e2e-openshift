@@ -1,1 +1,5 @@
 
+
+| Job ID |   Test Description         | Execution Time |Test Result   |
+ |---------|---------------------------| --------------|--------|
+ |    <a href="https://gitlab.openebs.ci/openebs/e2e-openshift/-/jobs/14474">14474</a>   |  Check if the clone can be created after snapshot rebuilt successfully           |  Wed Apr 10 19:41:47 IST 2019     |<a href="https://e2e-logs.openebs100.io/app/kibana#/discover?_g=(refreshInterval:(pause:!t,value:0),time:(from:now-7d,mode:quick,to:now))&_a=(columns:!(_source),filters:!(('$state':(store:appState),meta:(alias:!n,disabled:!f,index:cluster-logs,key:commit_id,negate:!f,params:(query:7237d3dd13c5ec12302a32859a1718f3c2e77a54,type:phrase),type:phrase,value:7237d3dd13c5ec12302a32859a1718f3c2e77a54),query:(match:(commit_id:(query:7237d3dd13c5ec12302a32859a1718f3c2e77a54,type:phrase)))),('$state':(store:appState),meta:(alias:!n,disabled:!f,index:cluster-logs,key:pipeline_id,negate:!f,params:(query:812,type:phrase),type:phrase,value:812),query:(match:(pipeline_id:(query:812,type:phrase))))),index:cluster-logs,interval:auto,query:(language:lucene,query:''),sort:!('@timestamp',desc))">Pass</a>  |
