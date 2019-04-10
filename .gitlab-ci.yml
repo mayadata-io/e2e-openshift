@@ -190,8 +190,8 @@ QKFK-Snap-Rebuild-multiple-replica:
 QURH-Clone-Rebuild-post-snapshot-rebuild:
   extends: .chaos_test_template
   script: 
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/UC7-clone-post-snap-rebuild/clone-post-rebuild
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/UC7-clone-post-snap-rebuild/clone-post-rebuild
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/QURH-clone-post-snap-rebuild/clone-post-rebuild
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/QURH-clone-post-snap-rebuild/clone-post-rebuild
 
       #I9VM-Pool-n/w-Loss:
       #  extends: .chaos_test_template
