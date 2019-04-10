@@ -24,3 +24,8 @@ The test cases covered in the functional stage are as follows:
 | 14   | ZFUA | Ensure that the disk can be replaced successfully in mirrored pool. |
 | 15   | ZTWH | Verify cStor pool rebuilding status using maya-exporter pool metrics. |
 | 16   | DBK5 | Verify if the clone volume inherits the properties of parent volume. |
+| 17   | JAIP | Verify if statefulset application replica and cstor target pod are scheduled on same node |
+| 18   | KUL9 | Verify if application replicas consuming jiva volumes can be scaled up. |
+| 19   | SN3A | Check if the memory consumption in jiva controller doesn't cross the desired threshold for known workload. |
+| 20   | UH9A | Ensure the data integrity in jiva based openebs volume using fio. |
+| 21   | UURF | Verify if application replica pod and its corresponding jiva controller pod are scheduled on same node |
