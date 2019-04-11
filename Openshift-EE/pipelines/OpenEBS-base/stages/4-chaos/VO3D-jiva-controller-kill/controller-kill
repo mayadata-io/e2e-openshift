@@ -1,0 +1,188 @@
+#!/bin/bash
+set -x
+
+pod() {
+echo $CI_JOB_ID
+###clone e2e-openshift-repo
+echo "cloning e2e-openshift repo*************"
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/openebs/e2e-openshift.git'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/VO3D-jiva-controller-kill/controller-kill node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+}
+
+node() {
+source ~/.profile
+#github token to push the test result into github openebs/e2e-openshift repository. 
+#This token is set as a env in ~/.profile to the openshift cluster.
+gittoken=$(echo "$github_token")
+
+job_id=$(echo $1) #Gitlab job id obtain from the gitlab env ($CI_JOB_ID).
+pipeline_id=$(echo $2) # Gitlab pipeline id obtained from gitlab env ($CI_PIPELINE_ID).
+commit_id=$(echo $3) #Gitlab commit id Obtained fron gilab env ($CI_COMMIT_SHA).
+case_id=VO3D #Id for the test case.
+gitlab_stage=4-chaos # Gitlab stage where this test case is running.
+job_description="Induce failure on JIVA controller pod and check if it gets scheduled immediately and the application is available"
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+#Creating e2e custom resoure result fot the each stage of the test.
+
+bash Openshift-EE/utils/e2e-cr jobname:controller-kill jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:controller-kill jobphase:Running init_time:"$current_time"
+
+echo "*******Deploying Busybox Application****"
+
+#testcase name for the busybox deployers will be append with busybox-{{ action }}- {{ app-namespace }}
+#action will be provision or deprovision.
+#app namespaces is the name to deploy the busybox application.
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-ctrl-kill metadata="")
+echo $test_name
+
+cd litmus
+echo "Running the litmus test for Busybox Deployment.."
+
+#copy the content of deployer run_litmus_test.yml into a different file to perform the sed commands.
+#To ensure that to use the litmus test parallel.
+
+cp apps/busybox/deployers/run_litmus_test.yml busybox_ctrl_kill.yml
+
+: << EOF
+  ---------------------------------------------------------------------------------------------
+ | specAttribute        | kind     | default busybox value   | test specifc value             |
+  --------------------------------------------------------------------------------------------|
+ | appLabel             | env      | app=busybox-sts         | app=ctrl-kill                  |
+ | pvcName              | env      | openebs-busybox         | busybox-ctrl-kill              | 
+ | appNamespace         | env      | app-busybox-ns          | ctrl-kill	              | 
+ | storage class        | env      | openebs-cstor-sparse    | openebs-jiva-default           |
+ | deploy type          | env      | statefulset             | deployment                     |
+ | Litmus job label     | label    | app: busybox-litmus     | app: deploy-busybox-ctrl-kill  |
+  ---------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/app: busybox-litmus/app: deploy-busybox-ctrl-kill/g' \
+-e 's/app=busybox-sts/app=ctrl-kill/g' \
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/value: openebs-cstor-sparse/value: openebs-jiva-default/g' \
+-e 's/value: openebs-busybox/value: busybox-ctrl-kill/g' \
+-e 's/value: app-busybox-ns/value: ctrl-kill/g' busybox_ctrl_kill.yml
+
+cat busybox_ctrl_kill.yml
+
+# Run the Litmus job and get the details of the litmus job from litmus_job_runner utils
+bash ../Openshift-EE/utils/litmus_job_runner label='app:deploy-busybox-ctrl-kill' job=busybox_ctrl_kill.yml
+cd ..
+
+#Get the cluster state Once the litmus jobs completed.
+bash Openshift-EE/utils/dump_cluster_state;
+#Update the e2e event for the job
+bash Openshift-EE/utils/event_updater jobname:controller-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+#Update the result of the test case in github openebs/e2e-openshift repository.
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id $case_id $gitlab_stage $job_description Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+run_id="jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-target-failure metadata=${run_id})
+echo $test_name
+
+cd litmus
+cp apps/percona/chaos/openebs_target_failure/run_litmus_test.yml run_ctrlkill_test.yml
+
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value                 | test specifc value                       |
+  ---------------------------------------------------------------------------------------------------------------|
+ | appLabel          | env    | value: name=percona                   | value:     app=ctrl-kill                 |
+ | pvcName           | env    | value: percona-mysql-claim            | value: busybox-ctrl-kill                 | 
+ | appNamespace      | env    | app-percon-ns                         | ctrl-kill                                | 
+ | Litmus Job name   | name   | generateName: openebs-target-failure  | generateName: openebs-controller-failure |
+ | Litmus job label  | label  | openebs-target-failure                | openebs-controller-failure               |
+  ----------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/value: percona-mysql-claim/value: busybox-ctrl-kill/g' \
+-e 's/generateName: openebs-target-failure/generateName: openebs-controller-failure/g' \
+-e 's/openebs-target-failure/openebs-controller-failure/g' \
+-e 's/value: '\''name=percona'\''/value: '\''app=ctrl-kill'\''/g' \
+-e 's/value: app-percona-ns/value: ctrl-kill/g' run_ctrlkill_test.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' run_ctrlkill_test.yml
+
+echo "Running the litmus test for Busybox Deployment Scaleup.."
+cat run_ctrlkill_test.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-controller-failure' job=run_ctrlkill_test.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:controller-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id $case_id $gitlab_stage $job_description Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+echo "********Deprovisioning Busybox Application*******"
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-ctrl-kill metadata="")
+echo $test_name
+
+cd litmus
+cp apps/busybox/deployers/run_litmus_test.yml deprovision_ctrl_kill.yml
+
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                         |
+  ---------------------------------------------------------------------------------------------------------------|
+ | appLabel          | env    | app=busybox-sts                     | app=ctrl-kill                              |
+ | pvcName           | env    | openebs-busybox                     | busybox-ctrl-kill                          | 
+ | appNamespace      | env    | app-busybox-ns                      | ctrl-kill                                  | 
+ | storage clas      | env    | openebs-cstor-sparse                | openebs-jiva-default                       |
+ | deploy type       | env    | statefulset                         | deployment                                 |
+ | Action            | env    | value: provision                    | value: deprovision                         |
+ | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName: busybox-deprovision-ctrl-kill|
+ | Litmus job label  | label  | app: busybox-litmus                 | app: busybox-deprovision-ctrl-kill         |
+  ----------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovision-ctrl-kill/g' \
+-e 's/app: busybox-litmus/app: busybox-deprovision-ctrl-kill/g' \
+-e 's/app=busybox-sts/app=ctrl-kill/g' \
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/value: openebs-cstor-sparse/value: openebs-jiva-default/g' \
+-e 's/value: openebs-busybox/value: busybox-ctrl-kill/g' \
+-e 's/value: app-busybox-ns/value: ctrl-kill/g' \
+-e 's/value: provision/value: deprovision/g' deprovision_ctrl_kill.yml
+
+echo "Running the litmus test for Busybox Deployment.."
+cat deprovision_ctrl_kill.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-deprovision-ctrl-kill' job=deprovision_ctrl_kill.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:controller-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+
+# testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+
+# if [ "$rc_val" != "0" ]; then
+# exit 1;
+# fi
+
+current_time=$(eval $time)
+bash Openshift-EE/utils/e2e-cr jobname:controller-kill jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
+
+python3 Openshift-EE/utils/result/result_update.py $job_id $case_id $gitlab_stage $job_description Pass $pipeline_id "$current_time" $commit_id $gittoken
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4
+else
+  pod
+fi
