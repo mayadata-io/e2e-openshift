@@ -121,7 +121,6 @@ sed -i '/command:/i \
             value: '"$run_id"'\
 ' run_ctrl_kill_test.yml
 
-echo "Running the litmus test for Busybox Deployment Scaleup.."
 cat run_ctrl_kill_test.yml
 
 bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-controller-failure' job=run_ctrl_kill_test.yml
