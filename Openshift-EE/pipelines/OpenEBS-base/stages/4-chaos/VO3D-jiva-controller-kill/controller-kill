@@ -51,19 +51,21 @@ echo "Running the litmus test for Busybox Deployment.."
 cp apps/busybox/deployers/run_litmus_test.yml busybox_ctrl_kill.yml
 
 : << EOF
-  ---------------------------------------------------------------------------------------------
- | specAttribute        | kind     | default busybox value   | test specifc value             |
-  --------------------------------------------------------------------------------------------|
- | appLabel             | env      | app=busybox-sts         | app=ctrl-kill                  |
- | pvcName              | env      | openebs-busybox         | busybox-ctrl-kill              | 
- | appNamespace         | env      | app-busybox-ns          | ctrl-kill	              | 
- | storage class        | env      | openebs-cstor-sparse    | openebs-jiva-default           |
- | deploy type          | env      | statefulset             | deployment                     |
- | Litmus job label     | label    | app: busybox-litmus     | app: deploy-busybox-ctrl-kill  |
-  ---------------------------------------------------------------------------------------------
+  --------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind     | default busybox value               | test specifc value                     |
+  -----------------------------------------------------------------------------------------------------        |
+ | Litmus job label  | label    | app: busybox-litmus                 | app: deploy-busybox-ctrl-kill          | 
+ | Litmus job Name   | job name | generateName: litmus-busybox-deploy | generateName: busybox-deploy-ctrl-kill |
+ | appLabel          | env      | app=busybox-sts                     | app=ctrl-kill                          |
+ | deploy type       | env      | statefulset                         | deployment                             |
+ | storage class     | env      | openebs-cstor-sparse                | openebs-jiva-default                   |
+ | pvcName           | env      | openebs-busybox                     | busybox-ctrl-kill                      | 
+ | appNamespace      | env      | app-busybox-ns                      | ctrl-kill	                             | 
+  --------------------------------------------------------------------------------------------------------------
 EOF
 
 sed -i -e 's/app: busybox-litmus/app: deploy-busybox-ctrl-kill/g' \
+-e 's/generateName: litmus-busybox-deploy/generateName: busybox-deploy-ctrl-kill/g' \
 -e 's/app=busybox-sts/app=ctrl-kill/g' \
 -e 's/value: statefulset/value: deployment/g' \
 -e 's/value: openebs-cstor-sparse/value: openebs-jiva-default/g' \
@@ -102,11 +104,11 @@ cp apps/percona/chaos/openebs_target_failure/run_litmus_test.yml run_ctrl_kill_t
   ---------------------------------------------------------------------------------------------------------------
  | specAttribute     | kind   |         default value                 | test specifc value                       |
   ---------------------------------------------------------------------------------------------------------------|
- | appLabel          | env    | value: name=percona                   | value:     app=ctrl-kill                 |
  | pvcName           | env    | value: percona-mysql-claim            | value: busybox-ctrl-kill                 | 
- | appNamespace      | env    | app-percon-ns                         | ctrl-kill                                | 
  | Litmus Job name   | name   | generateName: openebs-target-failure  | generateName: openebs-controller-failure |
  | Litmus job label  | label  | openebs-target-failure                | openebs-controller-failure               |
+ | appLabel          | env    | value: name=percona                   | value:     app=ctrl-kill                 |
+ | appNamespace      | env    | app-percon-ns                         | ctrl-kill                                | 
   ----------------------------------------------------------------------------------------------------------------
 EOF
 
@@ -150,14 +152,14 @@ cp apps/busybox/deployers/run_litmus_test.yml deprovision_ctrl_kill.yml
   ---------------------------------------------------------------------------------------------------------------
  | specAttribute     | kind   |         default value               | test specifc value                         |
   ---------------------------------------------------------------------------------------------------------------|
- | appLabel          | env    | app=busybox-sts                     | app=ctrl-kill                              |
- | pvcName           | env    | openebs-busybox                     | busybox-ctrl-kill                          | 
- | appNamespace      | env    | app-busybox-ns                      | ctrl-kill                                  | 
- | storage clas      | env    | openebs-cstor-sparse                | openebs-jiva-default                       |
- | deploy type       | env    | statefulset                         | deployment                                 |
- | Action            | env    | value: provision                    | value: deprovision                         |
  | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName: busybox-deprovision-ctrl-kill|
  | Litmus job label  | label  | app: busybox-litmus                 | app: busybox-deprovision-ctrl-kill         |
+ | appLabel          | env    | app=busybox-sts                     | app=ctrl-kill                              |
+ | deploy type       | env    | statefulset                         | deployment                                 |
+ | storage clas      | env    | openebs-cstor-sparse                | openebs-jiva-default                       |
+ | pvcName           | env    | openebs-busybox                     | busybox-ctrl-kill                          | 
+ | appNamespace      | env    | app-busybox-ns                      | ctrl-kill                                  | 
+ | Action            | env    | value: provision                    | value: deprovision                         |
   ----------------------------------------------------------------------------------------------------------------
 EOF
 
@@ -170,7 +172,6 @@ sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovisi
 -e 's/value: app-busybox-ns/value: ctrl-kill/g' \
 -e 's/value: provision/value: deprovision/g' deprovision_ctrl_kill.yml
 
-echo "Running the litmus test for Busybox Deployment.."
 cat deprovision_ctrl_kill.yml
 
 bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-deprovision-ctrl-kill' job=deprovision_ctrl_kill.yml
