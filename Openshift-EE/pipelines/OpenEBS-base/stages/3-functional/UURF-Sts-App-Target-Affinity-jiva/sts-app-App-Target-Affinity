@@ -26,7 +26,9 @@ echo $present_dir
 bash Openshift-EE/utils/e2e-cr jobname:sts-app-target-affinity-jiva jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 bash Openshift-EE/utils/e2e-cr jobname:sts-app-target-affinity-jiva jobphase:Running
 
-echo "*******Deploying Busybox-sts Application****"
+################
+# LitmusBook 1 #
+################
 
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-target-affinity-jiva metadata="")
 echo $test_name
@@ -35,7 +37,23 @@ cd litmus
 echo "Running the litmus test for Busybox Deployment.."
 cp apps/busybox/deployers/run_litmus_test.yml deploy_affinity_test_jiva.yml
 
+
+: << EOF
+  -------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                             |
+  -------------------------------------------------------------------------------------------------------------------|
+ | appLabel          | env    | app=busybox-sts                     | app=target-affinity-jiva                       |
+ | pvcName           | env    | openebs-busybox                     | busybox-target-affinity-jiva                   | 
+ | appNamespace      | env    | app-busybox-ns                      | target-affinity-jiva                           | 
+ | storage clas      | env    | openebs-cstor-sparse                | openebs-jiva-default                           |
+ | deploy type       | env    | statefulset                         | deployment                                     |
+ | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName: busybox-provision-target-affinity|
+ | Litmus job label  | label  | app: busybox-litmus                 | app: busybox-litmus-target-jiva                |
+  --------------------------------------------------------------------------------------------------------------------
+EOF
+
 sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
+-e 's/generateName: litmus-busybox-deploy/generateName: busybox-provision-target-affinity/g' \
 -e 's/app: busybox-litmus/app: busybox-litmus-target-jiva/g' \
 -e 's/value: '\''app=busybox-sts'\''/value: '\''app=target-affinity-jiva'\''/g' \
 -e 's/value: app-busybox-ns/value: target-affinity-jiva/g' \
@@ -57,11 +75,27 @@ fi
 
 echo "*******Checking Application and Target Pod Affinity **********"
 
+################
+# LitmusBook 2 #
+################
+
 run_id="jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=app-target-affinity metadata=${run_id})
 echo $test_name
 
 cd litmus
 cp experiments/functional/app-target-affinity/run_litmus_test.yml run_affinity_test_jiva.yml
+
+
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                         |
+  ---------------------------------------------------------------------------------------------------------------|
+ | appLabel          | env    | app=busybox-sts                     | app=app=target-affinity-jiva               | 
+ | appNamespace      | env    | app-busybox-ns                      | target-affinity-jiva                       | 
+ | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName: busybox-deprovision-ctrl-kill|
+ | Litmus job label  | label  | app: litmus-affinity                | app: litmus-affinity-jiva                  |
+  ----------------------------------------------------------------------------------------------------------------
+EOF
 
 sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
 -e 's/app: litmus-affinity/app: litmus-affinity-jiva/g' \
@@ -90,10 +124,30 @@ echo "********Deprovisioning Busybox Application*******"
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-target-affinity-jiva metadata="")
 echo $test_name
 
+################
+# LitmusBook 3 #
+################
+
 cd litmus
 cp apps/busybox/deployers/run_litmus_test.yml deprovision_affinity_jiva.yml
 
-sed -i -e 's/generateName: litmus-busybox-deploy/generateName: litmus-busybox-deprovision/g' \
+
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+  ---------------------------------------------------------------------------------------------------------------------|
+ | appLabel          | env    | app=busybox-sts                     | app=ctrl-kill                                    |
+ | pvcName           | env    | openebs-busybox                     | busybox-target-affinity-jiva                     | 
+ | appNamespace      | env    | app-busybox-ns                      | target-affinity-jiva                             | 
+ | storage clas      | env    | openebs-cstor-sparse                | openebs-jiva-default                             |
+ | deploy type       | env    | statefulset                         | deployment                                       |
+ | Action            | env    | value: provision                    | value: deprovision                               |
+ | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName: busybox-deprovision-target-affinity|
+ | Litmus job label  | label  | app: busybox-litmus                 | app: busybox-deprovision-ctrl-kill               |
+  ----------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovision-target-affinity/g' \
 -e 's/app: busybox-litmus/app: busybox-deprovision-affinity/g' \
 -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
 -e 's/value: '\''app=busybox-sts'\''/value: '\''app=target-affinity-jiva'\''/g' \
