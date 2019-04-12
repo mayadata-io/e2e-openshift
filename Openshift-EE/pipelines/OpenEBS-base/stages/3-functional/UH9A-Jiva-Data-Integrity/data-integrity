@@ -34,6 +34,18 @@ cd litmus
 echo "Running the litmus test for Busybox Deployment.."
 cp apps/fio/tests/data-integrity/run_litmus_test.yml data_integrity_test_jiva.yml
 
+: << EOF
+  --------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind     | default busybox value               | test specifc value                      |
+  --------------------------------------------------------------------------------------------------------------|
+ | imagePullPolicy   | image    | Always                              | IfNotPresent                            |
+ | appLabel          | label    | app:fio-di-litmus                   | app:fio-di-litmus-jiva                  |
+ | storage class     | env      | openebs-standard                    | openebs-jiva-default                    |
+ | appNamespace      | env      | fio                                 | fio-jiva                                | 
+  --------------------------------------------------------------------------------------------------------------
+EOF
+
+
 sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
 -e 's/value: openebs-standard/value: openebs-jiva-default/g' \      
 -e 's/app: fio-di-litmus/app: fio-di-litmus-jiva/g' \
