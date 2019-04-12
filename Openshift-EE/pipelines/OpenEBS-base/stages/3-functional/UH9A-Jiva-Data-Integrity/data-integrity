@@ -39,7 +39,7 @@ cp apps/fio/tests/data-integrity/run_litmus_test.yml data_integrity_test_jiva.ym
  | specAttribute     | kind     | default busybox value               | test specifc value                      |
   --------------------------------------------------------------------------------------------------------------|
  | imagePullPolicy   | image    | Always                              | IfNotPresent                            |
- | appLabel          | label    | app:fio-di-litmus                   | app:fio-di-litmus-jiva                  |
+ | LitmusjobLabel    | label    | app:fio-di-litmus                   | app:fio-di-litmus-jiva                  |
  | storage class     | env      | openebs-standard                    | openebs-jiva-default                    |
  | appNamespace      | env      | fio                                 | fio-jiva                                | 
   --------------------------------------------------------------------------------------------------------------
