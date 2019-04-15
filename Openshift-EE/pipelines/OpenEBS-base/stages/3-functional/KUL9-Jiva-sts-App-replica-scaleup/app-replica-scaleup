@@ -1,0 +1,177 @@
+#!/bin/bash
+set -x
+
+pod() {
+echo $CI_JOB_ID
+###clone e2e-openshift-repo
+echo "cloning e2e-openshift repo*************"
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/openebs/e2e-openshift.git'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/KUL9-Jiva-sts-App-replica-scaleup/app-replica-scaleup node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+}
+
+node() {
+source ~/.profile
+gittoken=$(echo "$github_token")
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+case_id=KUL9
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+bash Openshift-EE/utils/e2e-cr jobname:app-replica-scaleup-jiva jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:app-replica-scaleup-jiva jobphase:Running
+
+echo "*******Deploying Busybox-sts Application****"
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-app-scale-jiva metadata="") 
+echo $test_name
+
+################
+# LitmusBook 1 #
+################
+
+cd litmus
+echo "Running the litmus test for Busybox Deployment.."
+cp apps/busybox/deployers/run_litmus_test.yml deploy_run_test_jiva.yml
+
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+  ---------------------------------------------------------------------------------------------------------------------|
+ | appLabel          | env    | app=busybox-sts                     | app=busybox-scale-jiva                           |
+ | appNamespace      | env    | app-busybox-ns                      | app-scale-jiva                                   | 
+ | storage class     | env    | openebs-cstor-sparse                | openebs-jiva-default                             |
+ | deploy type       | env    | statefulset                         | deployment                                       |
+ | Action            | env    | value: provision                    | value: deprovision                               |
+ | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName: busybox-provision-app-replica      |
+ | Litmus job label  | label  | app: busybox-litmus                 | app:busybox-replica-scale-jiva                   |
+  ----------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
+-e 's/generateName: litmus-busybox-deploy/generateName: busybox-provision-app-replica/g' \
+-e 's/value: app-busybox-ns/value: app-scale-jiva/g' \
+-e 's/app: busybox-litmus/app: busybox-replica-scale-jiva/g' \
+-e 's/value: '\''app=busybox-sts'\''/value: '\''app=busybox-scale-jiva'\''/g' \
+-e 's/value: openebs-cstor-sparse/value: openebs-jiva-default/g' deploy_run_test_jiva.yml
+
+cat deploy_run_test_jiva.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-replica-scale-jiva' job=deploy_run_test_jiva.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:app-replica-scaleup-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id KUL9 3-functional "Scale the statefulset application replicas and verify the ring configuration" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+echo "*******Scaling Application replicas**********"
+
+run_id="jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=scale-app-replicas metadata=${run_id})
+echo $test_name
+
+################
+# LitmusBook 2 #
+################
+
+cd litmus
+cp apps/cassandra/functional/scale_replicas/run_litmus_test.yml run_scaleup_test_jiva.yml
+
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+  ---------------------------------------------------------------------------------------------------------------------|
+ | appLabel          | env    | app=cassandra                       | app=busybox-scale-jiva                           | 
+ | appNamespace      | env    | app-cass-ns                         | busybox-scale-jiva                               | 
+ | Litmus job label  | label  | app: cassandra-scaleup-litmus       | app:  scaleup-litmus-jiva                        |
+  ----------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/app: cassandra-scaleup-litmus/app: scaleup-litmus-jiva/g' \
+-e 's/value: '\''app=cassandra'\''/value: '\''app=busybox-scale-jiva'\''/g' \
+-e 's/value: app-cass-ns/value:app-scale-jiva/g' run_scaleup_test_jiva.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' run_scaleup_test_jiva.yml
+
+echo "Running the litmus test for Busybox Deployment Scaleup.."
+cat run_scaleup_test_jiva.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:scaleup-litmus-jiva' job=run_scaleup_test_jiva.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:app-replica-scaleup-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id KUL9 3-functional "Scale the statefulset application replicas and verify the ring configuration" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+echo "********Deprovisioning Busybox Application*******"
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-app-scale-jiva metadata="")
+echo $test_name
+
+################
+# LitmusBook 3 #
+################
+
+cd litmus
+cp apps/busybox/deployers/run_litmus_test.yml deprovision_scaleup_jiva.yml
+
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+  ---------------------------------------------------------------------------------------------------------------------|
+ | appLabel          | env    | app=busybox-sts                     | app=busybox-scale-jiva                           | 
+ | appNamespace      | env    | app-busybox-ns                      | app-scale-jiva                                   | 
+ | storage clas      | env    | openebs-cstor-sparse                | openebs-jiva-default                             |
+ | deploy type       | env    | statefulset                         | deployment                                       |
+ | Action            | env    | value: provision                    | value: deprovision                               |
+ | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName: busybox-deprovision-target-affinity|
+ | Litmus job label  | label  | app: busybox-litmus                 | app: busybox-deprovision-litmus-jiva             |
+  ----------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovision-app-replica/g' \
+-e 's/value: app-busybox-ns/value: app-scale-jiva/g' \
+-e 's/app: busybox-litmus/app: busybox-deprovision-litmus-jiva/g' \
+-e 's/value: '\''app=busybox-sts'\''/value: '\''app=busybox-scale-jiva'\''/g' \
+-e 's/value: openebs-cstor-sparse/value: openebs-jiva-default/g' \
+-e 's/value: provision/value: deprovision/g' deprovision_scaleup_jiva.yml
+
+
+echo "Running the litmus test for Busybox Deployment Scaleup.."
+cat deprovision_scaleup_jiva.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-deprovision-litmus-jiva' job=deprovision_scaleup_jiva.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:app-replica-scaleup-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+
+# testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+# if [ "$rc_val" != "0" ]; then
+# exit 1;
+# fi
+
+current_time=$(eval $time)
+bash Openshift-EE/utils/e2e-cr jobname:app-replica-scaleup-jiva jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
+python3 Openshift-EE/utils/result/result_update.py $job_id KUL9 3-functional "Scale the statefulset application replicas and verify the ring configuration" Pass $pipeline_id "$current_time" $commit_id $gittoken
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4
+else
+  pod
+fi
