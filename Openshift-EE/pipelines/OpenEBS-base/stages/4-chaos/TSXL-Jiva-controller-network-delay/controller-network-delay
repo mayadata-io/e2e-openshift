@@ -1,0 +1,187 @@
+#!/bin/bash
+set -x
+
+pod() {
+echo $CI_JOB_ID
+###clone e2e-openshift-repo
+echo "cloning e2e-openshift repo*************"
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/openebs/e2e-openshift.git'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/TSXL-Jiva-controller-network-delay-jiva/controller-network-delay node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+}
+
+node() {
+source ~/.profile
+gittoken=$(echo "$github_token")
+
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+case_id=TSXL
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+bash Openshift-EE/utils/e2e-cr jobname:controller-network-delay-jiva jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:controller-network-delay-jiva jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+echo "*******Deploying Busybox Application****"
+
+################
+# LitmusBook 1 #
+################
+
+: << EOF
+  --------------------------------------------------------------------------------------------------------------------     
+ | specAttribute     | kind   |         default value               | test specifc value                              |
+  ------------------------------------------------------------------------------------------------------------------- |
+ | appLabel          | env    | app=busybox-sts                     | app=busybox-controller-delay-jiva               |
+ | deploy type       | env    | statefulset                         | deployment                                      |
+ | appNamespace      | env    | app-busybox-ns                      | controller-delay-jiva                           |
+ | pvcName           | env    | openebs-busybox                     | openebs-bb-controller-delay                     | 
+ | storage clas      | env    | openebs-cstor-sparse                | openebs-jiva-default                            |
+ | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName: busybox-provision-controller-delay-jiva|
+ | Litmus job label  | label  | app: busybox-litmus                 | deploy-busybox-controller-delay-jiva            |
+  ---------------------------------------------------------------------------------------------------------------------
+EOF
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-controller-delay-jiva metadata="")
+echo $test_name
+
+cd litmus
+echo "Running the litmus test for Busybox Deployment.."
+
+cp apps/busybox/deployers/run_litmus_test.yml busybox_controller_delay_jiva.yml
+
+
+
+sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-provision-controller-delay-jiva/g' \
+-e 's/app: busybox-litmus/app: deploy-busybox-controller-delay-jiva/g' \  
+-e 's/app=busybox-sts/app=busybox-controller-delay-jiva/g' \   
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/value: openebs-cstor-sparse/value: openebs-jiva-default/g' \
+-e 's/value: openebs-busybox/value: openebs-bb-controller-delay/g' \
+-e 's/value: app-busybox-ns/value: controller-delay-jiva/g' busybox_controller_delay_jiva.yml
+cat busybox_controller_delay_jiva.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:deploy-busybox-controller-delay-jiva' job=busybox_controller_delay_jiva.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:controller-network-delay-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id TSXL 4-chaos "Induce delay in jiva controller pod network and verify if the application is not impacted" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+echo "*******Performing network delay on controller**********"
+
+run_id="jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-target-network-delay metadata=${run_id})
+echo $test_name
+
+cd litmus
+cp apps/percona/chaos/openebs_target_network_delay/run_litmus_test.yml run_controller_delay_test_jiva.yml
+
+################
+# LitmusBook 2 #
+################
+
+: << EOF
+  --------------------------------------------------------------------------------------------------------------------     
+ | specAttribute     | kind   |         default value               | test specifc value                              |
+  ------------------------------------------------------------------------------------------------------------------- |
+ | appLabel          | env    | app=busybox-sts                     | app=busybox-controller-delay-jiva               |
+ | pvcName           | env    | percona-mysql-claim                 | openebs-bb-controller-delay                     | 
+ | appNamespace      | env    | app-busybox-ns                      | controller-delay-jiva                           |
+ | storage clas      | env    | openebs-cstor-sparse                | openebs-jiva-default                            |
+ | Litmus Job name   | name   | generateName: openebs-target-network-delay- | generateName: openebs-target-network-delay-jiva|
+ | Litmus job label  | label  | app: openebs-target-network-delay            | network-delay-test-jiva                              |
+  ---------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/value: percona-mysql-claim/value: openebs-bb-controller-delay/g' \
+-e 's/generateName: openebs-target-network-delay-/generateName: openebs-target-network-delay-jiva/g' \
+-e 's/value: percona-mysql-claim/value: openebs-bb-controller-delay/g' \
+-e 's/app: openebs-target-network-delay/app: network-delay-test-jiva/g' \
+-e 's/app=busybox-sts/app=busybox-controller-delay-jiva/g' \
+-e 's/value: '\''name=percona'\''/value: '\''app=busybox-controller-delay-jiva'\''/g' \
+-e 's/value: app-percona-ns/value: controller-delay-jiva/g' run_controller_delay_test_jiva.yml
+
+cat run_controller_delay_test_jiva.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='name:network-delay-test-jiva' job=run_controller_delay_test_jiva.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:controller-network-delay-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id TSXL 4-chaos "Induce delay in jiva controller pod network and verify if the application is not impacted" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+echo "********Deprovisioning Busybox Application*******"
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-controller-delay-jiva metadata="")
+echo $test_name
+
+cd litmus
+cp apps/busybox/deployers/run_litmus_test.yml deprovision_controller_delay_jiva.yml
+
+################
+# LitmusBook 3 #
+################
+
+: << EOF
+  --------------------------------------------------------------------------------------------------------------------     
+ | specAttribute     | kind   |         default value               | test specifc value                              |
+  ------------------------------------------------------------------------------------------------------------------- |
+ | appLabel          | env    | app=busybox-sts                     | app=busybox-controller-delay-jiva               |
+ | pvcName           | env    | openebs-busybox                     | openebs-bb-controller-delay                     | 
+ | appNamespace      | env    | app-busybox-ns                      | controller-delay-jiva                           | 
+ | storage clas      | env    | openebs-cstor-sparse                | openebs-jiva-default                            |
+ | deploy type       | env    | statefulset                         | deployment                                      |
+ | Action            | env    | value: provision                    | value: deprovision                              |
+ | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName: busybox-deprovision-controller-delay-jiva|
+ | Litmus job label  | label  | app: busybox-litmus                 | bb-controller-delay-jiva             |
+  ---------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovision-controller-delay-jiva/g' \
+-e 's/app: busybox-litmus/app: bb-deprovision-controller-delay-jiva/g' \
+-e 's/app=busybox-sts/app=busybox-controller-delay-jiva/g' \
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/value: openebs-cstor-sparse/value: openebs-jiva-default/g' \
+-e 's/value: openebs-busybox/value: openebs-bb-controller-delay/g' \
+-e 's/value: app-busybox-ns/value: controller-delay-jiva/g' \
+-e 's/value: provision/value: deprovision/g' deprovision_controller_delay_jiva.yml  
+
+echo "Running the litmus test for Busybox Deployment.."
+cat deprovision_controller_delay_jiva.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:bb-deprovision-controller-delay' job=deprovision_controller_delay_jiva.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:controller-network-delay-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+
+
+# testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+
+# if [ "$rc_val" != "0" ]; then
+# exit 1;
+# fi
+
+current_time=$(eval $time)
+bash Openshift-EE/utils/e2e-cr jobname:controller-network-delay-jiva jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
+python3 Openshift-EE/utils/result/result_update.py $job_id TSXL 4-chaos "Induce delay in jiva controller pod network and verify if the application is not impacted" Pass $pipeline_id "$current_time" $commit_id $gittoken
+
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4
+else
+  pod
+fi
