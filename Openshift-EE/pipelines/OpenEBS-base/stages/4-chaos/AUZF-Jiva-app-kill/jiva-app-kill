@@ -23,8 +23,8 @@ current_time=$(eval $time)
 present_dir=$(pwd)
 echo $present_dir
 
-bash Openshift-EE/utils/e2e-cr jobname:app-kill jobphase:Waiting
-bash Openshift-EE/utils/e2e-cr jobname:app-kill jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:jiva-app-kill jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:jiva-app-kill jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 echo "*******Deploying Busybox Application****"
 
@@ -67,14 +67,14 @@ cat busybox_app_kill_jiva.yml
 bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-app-kill-jiva' job=busybox_app_kill_jiva.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
-bash Openshift-EE/utils/event_updater jobname:app-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/event_updater jobname:jiva-app-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 if [ "$?" != "0" ]; then
-python3 Openshift-EE/utils/result/result_update.py $job_id 1PP5 4-chaos "Induce application pod failure and check if it is recovered successfully" Fail $pipeline_id "$current_time" $commit_id $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id AUZF 4-chaos "Induce application pod failure and check if it is recovered successfully" Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase=application-pod-failure-jiva metadata="")
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=application-pod-failure-jiva metadata="" run_id=jiva)
 echo $test_name
 
 ################
@@ -88,17 +88,17 @@ cp apps/jenkins/chaos/app_pod_failure/run_litmus_test.yml appkill_jiva.yml
   ---------------------------------------------------------------------------------------------------------------------
  | specAttribute     | kind   |         default value               | test specifc value                               |
   ---------------------------------------------------------------------------------------------------------------------|
- | appLabel          | env    | app=jenkins-app                     | app=app-kill-jiva                                | 
+ | appLabel          | env    | app=jenkins-app                     | app=jenkins-app-jiva                             | 
  | Litmus Job name   | name   |generateName: application-pod-failure| generateName: application-pod-failure-jiva       |
  | Litmus job label  | label  | app: application-pod-failure        | app:  application-pod-failure-jiva               |
  | appNamespace      | env    | app-jenkins-ns                      | app-jenkins-ns-jiva                              |  
   ----------------------------------------------------------------------------------------------------------------------
 EOF
 
-sed -i -e 's/value: '\''app=jenkins-app'\''/value: '\''app=app-kill-jiva'\''/g' \
+sed -i -e 's/value: '\''app=jenkins-app'\''/value: '\''app=jenkins-app-jiva'\''/g' \
 -e 's/generateName: application-pod-failure/generateName: application-pod-failure-jiva/g' \
 -e 's/app: application-pod-failure/app: application-pod-failure-jiva/g' \
--e 's/value: app-jenkins-ns/value: app-kill-jiva/g' appkill_jiva.yml
+-e 's/value: app-jenkins-ns/value: app-jenkins-ns-jiva/g' appkill_jiva.yml
 
 sed -i '/command:/i \
           - name: RUN_ID\
@@ -109,13 +109,13 @@ sed -i '/command:/i \
 echo "Running the litmus test for Busybox Deployment application pod kill.."
 cat appkill_jiva.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='name:application-pod-failure' job=appkill_jiva.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='name:application-pod-failure-jiva' job=appkill_jiva.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
-bash Openshift-EE/utils/event_updater jobname:app-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/event_updater jobname:jiva-app-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 if [ "$?" != "0" ]; then
-python3 Openshift-EE/utils/result/result_update.py $job_id 1PP5 4-chaos "Induce application pod failure and check if it is recovered successfully" Fail $pipeline_id "$current_time" $commit_id $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id AUZF 4-chaos "Induce application pod failure and check if it is recovered successfully" Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 
@@ -138,7 +138,7 @@ cp apps/busybox/deployers/run_litmus_test.yml deprovision_app_kill_jiva.yml
  | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName: busybox-deprovision-app-kill-jiva  |
  | imagePullPolicy   | image  | Always                              | IfNotPresent                                     |
  | appLabel          | env    | app=busybox-sts                     | app=bb-app-kill-jiva                             |
- | appNamespace      | env    | app-busybox-ns                      | app-scale-jiva                                   | 
+ | appNamespace      | env    | app-busybox-ns                      | app-busybox-ns-jiva                                   | 
  | Litmus job label  | label  | app: busybox-litmus                 | app:busybox-deprovision-appkill-jiva             |
  | storage class     | env    | openebs-cstor-sparse                | openebs-jiva-default                             |
  | Action            | env    | value: provision                    | value: deprovision                               |
@@ -149,7 +149,7 @@ EOF
 sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovision-app-kill-jiva/g' \
 -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
 -e 's/value: '\''app=busybox-sts'\''/value: '\''app=bb-app-kill-jiva'\''/g' \
--e 's/value: app-busybox-ns/value: app-scale-jiva/g' \
+-e 's/value: app-busybox-ns/value: app-busybox-ns-jiva/g' \
 -e 's/app: busybox-litmus/app: busybox-deprovision-appkill-jiva/g' \
 -e 's/value: openebs-cstor-sparse/value: openebs-jiva-default/g' \
 -e 's/value: provision/value: deprovision/g' deprovision_app_kill_jiva.yml
@@ -161,7 +161,7 @@ cat deprovision_app_kill_jiva.yml
 bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-deprovision-appkill-jiva' job=deprovision_app_kill_jiva.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
-bash Openshift-EE/utils/event_updater jobname:app-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/event_updater jobname:jiva-app-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 rc_val=$(echo $?)
 
@@ -173,11 +173,11 @@ rc_val=$(echo $?)
 # fi
 
 current_time=$(eval $time)
-bash Openshift-EE/utils/e2e-cr jobname:app-kill jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
-python3 Openshift-EE/utils/result/result_update.py $job_id 1PP5 4-chaos "Induce application pod failure and check if it is recovered successfully" Pass $pipeline_id "$current_time" $commit_id $gittoken
+bash Openshift-EE/utils/e2e-cr jobname:jiva-app-kill jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
+python3 Openshift-EE/utils/result/result_update.py $job_id AUZF 4-chaos "Induce application pod failure and check if it is recovered successfully" Pass $pipeline_id "$current_time" $commit_id $gittoken
 
 }
-
+test_
 if [ "$1" == "node" ];then
   node $2 $3 $4
 else
