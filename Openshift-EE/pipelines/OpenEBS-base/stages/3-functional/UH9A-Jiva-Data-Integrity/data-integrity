@@ -1,0 +1,93 @@
+#!/bin/bash
+set -x
+
+pod() {
+echo $CI_JOB_ID
+###clone e2e-openshift-repo
+echo "cloning e2e-openshift repo*************"
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/openebs/e2e-openshift.git'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UH9A-Jiva-Data-Integrity/data-integrity node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+}
+
+node() {
+source ~/.profile
+gittoken=$(echo "$github_token")
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+case_id=UH9A
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+bash Openshift-EE/utils/e2e-cr jobname:data-integrity-jiva jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:data-integrity-jiva jobphase:Running
+
+echo "*******Deploying Busybox Application****"
+
+run_id="jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=fio-data-integrity metadata=${run_id})
+echo $test_name
+cd litmus
+
+################
+# LitmusBook 1 #
+################
+
+echo "Running the litmus test for Busybox Deployment.."
+cp apps/fio/tests/data-integrity/run_litmus_test.yml data_integrity_test_jiva.yml
+
+: << EOF
+  --------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind     | default busybox value               | test specifc value                      |
+  --------------------------------------------------------------------------------------------------------------|
+ | imagePullPolicy   | image    | Always                              | IfNotPresent                            |
+ | LitmusjobLabel    | label    | app:fio-di-litmus                   | app:fio-di-litmus-jiva                  |
+ | storage class     | env      | openebs-standard                    | openebs-jiva-default                    |
+ | appNamespace      | env      | fio                                 | fio-jiva                                | 
+  --------------------------------------------------------------------------------------------------------------
+EOF
+
+
+sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
+-e 's/value: openebs-standard/value: openebs-jiva-default/g' \      
+-e 's/app: fio-di-litmus/app: fio-di-litmus-jiva/g' \
+-e 's/value: fio/value: fio-jiva/g' data_integrity_test_jiva.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' data_integrity_test_jiva.yml
+
+cat data_integrity_test_jiva.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:fio-di-litmus-jiva' job=data_integrity_test_jiva.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:data-integrity-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+
+
+testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+#python3 Openshift-EE/utils/result/result_update.py $job_id UH9A 3-functional "Ensure the data integrity in openebs volume using fio" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+
+current_time=$(eval $time)
+bash Openshift-EE/utils/e2e-cr jobname:data-integrity-jiva jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:$testResult
+
+python3 Openshift-EE/utils/result/result_update.py $job_id UH9A 3-functional "Ensure the data integrity in openebs volume using fio" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4
+else
+  pod
+fi
+

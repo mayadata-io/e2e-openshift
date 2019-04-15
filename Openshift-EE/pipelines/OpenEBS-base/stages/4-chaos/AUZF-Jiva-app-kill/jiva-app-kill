@@ -1,0 +1,185 @@
+#!/bin/bash
+set -x
+
+pod() {
+echo $CI_JOB_ID
+###clone e2e-openshift-repo
+echo "cloning e2e-openshift repo*************"
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/openebs/e2e-openshift.git'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/AUZF-Jiva-app-kill/jiva-app-kill node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+}
+
+node() {
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+source ~/.profile
+gittoken=$(echo "$github_token")
+case_id=AUZF
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+bash Openshift-EE/utils/e2e-cr jobname:jiva-app-kill jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:jiva-app-kill jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+echo "*******Deploying Busybox Application****"
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-app-kill-jiva metadata="")
+echo $test_name
+
+################
+# LitmusBook 1 #
+################
+
+cd litmus
+echo "Running the litmus test for Busybox Deployment.."
+
+cp apps/busybox/deployers/run_litmus_test.yml busybox_app_kill_jiva.yml
+
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+  ---------------------------------------------------------------------------------------------------------------------|
+ | imagePullPolicy   | image  |  Always                             | IfNotPresent                                     |
+ | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName: busybox-provision-app-kill-jiva    |
+ | appNamespace      | env    | app-busybox-ns                      | app-kill-jiva                                    | 
+ | Litmus job label  | label  | app: busybox-litmus                 | app:busybox-app-kill-jiva                        |
+ | appLabel          | env    | app=busybox-sts                     | app=bb-app-kill-jiva                             | 
+ | storage class     | env    | openebs-cstor-sparse                | openebs-jiva-default                             |
+ | deploy type       | env    | statefulset                         | deployment                                       | 
+  ----------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
+-e 's/generateName: litmus-busybox-deploy/generateName: busybox-provision-app-kill-jiva/g' \
+-e 's/value: app-busybox-ns/value: app-kill-jiva/g' \
+-e 's/app: busybox-litmus/app: busybox-app-kill-jiva/g' \
+-e 's/value: '\''app=busybox-sts'\''/value: '\''app=bb-app-kill-jiva'\''/g' \
+-e 's/value: openebs-cstor-sparse/value: openebs-jiva-default/g' busybox_app_kill_jiva.yml
+
+cat busybox_app_kill_jiva.yml
+
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-app-kill-jiva' job=busybox_app_kill_jiva.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:jiva-app-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id AUZF 4-chaos "Induce application pod failure and check if it is recovered successfully" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=application-pod-failure-jiva metadata="" run_id=jiva)
+echo $test_name
+
+################
+# LitmusBook 2 #
+################
+
+cd litmus
+cp apps/jenkins/chaos/app_pod_failure/run_litmus_test.yml appkill_jiva.yml
+
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+  ---------------------------------------------------------------------------------------------------------------------|
+ | appLabel          | env    | app=jenkins-app                     | app=jenkins-app-jiva                             | 
+ | Litmus Job name   | name   |generateName: application-pod-failure| generateName: application-pod-failure-jiva       |
+ | Litmus job label  | label  | app: application-pod-failure        | app:  bb-app-kill-jiva                           |
+ | appNamespace      | env    | app-jenkins-ns                      | app-kill-jiva                                    |  
+  ----------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/value: '\''app=jenkins-app'\''/value: '\''app=bb-app-kill-jiva'\''/g' \
+-e 's/generateName: application-pod-failure/generateName: application-pod-failure-jiva/g' \
+-e 's/app: application-pod-failure/app: application-pod-failure-jiva/g' \
+-e 's/value: app-jenkins-ns/value: app-kill-jiva/g' appkill_jiva.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' appkill_jiva.yml
+
+
+echo "Running the litmus test for Busybox Deployment application pod kill.."
+cat appkill_jiva.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='name:application-pod-failure-jiva' job=appkill_jiva.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:jiva-app-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id AUZF 4-chaos "Induce application pod failure and check if it is recovered successfully" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+echo "********Deprovisioning Busybox Application*******"
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-app-kill-jiva metadata="")
+echo $test_name
+
+################
+# LitmusBook 3 #
+################
+
+cd litmus
+cp apps/busybox/deployers/run_litmus_test.yml deprovision_app_kill_jiva.yml
+
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+  ---------------------------------------------------------------------------------------------------------------------|
+ | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName: busybox-deprovision-app-kill-jiva  |
+ | imagePullPolicy   | image  | Always                              | IfNotPresent                                     |
+ | appLabel          | env    | app=busybox-sts                     | app=bb-app-kill-jiva                             |
+ | appNamespace      | env    | app-busybox-ns                      | app-kill-java                                    | 
+ | Litmus job label  | label  | app: busybox-litmus                 | app:busybox-deprovision-appkill-jiva             |
+ | storage class     | env    | openebs-cstor-sparse                | openebs-jiva-default                             |
+ | Action            | env    | value: provision                    | value: deprovision                               |
+ | deploy type       | env    | statefulset                         | deployment                                       |
+  ----------------------------------------------------------------------------------------------------------------------
+EOF
+                    
+sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovision-app-kill-jiva/g' \
+-e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
+-e 's/value: '\''app=busybox-sts'\''/value: '\''app=bb-app-kill-jiva'\''/g' \
+-e 's/value: app-busybox-ns/value: app-kill-jiva/g' \
+-e 's/app: busybox-litmus/app: busybox-deprovision-appkill-jiva/g' \
+-e 's/value: openebs-cstor-sparse/value: openebs-jiva-default/g' \
+-e 's/value: provision/value: deprovision/g' deprovision_app_kill_jiva.yml
+
+
+echo "Running the litmus test for Busybox Deployment.."
+cat deprovision_app_kill_jiva.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-deprovision-appkill-jiva' job=deprovision_app_kill_jiva.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:jiva-app-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+
+
+# testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+
+# if [ "$rc_val" != "0" ]; then
+# exit 1;
+# fi
+
+current_time=$(eval $time)
+bash Openshift-EE/utils/e2e-cr jobname:jiva-app-kill jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
+python3 Openshift-EE/utils/result/result_update.py $job_id AUZF 4-chaos "Induce application pod failure and check if it is recovered successfully" Pass $pipeline_id "$current_time" $commit_id $gittoken
+
+}
+test_
+if [ "$1" == "node" ];then
+  node $2 $3 $4
+else
+  pod
+fi
