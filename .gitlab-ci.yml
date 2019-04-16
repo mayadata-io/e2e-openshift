@@ -114,6 +114,24 @@ OBS2-Memory-Usage:
       #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/29O5-Volume-Capacity/volume-capacity
       #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/29O5-Volume-Capacity/volume-capacity
 
+UH9A-Jiva-Data-Integrity:
+  extends: .func_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UH9A-Jiva-Data-Integrity/data-integrity
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UH9A-Jiva-Data-Integrity/data-integrity
+
+KUL9-Jiva-App-Scaleup:
+  extends: .func_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/KUL9-Jiva-sts-App-replica-scaleup/app-replica-scaleup
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/KUL9-Jiva-sts-App-replica-scaleup/app-replica-scaleup
+
+UURF-Jiva-STS-App-Target-Affinity:
+  extends: .func_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UURF-Jiva-sts-App-Target-Affinity/sts-app-target-affinity
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UURF-Jiva-sts-App-Target-Affinity/sts-app-target-affinity
+
 .chaos_test_template:
   image: openebs/openshift-ci:latest
   stage: CHAOS
@@ -253,6 +271,24 @@ QURH-Clone-Rebuild-post-snapshot-rebuild:
       #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/BF12-evict-node/evict-node
       #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/BF12-evict-node/evict-node
 
+AUZF-Jiva-App-Kill:
+  extends: .chaos_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/AUZF-Jiva-app-kill/jiva-app-kill
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/AUZF-Jiva-app-kill/jiva-app-kill
+
+HOSN-Jiva-single-replica-failure:
+  extends: .chaos_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/HOSN-jiva-single-replica-failure/single-replica-failure
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/HOSN-jiva-single-replica-failure/single-replica-failure
+
+VO3D-Jiva-controller-kill:
+  extends: .chaos_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/VO3D-jiva-controller-kill/controller-kill
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/VO3D-jiva-controller-kill/controller-kill
+
       #GP95-openebs-Uninstall:
       #  image: openebs/openshift-ci:latest
       #  stage: CLEANUP
@@ -262,7 +298,7 @@ QURH-Clone-Rebuild-post-snapshot-rebuild:
       #  script:
       #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/5-cleanup/GP95-openebs-cleanup/openebs-cleanup
       #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/5-cleanup/GP95-openebs-cleanup/openebs-cleanup
-  
+
 4SMQ-cluster-Delete:
   image: openebs/openshift-ci:latest
   stage: CLEANUP
