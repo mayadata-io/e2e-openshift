@@ -132,6 +132,12 @@ UURF-Jiva-STS-App-Target-Affinity:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UURF-Jiva-sts-App-Target-Affinity/sts-app-target-affinity
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UURF-Jiva-sts-App-Target-Affinity/sts-app-target-affinity
 
+SN3A-Jiva-Memory-Consumption:
+  extends: .func_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/SN3A-Jiva-Memory-Consumption/memory-consumption
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/SN3A-Jiva-Memory-Consumption/memory-consumption      
+
 .chaos_test_template:
   image: openebs/openshift-ci:latest
   stage: CHAOS
@@ -288,6 +294,12 @@ VO3D-Jiva-controller-kill:
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/VO3D-jiva-controller-kill/controller-kill
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/VO3D-jiva-controller-kill/controller-kill
+
+TSXL-Jiva-controller-network-delay:
+  extends: .chaos_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/TSXL-Jiva-controller-network-delay/controller-network-delay
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/TSXL-Jiva-controller-network-delay/controller-network-delay
 
       #GP95-openebs-Uninstall:
       #  image: openebs/openshift-ci:latest
