@@ -23,3 +23,7 @@ This test kills the jiva controller pod and check if it doesn't affect the appli
 
 #### Test Result
 
+
+| Job ID |   Test Description         | Execution Time |Test Result   |
+ |---------|---------------------------| --------------|--------|
+ |    <a href="https://gitlab.openebs.ci/openebs/e2e-openshift/-/jobs/17530">17530</a>   |  Induce failure on JIVA controller pod and check if it gets scheduled immediately and the application is available           |  Wed Apr 17 23:10:29 IST 2019     |<a href="https://e2e-logs.openebs100.io/app/kibana#/discover?_g=(refreshInterval:(pause:!t,value:0),time:(from:now-7d,mode:quick,to:now))&_a=(columns:!(_source),filters:!(('$state':(store:appState),meta:(alias:!n,disabled:!f,index:cluster-logs,key:commit_id,negate:!f,params:(query:0e8361f3be0afee04fd542f4b58108f507fbf1c1,type:phrase),type:phrase,value:0e8361f3be0afee04fd542f4b58108f507fbf1c1),query:(match:(commit_id:(query:0e8361f3be0afee04fd542f4b58108f507fbf1c1,type:phrase)))),('$state':(store:appState),meta:(alias:!n,disabled:!f,index:cluster-logs,key:pipeline_id,negate:!f,params:(query:925,type:phrase),type:phrase,value:925),query:(match:(pipeline_id:(query:925,type:phrase))))),index:cluster-logs,interval:auto,query:(language:lucene,query:''),sort:!('@timestamp',desc))">Pass</a>  |
