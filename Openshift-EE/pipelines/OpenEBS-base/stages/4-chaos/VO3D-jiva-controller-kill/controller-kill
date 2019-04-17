@@ -20,7 +20,7 @@ pipeline_id=$(echo $2) # Gitlab pipeline id obtained from gitlab env ($CI_PIPELI
 commit_id=$(echo $3) #Gitlab commit id Obtained fron gilab env ($CI_COMMIT_SHA).
 case_id=VO3D #test case ID.
 gitlab_stage=4-chaos # Gitlab stage where this test case is running.
-job_description="'Induce failure on JIVA controller pod and check if it gets scheduled immediately and the application is available'"
+#job_description="'Induce failure on JIVA controller pod and check if it gets scheduled immediately and the application is available'"
 
 time="date"
 current_time=$(eval $time)
@@ -84,7 +84,7 @@ bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:controller-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 #Update the result of the test case in github openebs/e2e-openshift repository.
 if [ "$?" != "0" ]; then
-python3 Openshift-EE/utils/result/result_update.py $job_id $case_id $gitlab_stage $job_description Fail $pipeline_id "$current_time" $commit_id $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id $case_id $gitlab_stage 'Induce failure on JIVA controller pod and check if it gets scheduled immediately and the application is available' Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 
@@ -131,7 +131,7 @@ bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:controller-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 if [ "$?" != "0" ]; then
-python3 Openshift-EE/utils/result/result_update.py $job_id $case_id $gitlab_stage $job_description Fail $pipeline_id "$current_time" $commit_id $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id $case_id $gitlab_stage 'Induce failure on JIVA controller pod and check if it gets scheduled immediately and the application is available' Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 
@@ -190,7 +190,7 @@ rc_val=$(echo $?)
 current_time=$(eval $time)
 bash Openshift-EE/utils/e2e-cr jobname:controller-kill jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
 
-python3 Openshift-EE/utils/result/result_update.py $job_id $case_id $gitlab_stage $job_description Pass $pipeline_id "$current_time" $commit_id $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id $case_id $gitlab_stage 'Induce failure on JIVA controller pod and check if it gets scheduled immediately and the application is available' Pass $pipeline_id "$current_time" $commit_id $gittoken
 }
 
 if [ "$1" == "node" ];then

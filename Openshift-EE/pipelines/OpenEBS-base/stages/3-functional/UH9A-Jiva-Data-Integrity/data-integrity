@@ -48,7 +48,7 @@ cp apps/fio/tests/data-integrity/run_litmus_test.yml data_integrity_test_jiva.ym
 EOF
 
 sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
--e 's/value: openebs-standard/value: openebs-jiva-default/g' \      
+-e 's/value: openebs-standard/value: openebs-jiva-default/g' \
 -e 's/app: fio-di-litmus/app: fio-di-litmus-jiva/g' \
 -e 's/value: fio/value: fio-jiva/g' data_integrity_test_jiva.yml
 
