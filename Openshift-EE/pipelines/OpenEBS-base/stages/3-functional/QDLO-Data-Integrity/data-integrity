@@ -23,28 +23,24 @@ current_time=$(eval $time)
 present_dir=$(pwd)
 echo $present_dir
 
-bash Openshift-EE/utils/e2e-cr jobname:data-integrity jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
-bash Openshift-EE/utils/e2e-cr jobname:data-integrity jobphase:Running
-
-echo "*******Deploying Busybox-sts Application****"
+bash Openshift-EE/utils/e2e-cr jobname:data-integrity-cstor jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:data-integrity-cstor jobphase:Running
 
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=fio-data-integrity metadata="")
 echo $test_name
 cd litmus
-echo "Running the litmus test for Busybox Deployment.."
-sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' apps/fio/tests/data-integrity/run_litmus_test.yml
-run_test=apps/fio/tests/data-integrity/run_litmus_test.yml
-sed -i -e 's/value: openebs-standard/value: openebs-cstor-disk/g' $run_test
+cp apps/fio/tests/data-integrity/run_litmus_test.yml data_integrity_cstor.yml
+sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
+-e 's/value: openebs-standard/value: openebs-cstor-disk/g' data_integrity_cstor.yml
 
-cat $run_test
+cat data_integrity_cstor.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:fio-di-litmus' job=$run_test
+bash ../Openshift-EE/utils/litmus_job_runner label='app:fio-di-litmus' job=data_integrity_cstor.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
-bash Openshift-EE/utils/event_updater jobname:data-integrity $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/event_updater jobname:data-integrity-cstor $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 rc_val=$(echo $?)
-
 
 testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
 #python3 Openshift-EE/utils/result/result_update.py $job_id QDLO 3-functional "Ensure the data integrity in openebs volume using fio" $testResult $pipeline_id "$current_time" $commit_id $gittoken
@@ -54,7 +50,7 @@ exit 1;
 fi
 
 current_time=$(eval $time)
-bash Openshift-EE/utils/e2e-cr jobname:data-integrity jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
+bash Openshift-EE/utils/e2e-cr jobname:data-integrity-cstor jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
 
 python3 Openshift-EE/utils/result/result_update.py $job_id QDLO 3-functional "Ensure the data integrity in openebs volume using fio" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 

@@ -20,7 +20,7 @@ pipeline_id=$(echo $2) # Gitlab pipeline id obtained from gitlab env ($CI_PIPELI
 commit_id=$(echo $3) #Gitlab commit id Obtained fron gilab env ($CI_COMMIT_SHA).
 case_id=VO3D #test case ID.
 gitlab_stage=4-chaos # Gitlab stage where this test case is running.
-job_description="Induce failure on JIVA controller pod and check if it gets scheduled immediately and the application is available"
+job_description="'Induce failure on JIVA controller pod and check if it gets scheduled immediately and the application is available'"
 
 time="date"
 current_time=$(eval $time)

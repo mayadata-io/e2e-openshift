@@ -95,7 +95,7 @@ EOF
 
 sed -i -e 's/app: cassandra-scaleup-litmus/app: scaleup-litmus-jiva/g' \
 -e 's/value: '\''app=cassandra'\''/value: '\''app=busybox-scale-jiva'\''/g' \
--e 's/value: app-cass-ns/value:app-scale-jiva/g' run_scaleup_test_jiva.yml
+-e 's/value: app-cass-ns/value: app-scale-jiva/g' run_scaleup_test_jiva.yml
 
 sed -i '/command:/i \
           - name: RUN_ID\

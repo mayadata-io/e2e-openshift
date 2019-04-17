@@ -20,7 +20,7 @@ pipeline_id=$(echo $2) # Gitlab pipeline id obtained from gitlab env ($CI_PIPELI
 commit_id=$(echo $3) #Gitlab commit id Obtained fron gilab env ($CI_COMMIT_SHA).
 case_id=HOSN #test case ID.
 gitlab_stage=4-chaos # Gitlab stage where this test case is running.
-job_description="Induce failure on JIVA single replica deployment and check if it gets scheduled immediately and the application is available"
+job_description="'Induce failure on JIVA single replica deployment and check if it gets scheduled immediately and the application is available'"
 
 time="date"
 current_time=$(eval $time)
@@ -94,7 +94,7 @@ fi
 ##### Run the litmus book to perform the Single Replica Failure failure on JIVA
 
 ## testcase name is defined in test_vars of LitmusBook.
-run_id="single";test_name=$(${utils_path}/generate_test_name testcase=openebs-volume-replica-failure metadata=${run_id})
+run_id="single";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-volume-replica-failure metadata=${run_id})
 echo $test_name
 
 cd litmus

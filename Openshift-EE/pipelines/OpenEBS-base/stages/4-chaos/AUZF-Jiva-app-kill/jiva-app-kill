@@ -57,6 +57,7 @@ sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
 -e 's/generateName: litmus-busybox-deploy/generateName: busybox-provision-app-kill-jiva/g' \
 -e 's/value: app-busybox-ns/value: app-kill-jiva/g' \
 -e 's/app: busybox-litmus/app: busybox-app-kill-jiva/g' \
+-e 's/value: statefulset/value: deployment/g' \
 -e 's/value: '\''app=busybox-sts'\''/value: '\''app=bb-app-kill-jiva'\''/g' \
 -e 's/value: openebs-cstor-sparse/value: openebs-jiva-default/g' busybox_app_kill_jiva.yml
 
@@ -147,11 +148,10 @@ sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovisi
 -e 's/value: '\''app=busybox-sts'\''/value: '\''app=bb-app-kill-jiva'\''/g' \
 -e 's/value: app-busybox-ns/value: app-kill-jiva/g' \
 -e 's/app: busybox-litmus/app: busybox-deprovision-appkill-jiva/g' \
+-e 's/value: statefulset/value: deployment/g' \
 -e 's/value: openebs-cstor-sparse/value: openebs-jiva-default/g' \
 -e 's/value: provision/value: deprovision/g' deprovision_app_kill_jiva.yml
 
-
-echo "Running the litmus test for Busybox Deployment.."
 cat deprovision_app_kill_jiva.yml
 
 bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-deprovision-app-kill-jiva' job=deprovision_app_kill_jiva.yml

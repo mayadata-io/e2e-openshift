@@ -59,7 +59,7 @@ sed -i -e 's/app: busybox-litmus/app: mem-busybox-jiva/g' \
 
 cat busybox_memcheck_jiva.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:mem-busybox-jiva' job=busybox_memcheck.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='app:mem-busybox-jiva' job=busybox_memcheck_jiva.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:memory-consumption-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
@@ -101,7 +101,7 @@ sed -i -e 's/name=prometheus/app=busybox-mem-jiva/g' \
 
 cat memcheck_test_jiva.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:memcheck-test-jiva' job=memcheck_test.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='app:memcheck-test-jiva' job=memcheck_test_jiva.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:memory-consumption-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
