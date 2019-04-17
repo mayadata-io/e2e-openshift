@@ -2,7 +2,6 @@
 set -x
 
 pod() {
-echo $CI_JOB_ID
 ###clone e2e-openshift-repo
 echo "cloning e2e-openshift repo*************"
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/openebs/e2e-openshift.git'
@@ -63,7 +62,6 @@ sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
 
 cat busybox_app_kill_jiva.yml
 
-
 bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-app-kill-jiva' job=busybox_app_kill_jiva.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
@@ -82,34 +80,32 @@ echo $test_name
 ################
 
 cd litmus
-cp apps/jenkins/chaos/app_pod_failure/run_litmus_test.yml appkill_jiva.yml
+cp apps/jenkins/chaos/app_pod_failure/run_litmus_test.yml app_kill_jiva.yml
 
 : << EOF
   ---------------------------------------------------------------------------------------------------------------------
  | specAttribute     | kind   |         default value               | test specifc value                               |
   ---------------------------------------------------------------------------------------------------------------------|
- | appLabel          | env    | app=jenkins-app                     | app=jenkins-app-jiva                             | 
+ | appLabel          | env    | app=jenkins-app                     | app=bb-app-kill-jiva                             | 
  | Litmus Job name   | name   |generateName: application-pod-failure| generateName: application-pod-failure-jiva       |
- | Litmus job label  | label  | app: application-pod-failure        | app:  bb-app-kill-jiva                           |
+ | Litmus job label  | label  | name: application-pod-failure       | name:  application-pod-failure-jiva              |
  | appNamespace      | env    | app-jenkins-ns                      | app-kill-jiva                                    |  
   ----------------------------------------------------------------------------------------------------------------------
 EOF
 
 sed -i -e 's/value: '\''app=jenkins-app'\''/value: '\''app=bb-app-kill-jiva'\''/g' \
 -e 's/generateName: application-pod-failure/generateName: application-pod-failure-jiva/g' \
--e 's/app: application-pod-failure/app: application-pod-failure-jiva/g' \
--e 's/value: app-jenkins-ns/value: app-kill-jiva/g' appkill_jiva.yml
+-e 's/name: application-pod-failure/name: application-pod-failure-jiva/g' \
+-e 's/value: app-jenkins-ns/value: app-kill-jiva/g' app_kill_jiva.yml
 
 sed -i '/command:/i \
           - name: RUN_ID\
             value: '"$run_id"'\
-' appkill_jiva.yml
+' app_kill_jiva.yml
 
+cat app_kill_jiva.yml
 
-echo "Running the litmus test for Busybox Deployment application pod kill.."
-cat appkill_jiva.yml
-
-bash ../Openshift-EE/utils/litmus_job_runner label='name:application-pod-failure-jiva' job=appkill_jiva.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='name:application-pod-failure-jiva' job=app_kill_jiva.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:jiva-app-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
@@ -158,13 +154,12 @@ sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovisi
 echo "Running the litmus test for Busybox Deployment.."
 cat deprovision_app_kill_jiva.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-deprovision-appkill-jiva' job=deprovision_app_kill_jiva.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-deprovision-app-kill-jiva' job=deprovision_app_kill_jiva.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:jiva-app-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 rc_val=$(echo $?)
-
 
 # testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
 

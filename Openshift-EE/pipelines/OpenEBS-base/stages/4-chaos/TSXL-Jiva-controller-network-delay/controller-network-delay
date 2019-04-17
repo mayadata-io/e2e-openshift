@@ -6,7 +6,7 @@ echo $CI_JOB_ID
 ###clone e2e-openshift-repo
 echo "cloning e2e-openshift repo*************"
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/openebs/e2e-openshift.git'
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/TSXL-Jiva-controller-network-delay-jiva/controller-network-delay node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/TSXL-Jiva-controller-network-delay/controller-network-delay node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
 }
 
 node() {
@@ -54,8 +54,6 @@ cd litmus
 echo "Running the litmus test for Busybox Deployment.."
 
 cp apps/busybox/deployers/run_litmus_test.yml busybox_controller_delay_jiva.yml
-
-
 
 sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-provision-controller-delay-jiva/g' \
 -e 's/app: busybox-litmus/app: deploy-busybox-controller-delay-jiva/g' \  
@@ -160,13 +158,12 @@ sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovisi
 echo "Running the litmus test for Busybox Deployment.."
 cat deprovision_controller_delay_jiva.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:bb-deprovision-controller-delay' job=deprovision_controller_delay_jiva.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='app:bb-deprovision-controller-delay-jiva' job=deprovision_controller_delay_jiva.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:controller-network-delay-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 rc_val=$(echo $?)
-
 
 # testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
 

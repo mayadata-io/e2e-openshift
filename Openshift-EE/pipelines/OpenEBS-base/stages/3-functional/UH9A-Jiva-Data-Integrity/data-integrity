@@ -26,17 +26,14 @@ echo $present_dir
 bash Openshift-EE/utils/e2e-cr jobname:data-integrity-jiva jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 bash Openshift-EE/utils/e2e-cr jobname:data-integrity-jiva jobphase:Running
 
-echo "*******Deploying Busybox Application****"
+################
+# LitmusBook 1 #
+################
 
 run_id="jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=fio-data-integrity metadata=${run_id})
 echo $test_name
 cd litmus
 
-################
-# LitmusBook 1 #
-################
-
-echo "Running the litmus test for Busybox Deployment.."
 cp apps/fio/tests/data-integrity/run_litmus_test.yml data_integrity_test_jiva.yml
 
 : << EOF
@@ -49,7 +46,6 @@ cp apps/fio/tests/data-integrity/run_litmus_test.yml data_integrity_test_jiva.ym
  | appNamespace      | env      | fio                                 | fio-jiva                                | 
   --------------------------------------------------------------------------------------------------------------
 EOF
-
 
 sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
 -e 's/value: openebs-standard/value: openebs-jiva-default/g' \      
@@ -69,7 +65,6 @@ bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:data-integrity-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 rc_val=$(echo $?)
-
 
 testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
 #python3 Openshift-EE/utils/result/result_update.py $job_id UH9A 3-functional "Ensure the data integrity in openebs volume using fio" $testResult $pipeline_id "$current_time" $commit_id $gittoken

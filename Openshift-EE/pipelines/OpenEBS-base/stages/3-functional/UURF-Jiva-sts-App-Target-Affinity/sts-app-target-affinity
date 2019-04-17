@@ -2,7 +2,6 @@
 set -x
 
 pod() {
-echo $CI_JOB_ID
 ###clone e2e-openshift-repo
 echo "cloning e2e-openshift repo*************"
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/openebs/e2e-openshift.git'
@@ -37,7 +36,6 @@ cd litmus
 echo "Running the litmus test for Busybox Deployment.."
 cp apps/busybox/deployers/run_litmus_test.yml deploy_affinity_test_jiva.yml
 
-
 : << EOF
   -------------------------------------------------------------------------------------------------------------------
  | specAttribute     | kind   |         default value               | test specifc value                             |
@@ -58,8 +56,7 @@ sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
 -e 's/value: '\''app=busybox-sts'\''/value: '\''app=target-affinity-jiva'\''/g' \
 -e 's/value: app-busybox-ns/value: target-affinity-jiva/g' \
 -e 's/value: openebs-busybox/value: busybox-target-affinity-jiva/g' \
--e 's/value: openebs-cstor-sparse/value: openebs-jiva-default/g' deploy_affinity_test_jiva.yml
-
+-e 's/value: openebs-cstor-sparse/value: openebs-jiva-standalone/g' deploy_affinity_test_jiva.yml
 
 cat deploy_affinity_test_jiva.yml
 
@@ -84,7 +81,6 @@ echo $test_name
 
 cd litmus
 cp experiments/functional/app-target-affinity/run_litmus_test.yml run_affinity_test_jiva.yml
-
 
 : << EOF
   ---------------------------------------------------------------------------------------------------------------
@@ -131,7 +127,6 @@ echo $test_name
 cd litmus
 cp apps/busybox/deployers/run_litmus_test.yml deprovision_affinity_jiva.yml
 
-
 : << EOF
   ---------------------------------------------------------------------------------------------------------------------
  | specAttribute     | kind   |         default value               | test specifc value                               |
@@ -139,7 +134,7 @@ cp apps/busybox/deployers/run_litmus_test.yml deprovision_affinity_jiva.yml
  | appLabel          | env    | app=busybox-sts                     | app=ctrl-kill                                    |
  | pvcName           | env    | openebs-busybox                     | busybox-target-affinity-jiva                     | 
  | appNamespace      | env    | app-busybox-ns                      | target-affinity-jiva                             | 
- | storage clas      | env    | openebs-cstor-sparse                | openebs-jiva-default                             |
+ | storage clas      | env    | openebs-cstor-sparse                | openebs-jiva-standalone                          |
  | deploy type       | env    | statefulset                         | deployment                                       |
  | Action            | env    | value: provision                    | value: deprovision                               |
  | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName: busybox-deprovision-target-affinity|
@@ -148,15 +143,14 @@ cp apps/busybox/deployers/run_litmus_test.yml deprovision_affinity_jiva.yml
 EOF
 
 sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovision-target-affinity/g' \
--e 's/app: busybox-litmus/app: busybox-deprovision-affinity/g' \
+-e 's/app: busybox-litmus/app: busybox-deprovision-affinity-jiva/g' \
 -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
 -e 's/value: '\''app=busybox-sts'\''/value: '\''app=target-affinity-jiva'\''/g' \
 -e 's/value: app-busybox-ns/value: target-affinity-jiva/g' \
 -e 's/app: busybox-litmus/app: busybox-deprovision-affinity-jiva/g' \
 -e 's/value: openebs-busybox/value: busybox-target-affinity-jiva/g' \
--e 's/value: openebs-cstor-sparse/value: openebs-jiva-default/g' \
+-e 's/value: openebs-cstor-sparse/value: openebs-jiva-standalone/g' \
 -e 's/value: provision/value: deprovision/g' deprovision_affinity_jiva.yml
-
 
 echo "Running the litmus test for Busybox Deployment.."
 cat deprovision_affinity_jiva.yml

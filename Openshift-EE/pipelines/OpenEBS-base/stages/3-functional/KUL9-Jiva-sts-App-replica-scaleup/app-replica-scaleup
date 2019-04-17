@@ -45,8 +45,7 @@ cp apps/busybox/deployers/run_litmus_test.yml deploy_run_test_jiva.yml
   ---------------------------------------------------------------------------------------------------------------------|
  | appLabel          | env    | app=busybox-sts                     | app=busybox-scale-jiva                           |
  | appNamespace      | env    | app-busybox-ns                      | app-scale-jiva                                   | 
- | storage class     | env    | openebs-cstor-sparse                | openebs-jiva-default                             |
- | deploy type       | env    | statefulset                         | deployment                                       |
+ | storage class     | env    | openebs-cstor-sparse                | openebs-jiva-standalone                          |
  | Action            | env    | value: provision                    | value: deprovision                               |
  | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName: busybox-provision-app-replica      |
  | Litmus job label  | label  | app: busybox-litmus                 | app:busybox-replica-scale-jiva                   |
@@ -58,7 +57,7 @@ sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
 -e 's/value: app-busybox-ns/value: app-scale-jiva/g' \
 -e 's/app: busybox-litmus/app: busybox-replica-scale-jiva/g' \
 -e 's/value: '\''app=busybox-sts'\''/value: '\''app=busybox-scale-jiva'\''/g' \
--e 's/value: openebs-cstor-sparse/value: openebs-jiva-default/g' deploy_run_test_jiva.yml
+-e 's/value: openebs-cstor-sparse/value: openebs-jiva-standalone/g' deploy_run_test_jiva.yml
 
 cat deploy_run_test_jiva.yml
 
@@ -146,7 +145,7 @@ sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovisi
 -e 's/value: app-busybox-ns/value: app-scale-jiva/g' \
 -e 's/app: busybox-litmus/app: busybox-deprovision-litmus-jiva/g' \
 -e 's/value: '\''app=busybox-sts'\''/value: '\''app=busybox-scale-jiva'\''/g' \
--e 's/value: openebs-cstor-sparse/value: openebs-jiva-default/g' \
+-e 's/value: openebs-cstor-sparse/value: openebs-jiva-standalone/g' \
 -e 's/value: provision/value: deprovision/g' deprovision_scaleup_jiva.yml
 
 
