@@ -25,3 +25,7 @@ This test checks if the application pod and its corresponding jiva controller ar
 
 #### Test Result
 
+
+| Job ID |   Test Description         | Execution Time |Test Result   |
+ |---------|---------------------------| --------------|--------|
+ |    <a href="https://gitlab.openebs.ci/openebs/e2e-openshift/-/jobs/16717">16717</a>   |  Checking Application and target scheduled on same Node           |  Wed Apr 17 10:27:03 IST 2019     |<a href="https://e2e-logs.openebs100.io/app/kibana#/discover?_g=(refreshInterval:(pause:!t,value:0),time:(from:now-7d,mode:quick,to:now))&_a=(columns:!(_source),filters:!(('$state':(store:appState),meta:(alias:!n,disabled:!f,index:cluster-logs,key:commit_id,negate:!f,params:(query:c33cc84fa4f1cbab77ead58122cd5675f227a08d,type:phrase),type:phrase,value:c33cc84fa4f1cbab77ead58122cd5675f227a08d),query:(match:(commit_id:(query:c33cc84fa4f1cbab77ead58122cd5675f227a08d,type:phrase)))),('$state':(store:appState),meta:(alias:!n,disabled:!f,index:cluster-logs,key:pipeline_id,negate:!f,params:(query:902,type:phrase),type:phrase,value:902),query:(match:(pipeline_id:(query:902,type:phrase))))),index:cluster-logs,interval:auto,query:(language:lucene,query:''),sort:!('@timestamp',desc))">Fail</a>  |
