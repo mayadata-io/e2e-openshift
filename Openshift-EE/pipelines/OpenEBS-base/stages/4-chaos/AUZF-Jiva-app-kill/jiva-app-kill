@@ -136,7 +136,7 @@ cp apps/busybox/deployers/run_litmus_test.yml deprovision_app_kill_jiva.yml
  | imagePullPolicy   | image  | Always                              | IfNotPresent                                     |
  | appLabel          | env    | app=busybox-sts                     | app=bb-app-kill-jiva                             |
  | appNamespace      | env    | app-busybox-ns                      | app-kill-java                                    | 
- | Litmus job label  | label  | app: busybox-litmus                 | app:busybox-deprovision-appkill-jiva             |
+ | Litmus job label  | label  | app: busybox-litmus                 | app:busybox-deprovision-app-kill-jiva             |
  | storage class     | env    | openebs-cstor-sparse                | openebs-jiva-default                             |
  | Action            | env    | value: provision                    | value: deprovision                               |
  | deploy type       | env    | statefulset                         | deployment                                       |
@@ -147,7 +147,7 @@ sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovisi
 -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
 -e 's/value: '\''app=busybox-sts'\''/value: '\''app=bb-app-kill-jiva'\''/g' \
 -e 's/value: app-busybox-ns/value: app-kill-jiva/g' \
--e 's/app: busybox-litmus/app: busybox-deprovision-appkill-jiva/g' \
+-e 's/app: busybox-litmus/app: busybox-deprovision-app-kill-jiva/g' \
 -e 's/value: statefulset/value: deployment/g' \
 -e 's/value: openebs-cstor-sparse/value: openebs-jiva-default/g' \
 -e 's/value: provision/value: deprovision/g' deprovision_app_kill_jiva.yml

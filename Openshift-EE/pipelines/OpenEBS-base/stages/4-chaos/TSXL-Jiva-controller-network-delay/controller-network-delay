@@ -102,14 +102,14 @@ EOF
 sed -i -e 's/value: percona-mysql-claim/value: openebs-bb-controller-delay/g' \
 -e 's/generateName: openebs-target-network-delay-/generateName: openebs-target-network-delay-jiva/g' \
 -e 's/value: percona-mysql-claim/value: openebs-bb-controller-delay/g' \
--e 's/app: openebs-target-network-delay/app: network-delay-test-jiva/g' \
+-e 's/name: openebs-target-network-delay/name: network-delay-test-jiva/g' \
 -e 's/app=busybox-sts/app=busybox-controller-delay-jiva/g' \
 -e 's/value: '\''name=percona'\''/value: '\''app=busybox-controller-delay-jiva'\''/g' \
 -e 's/value: app-percona-ns/value: controller-delay-jiva/g' run_controller_delay_test_jiva.yml
 
 cat run_controller_delay_test_jiva.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:network-delay-test-jiva' job=run_controller_delay_test_jiva.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='name:network-delay-test-jiva' job=run_controller_delay_test_jiva.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:controller-network-delay-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
