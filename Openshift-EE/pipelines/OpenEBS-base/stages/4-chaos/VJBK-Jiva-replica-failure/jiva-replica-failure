@@ -22,12 +22,12 @@ current_time=$(eval $time)
 present_dir=$(pwd)
 echo $present_dir
 
-bash Openshift-EE/utils/e2e-cr jobname:app-replica-failurse-jiva jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
-bash Openshift-EE/utils/e2e-cr jobname:app-replica-failure-jiva jobphase:Running
+bash Openshift-EE/utils/e2e-cr jobname:volume-replica-failure-jiva jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:volume-replica-failure-jiva jobphase:Running
 
-echo "*******Deploying Busybox-sts Application****"
+echo "*******Deploying Busybox Application****"
 
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-app-rep-fail-jiva metadata="") 
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-app-replica-fail-jiva metadata="") 
 echo $test_name
 
 ################
@@ -42,7 +42,7 @@ cp apps/busybox/deployers/run_litmus_test.yml deploy_run_test_jiva.yml
   ---------------------------------------------------------------------------------------------------------------------
  | specAttribute     | kind   |         default value               | test specifc value                               |
   ---------------------------------------------------------------------------------------------------------------------|
- | appLabel          | env    | app=busybox-sts                     | app=busybox-rep-fail-jiva                        |
+ | appLabel          | env    | app=busybox-sts                     | app=busybox-replica-fail-jiva                    |
  | appNamespace      | env    | app-busybox-ns                      | app-rep-fail-jiva                                |   
  | appPVC            | env    | openebs-busybox                     | openebs-busybox-rep-kill                         |
  | storage class     | env    | openebs-cstor-sparse                | openebs-jiva-default                             |
@@ -54,7 +54,7 @@ cp apps/busybox/deployers/run_litmus_test.yml deploy_run_test_jiva.yml
 EOF
 
 sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
--e 's/generateName: litmus-busybox-deploy/generateName: busybox-provision-app-rep-fail-jiva/g' \
+-e 's/generateName: litmus-busybox-deploy/generateName: busybox-provision-app-replica-fail-jiva/g' \
 -e 's/value: app-busybox-ns/value: app-replica-fail-jiva/g' \
 -e 's/value: statefulset/value: deployment/g' \
 -e 's/value: openebs-busybox/value: openebs-busybox-rep-kill/g' \
@@ -67,7 +67,7 @@ cat deploy_run_test_jiva.yml
 bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-replica-failure-jiva' job=deploy_run_test_jiva.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
-bash Openshift-EE/utils/event_updater jobname:app-replica-failure-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/event_updater jobname:volume-replica-failure-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 if [ "$?" != "0" ]; then
 python3 Openshift-EE/utils/result/result_update.py $job_id VJBK 4-chaos "Fails Jiva Replica and verify successful recovery" Fail $pipeline_id "$current_time" $commit_id $gittoken
@@ -78,7 +78,7 @@ fi
 # LitmusBook 2 #
 ################
 
-run_id="jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-volume-replica-failure metadata=${run_id})
+run_id="jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-volume-replica-failure-jiva metadata=${run_id})
 echo $test_name
 
 cd litmus
@@ -103,13 +103,12 @@ sed -i '/command:/i \
             value: '"$run_id"'\
 ' run_rep_fail_test_jiva.yml
 
-echo "Running the litmus test for Busybox Deployment Scaleup.."
 cat run_rep_fail_test_jiva.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-volume-replica-failure' job=run_rep_fail_test_jiva.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-volume-replica-failure-jiva' job=run_rep_fail_test_jiva.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
-bash Openshift-EE/utils/event_updater jobname:app-replica-failure-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/event_updater jobname:volume-replica-failure-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 if [ "$?" != "0" ]; then
 python3 Openshift-EE/utils/result/result_update.py $job_id VJBK 4-chaos "Fails Jiva Replica and verify successful recovery" Fail $pipeline_id "$current_time" $commit_id $gittoken
@@ -132,7 +131,7 @@ cp apps/busybox/deployers/run_litmus_test.yml deprovision_rep_fail_jiva.yml
   ---------------------------------------------------------------------------------------------------------------------
  | specAttribute     | kind   |         default value               | test specifc value                                 |
   ---------------------------------------------------------------------------------------------------------------------  |
- | appLabel          | env    | app=busybox-sts                     | app=busybox-rep-fail-jiva                          | 
+ | appLabel          | env    | app=busybox-sts                     | app=busybox-replica-fail-jiva                          | 
  | appNamespace      | env    | app-busybox-ns                      | app-rep-fail-jiva                                  |   
  | storage clas      | env    | openebs-cstor-sparse                | openebs-jiva-default                               |
  | deploy type       | env    | statefulset                         | deployment                                         |
@@ -142,21 +141,19 @@ cp apps/busybox/deployers/run_litmus_test.yml deprovision_rep_fail_jiva.yml
   ----------------------------------------------------------------------------------------------------------------------
 EOF
 
-sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovision-app-rep-fail-jiva/g' \
+sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovision-app-replica-fail-jiva/g' \
 -e 's/value: app-busybox-ns/value: app-replica-fail-jiva/g' \
 -e 's/app: busybox-litmus/app: busybox-deprovision-rep-fail/g' \
 -e 's/value: '\''app=busybox-sts'\''/value: '\''app=busybox-rep-fail-jiva'\''/g' \
 -e 's/value: openebs-cstor-sparse/value: openebs-jiva-default/g' \
 -e 's/value: provision/value: deprovision/g' deprovision_rep_fail_jiva.yml
 
-
-echo "Running the litmus test for Busybox Deployment Scaleup.."
 cat deprovision_rep_fail_jiva.yml
 
 bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-deprovision-rep-fail' job=deprovision_rep_fail_jiva.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
-bash Openshift-EE/utils/event_updater jobname:app-replica-failure-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/event_updater jobname:volume-replica-failure-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 rc_val=$(echo $?)
 
@@ -166,7 +163,7 @@ rc_val=$(echo $?)
 # fi
 
 current_time=$(eval $time)
-bash Openshift-EE/utils/e2e-cr jobname:app-replica-failure-jiva jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
+bash Openshift-EE/utils/e2e-cr jobname:volume-replica-failure-jiva jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
 python3 Openshift-EE/utils/result/result_update.py $job_id VJBK 4-chaos "Fails Jiva Replica and verify successful recovery" Pass $pipeline_id "$current_time" $commit_id $gittoken
 }
 
