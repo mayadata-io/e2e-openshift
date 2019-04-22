@@ -98,7 +98,7 @@ python3 env.py -f providers/openebs/installers/operator/master/litmusbook/openeb
 
 echo "updated yaml"
 sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
--e 's/value: master/value: v0.8.x/g' providers/openebs/installers/operator/master/litmusbook/openebs_setup.yaml
+-e 's/value: master/value: v0.9.x/g' providers/openebs/installers/operator/master/litmusbook/openebs_setup.yaml
 cat providers/openebs/installers/operator/master/litmusbook/openebs_setup.yaml
 
 #################
