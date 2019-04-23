@@ -1,0 +1,74 @@
+#!/bin/bash
+set -x
+pod() {
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/openebs/e2e-openshift.git'
+
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/HC5P-create-striped-pool/create-pool node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+
+}
+
+node() {
+
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+case_id=2RWJ
+commit_id=$(echo $3)
+source ~/.profile
+gittoken=$(echo "$github_token")
+
+time="date"
+current_time=$(eval $time)
+
+#pooling over previous job to complete
+echo "*******Creating cstor-pool**************"
+bash Openshift-EE/utils/pooling jobname:s2-j1-openebs-deploy
+bash Openshift-EE/utils/e2e-cr jobname:s2-j2-cstor-pool jobphase:Running init_time:"$current_time"
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=cstor-disk-pool-provision metadata="")
+echo $test_name
+cd litmus
+#################
+## RUNNER MAIN ##
+#################
+echo "Running the litmus test.."
+sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' providers/cstor/cstor-disk-pool/run_litmus_test.yml
+sed -i -e 's/value: ci/value: 0.8.2-RC4/g' providers/cstor/cstor-disk-pool/run_litmus_test.yml
+run_test=providers/cstor/cstor-disk-pool/run_litmus_test.yml
+
+cat $run_test
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:cstor-disk-pool-provision' job=$run_test
+
+echo "Dumping state of cluster post job run"; echo ""
+bash ../Openshift-EE/utils/dump_cluster_state;
+
+cd ..
+bash Openshift-EE/utils/event_updater jobname:s2-j2-cstor-pool $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+#################
+## GET RESULT  ##
+#################
+rc_val=$(echo $?)
+
+
+## Check the test status & result from the litmus result custom resource
+source ~/.profile
+gittoken=$(echo "$github_token")
+testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+#python3 Openshift-EE/utils/result/result_update.py $job_id 2RWJ 2-setup "Create cStor based Striped storage pool on disks." $testResult $pipeline_id "$current_time" $commit_id $gittoken
+
+current_time=$(eval $time)
+bash Openshift-EE/utils/e2e-cr jobname:s2-j2-cstor-pool jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
+
+python3 Openshift-EE/utils/result/result_update.py $job_id 2RWJ 2-setup "Create cStor based Striped storage pool on disks." $testResult $pipeline_id "$current_time" $commit_id $gittoken
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4
+else
+  pod
+fi
+

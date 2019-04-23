@@ -1,0 +1,76 @@
+#!/bin/bash
+set -x
+
+pod() {
+echo $CI_JOB_ID
+###clone e2e-openshift-repo
+echo "cloning e2e-openshift repo*************"
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/openebs/e2e-openshift.git'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/QQ9F-deploy-elasticsearch/deploy-elasticsearch node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+}
+
+node() {
+source ~/.profile
+gittoken=$(echo "$github_token")
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+case_id=5Q19
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+bash Openshift-EE/utils/e2e-cr jobname:app-replica-scaleup-jiva jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:app-replica-scaleup-jiva jobphase:Running
+
+
+echo "*******Deploying Elasticsearch Application****"
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-target-affinity metadata="")
+echo $test_name
+
+cd litmus
+echo "Running the litmus test for Busybox Deployment.."
+cp apps/elasticsearch/deployers/run_litmus_test.yml deploy_affinity_test.yml
+
+
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+  ---------------------------------------------------------------------------------------------------------------------|
+ | imagePullPolicy   | image  | Always                              | IfNotPresent                                     |
+ | Litmus job label  | label  | app: busybox-litmus                 | app: elasticsearch-deployment-litmus             |
+ | appLabel          | env    | app=busybox-sts                     | app=elasticsearch                                |
+ | appNamespace      | env    | app-busybox-ns                      | app-esearch-ns                                   |
+ | replica count     | env    | 2                                   | 1                                                |
+ | pvcname           | env    | openebs-busybox                     | openebs-esearch                                  |
+ | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName: busybox-provision-app-replica      |
+ | storage class     | env    | openebs-cstor-sparse                | openebs-cstor-sparse                             |
+ | Action            | env    | value: provision                    | value: provision                                 |
+   ----------------------------------------------------------------------------------------------------------------------
+EOF
+
+
+sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
+-e 's/app: busybox-litmus/app: elasticsearch-deployment-litmus/g' \
+-e 's/value: '\''app=busybox-sts'\''/value: '\''app=elasticsearch'\''/g' \
+-e 's/value: app-busybox-ns/value: app-esearch-ns/g' \
+-e 's/value: '\''replicas=2'\''/value: '\''replicas=1'\''/g' \
+-e 's/value: openebs-busybox/value: busybox-target-affinity/g' \
+-e 's/generateName: litmus-busybox-deploy/generateName: litmus-elasticsearch /g' \
+-e 's/value: openebs-cstor-sparse/value: openebs-cstor-sparse /g' deploy_affinity_test.yml
+
+cat deploy_affinity_test.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:elasticsearch-deployment-litmus' job=deploy_affinity_test.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:sts-app-target-affinity $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id 5Q19 3-functional "Checking Application and target scheduled on same Node" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
