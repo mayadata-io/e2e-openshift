@@ -5,14 +5,14 @@ echo $CI_JOB_ID
 ###clone e2e-openshift-repo
 echo "cloning e2e-openshift repo*************"
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/openebs/e2e-openshift.git'
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/K9YC-openebs-deploy/deploy-openebs node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/CRGI-openebs-deploy/deploy-openebs node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
 }
 
 node() {
 job_id=$(echo $1)
 pipeline_id=$(echo $2)
 commit_id=$(echo $3)
-case_id=K9YC
+case_id=CRGI
 
 time="date"
 current_time=$(eval $time)
@@ -125,18 +125,18 @@ bash Openshift-EE/utils/event_updater jobname:s2-j1-openebs-deploy $test_name jo
 ## GET RESULT  ##
 #################
 rc_val=$(echo $?)
-test_case_id="K9YC-$pipeline_id"
+test_case_id="CRGI-$pipeline_id"
 
 ## Check the test status & result from the litmus result custom resource
 source ~/.profile
 gittoken=$(echo "$github_token")
 testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
-#python3 Openshift-EE/utils/result/result_update.py $job_id K9YC 2-setup "Deploy OpenEBS in OpenShift-EE-3.10 Cluster" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+#python3 Openshift-EE/utils/result/result_update.py $job_id CRGI 2-setup "Deploy OpenEBS in OpenShift-EE-3.10 Cluster" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 
 current_time=$(eval $time)
 bash Openshift-EE/utils/e2e-cr jobname:s2-j1-openebs-deploy jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
 
-python3 Openshift-EE/utils/result/result_update.py $job_id K9YC 2-setup "Deploy OpenEBS in OpenShift-EE-3.10 Cluster" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id CRGI 2-setup "Deploy OpenEBS in OpenShift-EE-3.10 Cluster" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 
 if [ "$rc_val" != "0" ]; then
 exit 1;
