@@ -31,35 +31,26 @@ bash Openshift-EE/utils/e2e-cr jobname:memory-consumption-jiva jobphase:Running 
 # LitmusBook 1 #
 ################
 
-: << EOF
-  --------------------------------------------------------------------------------------------------------------------     
- | specAttribute     | kind   |         default value               | test specifc value                              |
-  ------------------------------------------------------------------------------------------------------------------- |
- | appLabel          | env    | app=busybox-sts                     | app=busybox-mem-jiva                            |
- | deploy type       | env    | statefulset                         | deployment                                      |
- | appNamespace      | env    | app-busybox-ns                      | mem-check-jiva                                  |
- | pvcName           | env    | prometheus-claim                    | openebs-busybox                                 | 
- | storage clas      | env    | openebs-cstor-sparse                | openebs-jiva-default                            |
- | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName: busybox-mem-check-deprovision-jiva|
- | Litmus job label  | label  | app: busybox-litmus                 | mem-busybox-jiva                                |
-  ---------------------------------------------------------------------------------------------------------------------
-EOF
-
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-mem-check-jiva metadata="")
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=memleak-test metadata="")
 echo $test_name
 cd litmus
 
-cp apps/busybox/deployers/run_litmus_test.yml busybox_memcheck_jiva.yml
+cp apps/custom/tests/memcheck/run_litmus_test.yml memcheck_jiva.yml
 
-sed -i -e 's/app: busybox-litmus/app: mem-busybox-jiva/g' \
--e 's/app=busybox-sts/app=busybox-mem-jiva/g' \
--e 's/value: statefulset/value: deployment/g' \
--e 's/value: openebs-cstor-sparse/value: openebs-jiva-default/g' \
--e 's/value: app-busybox-ns/value: mem-check-jiva/g' busybox_memcheck_jiva.yml
+: << EOF
+  --------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind     | default busybox value               | test specifc value                      |
+  --------------------------------------------------------------------------------------------------------------|
+ | storage class     | env      | openebs-standard                    | openebs-standard                        |
+ | appNamespace      | env      | memleak                             | memleak-jiva                            | 
+  --------------------------------------------------------------------------------------------------------------
+EOF
 
-cat busybox_memcheck_jiva.yml
+sed -i -e 's/value: memleak/value: memleak-jiva/g' memcheck_jiva.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:mem-busybox-jiva' job=busybox_memcheck_jiva.yml
+cat memcheck_jiva.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:memleak-test' job=memcheck_jiva.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:memory-consumption-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
@@ -68,90 +59,6 @@ if [ "$?" != "0" ]; then
 python3 Openshift-EE/utils/result/result_update.py $job_id SN3A 3-functional "Check if the memory consumption doesn't cross the desired threshold for known workload" Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
-
-echo "*******Checking Memory Consumption**********"
-
-run_id="jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=memcheck-test metadata=${run_id})
-echo $test_name
-cd litmus
-
-################
-# LitmusBook 2 #
-################
-
-cp apps/prometheus/functional/memcheck/run_litmus_test.yml memcheck_test_jiva.yml
-
-
-: << EOF
-  --------------------------------------------------------------------------------------------------------------------     
- | specAttribute     | kind   |         default value               | test specifc value                              |
-  ------------------------------------------------------------------------------------------------------------------- |
- | appLabel          | env    | name=prometheus                     | app=busybox-mem-jiva                            |
- | pvcName           | env    | prometheus-claim                    | openebs-busybox                                 | 
- | storage clas      | env    | openebs-cstor-sparse                | openebs-jiva-default                            |
- | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName: busybox-mem-check-deprovision-jiva|
- | Litmus job label  | label  | app: memcheck-cstor-test            | memcheck-test-jiva                              |
-  ---------------------------------------------------------------------------------------------------------------------
-EOF
-
-sed -i -e 's/name=prometheus/app=busybox-mem-jiva/g' \
--e 's/prometheus-claim/openebs-busybox/g' \
--e 's/app: memcheck-cstor-test/app: memcheck-test-jiva/g' \
--e 's/value: app-prometheus/value: mem-check-jiva/g' memcheck_test_jiva.yml
-
-cat memcheck_test_jiva.yml
-
-bash ../Openshift-EE/utils/litmus_job_runner label='app:memcheck-test-jiva' job=memcheck_test_jiva.yml
-cd ..
-bash Openshift-EE/utils/dump_cluster_state;
-bash Openshift-EE/utils/event_updater jobname:memory-consumption-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
-
-if [ "$?" != "0" ]; then
-python3 Openshift-EE/utils/result/result_update.py $job_id SN3A 3-functional "Check if the memory consumption doesn't cross the desired threshold for known workload" Fail $pipeline_id "$current_time" $commit_id $gittoken
-exit 1;
-fi
-
-echo "********Deprovisioning Busybox Application*******"
-
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-mem-check-jiva metadata="")
-echo $test_name
-cd litmus
-
-################
-# LitmusBook 3 #
-################
-
-: << EOF
-  --------------------------------------------------------------------------------------------------------------------     
- | specAttribute     | kind   |         default value               | test specifc value                              |
-  ------------------------------------------------------------------------------------------------------------------- |
- | appLabel          | env    | app=busybox-sts                     | app=busybox-mem-jiva                            |
- | pvcName           | env    | openebs-busybox                     | busybox-ctrl-kill                               | 
- | appNamespace      | env    | app-busybox-ns                      | mem-check-jiva                                  | 
- | storage clas      | env    | openebs-cstor-sparse                | openebs-jiva-default                            |
- | deploy type       | env    | statefulset                         | deployment                                      |
- | Action            | env    | value: provision                    | value: deprovision                              |
- | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName: busybox-mem-check-deprovision-jiva|
- | Litmus job label  | label  | app: busybox-litmus                 | busybox-deprovision-mem-check-jiva              |
-  ---------------------------------------------------------------------------------------------------------------------
-EOF
-
-cp apps/busybox/deployers/run_litmus_test.yml deprovision_mem_check_jiva.yml
-
-sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-mem-check-deprovision-jiva/g' \ 
--e 's/app: busybox-litmus/app: busybox-deprovision-mem-check-jiva/g' \
--e 's/app=busybox-sts/app=busybox-mem-jiva/g' \
--e 's/value: statefulset/value: deployment/g' \
--e 's/value: openebs-cstor-sparse/value: openebs-jiva-default/g' \
--e 's/value: app-busybox-ns/value: mem-check-jiva/g' \
--e 's/value: provision/value: deprovision/g' deprovision_mem_check_jiva.yml
-
-cat deprovision_mem_check_jiva.yml
-
-bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-deprovision-mem-check-jiva' job=deprovision_mem_check_jiva.yml
-cd ..
-bash Openshift-EE/utils/dump_cluster_state;
-bash Openshift-EE/utils/event_updater jobname:memory-consumption-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 rc_val=$(echo $?)
 
