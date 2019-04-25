@@ -5,6 +5,7 @@ stages:
   - OPENEBS-SETUP
   - FUNCTIONAL
   - CHAOS
+  - INFRA-CHAOS
   - CLEANUP
 
 PCZD-OpenShift-3.10:
@@ -271,12 +272,6 @@ QURH-Clone-Rebuild-post-snapshot-rebuild:
       #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/TGZK-drain-node/drain-node
       #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/TGZK-drain-node/drain-node
 
-      #BF12-Evict-Node:
-      #  extends: .chaos_test_template
-      #  script: 
-      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/BF12-evict-node/evict-node
-      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/BF12-evict-node/evict-node
-
 AUZF-Jiva-App-Kill:
   extends: .chaos_test_template
   script:
@@ -301,6 +296,19 @@ TSXL-Jiva-controller-network-delay:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/TSXL-Jiva-controller-network-delay/controller-network-delay
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/TSXL-Jiva-controller-network-delay/controller-network-delay
 
+.infra_chaos_test_template:
+  image: openebs/openshift-ci:latest
+  stage: INFRA-CHAOS
+  when: always
+  dependencies:
+    - K9YC-OpenEBS      
+
+BF12-Taint-app-Node:
+  extends: .infra_chaos_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/5-infra-chaos/BF12-taint-node/node-taint
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/5-infra-chaos/BF12-taint-node/node-taint
+
       #GP95-openebs-Uninstall:
       #  image: openebs/openshift-ci:latest
       #  stage: CLEANUP
@@ -318,5 +326,5 @@ TSXL-Jiva-controller-network-delay:
   dependencies:
     - PCZD-OpenShift-3.10
   script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/5-cleanup/4SMQ-cluster-cleanup/cluster-cleanup
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/5-cleanup/4SMQ-cluster-cleanup/cluster-cleanup
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/4SMQ-cluster-cleanup/cluster-cleanup
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/4SMQ-cluster-cleanup/cluster-cleanup
