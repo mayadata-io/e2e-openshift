@@ -1,4 +1,4 @@
-### BF12-Verify application availablity when node is evicted due to disk-pressure taint.
+### BF12-Verify application availablity when node is tainted due to disk-pressure taint.
 
 #### Description
 
