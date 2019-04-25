@@ -52,20 +52,20 @@ EOF
 
 sed -i -e 's/app: cassandra-scaleup-litmus/app: elasticsearch-deployment-litmus /g' \
 -e 's/value: '\''app=cassandra'\''/value: '\''app=elasticsearch'\''/g' \
--e 's/value: app-cass-ns/value: app-esearch-ns/g' run_scaleup_test_jiva.yml
+-e 's/value: app-cass-ns/value: app-esearch-ns/g' run_scaleup_test.yml
 
 sed -i '/command:/i \
           - name: RUN_ID\
             value: '"$run_id"'\
-' run_scaleup_test_jiva.yml
+' run_scaleup_test.yml
 
 echo "Running the litmus test for Elasticsearch Deployment Scaleup.."
-cat run_scaleup_test_jiva.yml
+cat run_scaleup_test.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app: elasticsearch-deployment-litmus' job=run_scaleup_test_jiva.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='app: elasticsearch-deployment-litmus' job=run_scaleup_test.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
-bash Openshift-EE/utils/event_updater jobname:app-replica-scaleup-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/event_updater jobname:app-replica-scaleup $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 if [ "$?" != "0" ]; then
 python3 Openshift-EE/utils/result/result_update.py $job_id 86TL 3-functional "Scale the statefulset application replicas and verify the ring configuration" Fail $pipeline_id "$current_time" $commit_id $gittoken

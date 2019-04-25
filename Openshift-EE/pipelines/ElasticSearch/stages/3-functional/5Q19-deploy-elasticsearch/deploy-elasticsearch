@@ -68,7 +68,7 @@ cat deploy_affinity_test.yml
 bash ../Openshift-EE/utils/litmus_job_runner label='app:elasticsearch-deployment-litmus' job=deploy_affinity_test.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
-bash Openshift-EE/utils/event_updater jobname:sts-app-target-affinity $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/event_updater jobname:elasticsearch-provision $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 if [ "$?" != "0" ]; then
 python3 Openshift-EE/utils/result/result_update.py $job_id 5Q19 3-functional "Checking Application and target scheduled on same Node" Fail $pipeline_id "$current_time" $commit_id $gittoken

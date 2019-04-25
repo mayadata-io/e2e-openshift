@@ -319,12 +319,12 @@ CRGI-OpenEBS:
 #       #    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/5-cleanup/GP95-openebs-cleanup/openebs-cleanup
 #       #    - ./Openshift-EE/pipelines/ElasticSearch/stages/5-cleanup/GP95-openebs-cleanup/openebs-cleanup
 
-# 4SMQ-cluster-Delete:
-#   image: openebs/openshift-ci:latest
-#   stage: CLEANUP
-#   when: always
-#   dependencies:
-#     - PCZD-OpenShift-3.10
-#   script:
-#     - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/5-cleanup/4SMQ-cluster-cleanup/cluster-cleanup
-#     - ./Openshift-EE/pipelines/ElasticSearch/stages/5-cleanup/4SMQ-cluster-cleanup/cluster-cleanup
+638K-cluster-Delete:
+  image: openebs/openshift-ci:latest
+  stage: CLEANUP
+  when: always
+  dependencies:
+    - HUNE-OpenShift-3.10
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/5-cleanup/638K-cluster-cleanup/cluster-cleanup
+    - ./Openshift-EE/pipelines/ElasticSearch/stages/5-cleanup/638K-cluster-cleanup/cluster-cleanup
