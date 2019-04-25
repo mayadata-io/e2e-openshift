@@ -1,0 +1,131 @@
+#!/bin/bash
+set -x
+
+pod() {
+# sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/openebs/e2e-openshift.git'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/CL2N-Jiva-snapshot/jiva-snapshot node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+}
+
+node() {
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+case_id=CL2N
+
+source ~/.profile
+gittoken=$(echo "$github_token")
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+bash Openshift-EE/utils/e2e-cr jobname:jiva-snapshot jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:jiva-snapshot jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:jiva-snapshot-clone jobphase:Waiting
+
+echo "*******Deploying Busybox Application****"
+
+################
+# LitmusBook 1 #
+################
+
+: << EOF
+  --------------------------------------------------------------------------------------------------------------------     
+ | specAttribute     | kind   |         default value               | test specifc value                              |
+  ------------------------------------------------------------------------------------------------------------------- |
+ | Litmus job label  | label  | app: busybox-litmus                 | app: deploy-jiva-busybox-snapshot               |
+ | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName: busybox-provision-jiva-snapshot   |
+ | appLabel          | env    | app=busybox-sts                     | app=busybox-jiva-snap                           |
+ | deploy type       | env    | statefulset                         | deployment                                      |
+ | pvcName           | env    | openebs-busybox                     | busybox-jiva-snapshot                           | 
+ | storage clas      | env    | openebs-cstor-sparse                | openebs-jiva-standalone                         |
+ | appNamespace      | env    | app-busybox-ns                      | busybox-jiva-snap                               |
+  ---------------------------------------------------------------------------------------------------------------------
+EOF
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-busybox-jiva-snap metadata="")
+echo $test_name
+
+cd litmus
+echo "Running the litmus test for Busybox Deployment.."
+cp apps/busybox/deployers/run_litmus_test.yml deploy_jiva_snapshot.yml
+
+sed -i -e 's/app: busybox-litmus/app: deploy-jiva-busybox-snapshot/g' \
+-e 's/generateName: litmus-busybox-deploy/generateName: busybox-provision-jiva-snapshot/g' \
+-e 's/app=busybox-sts/app=busybox-jiva-snap/g' \
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
+-e 's/value: openebs-busybox/value: busybox-jiva-snapshot/g' \
+-e 's/value: openebs-cstor-sparse/value: openebs-jiva-standalone/g' \
+-e 's/value: app-busybox-ns/value: busybox-jiva-snap/g' deploy_jiva_snapshot.yml
+
+cat deploy_jiva_snapshot.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:deploy-jiva-busybox-snapshot' job=deploy_jiva_snapshot.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:jiva-snapshot $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id CL2N 3-functional "Verify if the snapshot can be created for persistent volume" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# LitmusBook 2 #
+################
+
+: << EOF
+  --------------------------------------------------------------------------------------------------------------------     
+ | specAttribute     | kind   |         default value               | test specifc value                              |
+  ------------------------------------------------------------------------------------------------------------------- |
+ | Litmus job label  | label  | app: snapshot-litmus                | app: snapshot-jiva-litmus                       |
+ | snapshot name     | env    | value: snapshot-busybox             | value: snapshot-jiva-busybox                    |
+ | pvcName           | env    | openebs-busybox                     | busybox-jiva-snapshot                           | 
+ | appNamespace      | env    | app-busybox-ns                      | busybox-jiva-snap                               |
+  ---------------------------------------------------------------------------------------------------------------------
+EOF
+
+echo "*******Taking snapshot of BusyBox application**********"
+
+run_id="jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=create-snapshot metadata=${run_id})
+echo $test_name
+
+cd litmus
+cp experiments/functional/snapshot-creation/run_litmus_test.yml run_snap_test_jiva.yml
+
+sed -i -e 's/value: openebs-busybox/value: busybox-jiva-snapshot/g' \
+-e 's/value: snapshot-busybox/value: snapshot-jiva-busybox/g' \
+-e 's/app: snapshot-litmus/app: snapshot-jiva-litmus/g' \
+-e 's/value: app-busybox-ns/value: busybox-jiva-snap/g' run_snap_test_jiva.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' run_snap_jiva_test.yml
+
+cat run_snap_test_jiva.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:snapshot-jiva-litmus' job=run_snap_test_jiva.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:jiva-snapshot $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id CL2N 3-functional "Verify if the snapshot can be created for persistent volume" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+current_time=$(eval $time)
+bash Openshift-EE/utils/e2e-cr jobname:jiva-snapshot jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
+
+python3 Openshift-EE/utils/result/result_update.py $job_id CL2N 3-functional "Verify if the snapshot can be created for persistent volume" Pass $pipeline_id "$current_time" $commit_id $gittoken
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4
+else
+  pod
+fi
