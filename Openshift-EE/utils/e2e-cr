@@ -1,0 +1,44 @@
+#!/bin/bash
+set -x
+
+job_name=$(echo $1 | cut -d ":" -f 2)
+job_phase=$(echo $2 | cut -d ":" -f 2)
+time_phase=$(echo $3 |cut -d ":" -f 1)
+test_time=$(echo $3 | cut -d ":" -f2-)
+test_result=$(echo $4 | cut -d ":" -f2-)
+
+echo "******Creating e2e-result-custom-resource********"
+
+if [[ "${time_phase}" == "init_time" ]];then
+  sed -i -e "s/<test-init>/$test_time/g" result-$job_name.yml;
+elif [[ "${time_phase}" == "end_time" ]];then
+  sed -i "s/<test-finish>/$test_time/g" result-$job_name.yml;
+else 
+  echo "**Time not specified***";
+fi
+
+if [[ "${job_phase}" == "Waiting" ]];then
+  cat Openshift-EE/utils/e2e-result.yml > result-$job_name.yml
+  sed -i -e "s/<test-phase>/$job_phase/g" result-$job_name.yml
+elif [[ "${job_phase}" == "Running" ]];then
+  sed -i -e "s/Waiting/$job_phase/g" result-$job_name.yml
+else 
+  sed -i -e "s/Running/$job_phase/g" result-$job_name.yml
+fi
+
+sed -i -e "s/<test-name>/$job_name/g" result-$job_name.yml
+
+if [ ! -z "$test_result" ];then
+  sed -i "s/<test-result>/$test_result/g" result-$job_name.yml
+fi
+
+sed -i "s/<openebs-id>/0.8.1/g" result-$job_name.yml
+
+
+cat result-$job_name.yml
+
+kubectl apply -f result-$job_name.yml
+
+if [[ "${time_phase}" == "end_time" ]];then
+  rm result-$job_name.yml
+fi

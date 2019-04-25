@@ -1,0 +1,25 @@
+#!/bin/bash
+set -x 
+
+litmus_test_name=$1
+
+time="date"
+current_time=$(eval $time)
+
+## Check the test status & result from the litmus result custom resource
+
+testStatus=$(kubectl get litmusresult ${litmus_test_name} --no-headers -o custom-columns=:spec.testStatus.phase) && \
+testResult=$(kubectl get litmusresult ${litmus_test_name} --no-headers -o custom-columns=:spec.testStatus.result); retcode=$?
+bash Openshift-EE/utils/error_handler ${retcode} msg="Unable to find litmus result custom resource, exiting" action="exit"
+
+if [[ ${testStatus} == "completed" ]]; then
+  if [[ ${testResult} == "Pass" ]]; then
+    bash Openshift-EE/utils/e2e-cr jobname:$2 jobphase:Completed end_time:"$current_time" test_result:Pass
+    echo "TEST: PASS"
+  else
+    bash Openshift-EE/utils/e2e-cr jobname:$2 jobphase:Completed end_time:"$current_time" test_result:Fail
+    echo "TEST: FAILED"; exit 1
+  fi
+else
+  echo "Test Execution was aborted"; exit 1
+fi

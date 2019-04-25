@@ -1,0 +1,7 @@
+#!/bin/bash
+set -x
+
+echo "Dumping state of cluster post job run"; echo ""
+kubectl get pods --all-namespaces
+kubectl get pvc --all-namespaces
+kubectl get sc

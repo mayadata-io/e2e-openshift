@@ -1,0 +1,15 @@
+#!/bin/bash
+set -x
+pool_job=$(echo $1 | cut -d ":" -f 2)
+e2e_cr_status="kubectl get e2er $pool_job -n e2e -o yaml --no-headers -o custom-columns=:spec.testStatus.phase"
+
+while true; do
+   val1=$(eval $e2e_cr_status)
+   if [ "$val1" == "Completed" ]; then
+     echo "***Preceeding job completed**"
+     break;
+   else
+     echo "****Waiting for previous job to complete***";
+     sleep 10;
+   fi
+done
