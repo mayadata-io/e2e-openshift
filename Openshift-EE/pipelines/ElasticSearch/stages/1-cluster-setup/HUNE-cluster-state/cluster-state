@@ -41,13 +41,13 @@ gittoken=$(echo $git_token | tr -d '"')
 # sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 kubectl get pod --all-namespaces
 
 # echo "cloning e2e-openshift repo*************"
-# sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/openebs/e2e-openshift.git'
+# sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b elasticsearch https://github.com/openebs/e2e-openshift.git'
 # sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'python3 e2e-openshift/Openshift-EE/utils/result/result_update.py '"'$CI_JOB_ID'"' HUNE 1-cluster-setup "Configure OpenShift cluster" Pass '"'$CI_PIPELINE_ID'"' '"'date'"' '"'$CI_COMMIT_SHA'"' '"'$gittoken'"''
 # else
 # echo "All nodes are not ready"
 # echo "******Cluster is in Unhealthy state*******"
 # echo "cloning e2e-openshift repo*************"
-# sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/openebs/e2e-openshift.git'
+# sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b elasticsearch https://github.com/openebs/e2e-openshift.git'
 # sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'python3 e2e-openshift/Openshift-EE/utils/result/result_update.py '"'$CI_JOB_ID'"' HUNE 1-cluster-setup "Configure OpenShift cluster" Fail '"'$CI_PIPELINE_ID'"' '"'date'"' '"'$CI_COMMIT_SHA'"' '"'$gittoken'"''
 # exit;
 # fi
