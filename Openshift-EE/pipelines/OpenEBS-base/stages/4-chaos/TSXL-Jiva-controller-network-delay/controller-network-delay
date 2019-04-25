@@ -108,6 +108,11 @@ sed -i -e 's/value: percona-mysql-claim/value: openebs-bb-controller-delay/g' \
 -e 's/value: '\''name=percona'\''/value: '\''app=busybox-controller-delay-jiva'\''/g' \
 -e 's/value: app-percona-ns/value: controller-delay-jiva/g' run_controller_delay_test_jiva.yml
 
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' run_controller_delay_test_jiva.yml
+
 cat run_controller_delay_test_jiva.yml
 
 bash ../Openshift-EE/utils/litmus_job_runner label='name:network-delay-test-jiva' job=run_controller_delay_test_jiva.yml
