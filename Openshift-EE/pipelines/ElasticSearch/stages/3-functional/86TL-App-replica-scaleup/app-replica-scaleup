@@ -23,8 +23,8 @@ current_time=$(eval $time)
 present_dir=$(pwd)
 echo $present_dir
 
-bash Openshift-EE/utils/e2e-cr jobname:app-replica-scaleup-jiva jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
-bash Openshift-EE/utils/e2e-cr jobname:app-replica-scaleup-jiva jobphase:Running
+bash Openshift-EE/utils/e2e-cr jobname:app-replica-scaleup jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:app-replica-scaleup jobphase:Running
 
 
 
@@ -38,7 +38,7 @@ echo $test_name
 ################
 
 cd litmus
-cp apps/cassandra/functional/scale_replicas/run_litmus_test.yml run_scaleup_test_jiva.yml
+cp apps/cassandra/functional/scale_replicas/run_litmus_test.yml run_scaleup_test.yml
 
 : << EOF
   ---------------------------------------------------------------------------------------------------------------------
