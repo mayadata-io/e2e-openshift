@@ -145,11 +145,11 @@ CL2N-Jiva-snapshot:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/CL2N-Jiva-snapshot/jiva-snapshot
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/CL2N-Jiva-snapshot/jiva-snapshot
 
-Y4ET-Jiva-snpahsot-clone:
+Y4ET-Jiva-snapshot-clone:
   extends: .func_test_template
   script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/Y4ET-Jiva-snpahsot-clone/jiva-snapshot-clone
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/Y4ET-Jiva-snpahsot-clone/jiva-snapshot-clone
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/Y4ET-Jiva-snapshot-clone/jiva-snapshot-clone
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/Y4ET-Jiva-snapshot-clone/jiva-snapshot-clone
 
 .chaos_test_template:
   image: openebs/openshift-ci:latest

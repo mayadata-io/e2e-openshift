@@ -3,7 +3,7 @@ set -x
 
 pod() {
 # sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/openebs/e2e-openshift.git'
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/Y4ET-Jiva-snpahsot-clone/jiva-snapshot-clone node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/Y4ET-Jiva-snapshot-clone/jiva-snapshot-clone node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
 }
 
 node() {
@@ -66,14 +66,14 @@ bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:jiva-snapshot-clone $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 if [ "$?" != "0" ]; then
-python3 Openshift-EE/utils/result/result_update.py $job_id Y4ET 3-functional "Check if the clone can be created using volume snapshot" Fail $pipeline_id "$current_time" $commit_id $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id Y4ET 3-functional "Check if the clone can be created using jiva volume snapshot" Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 
 current_time=$(eval $time)
 bash Openshift-EE/utils/e2e-cr jobname:jiva-snapshot-clone jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
 
-python3 Openshift-EE/utils/result/result_update.py $job_id Y4ET 3-functional "Check if the clone can be created using volume snapshot" Pass $pipeline_id "$current_time" $commit_id $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id Y4ET 3-functional "Check if the clone can be created using jiva volume snapshot" Pass $pipeline_id "$current_time" $commit_id $gittoken
 
 }
 
