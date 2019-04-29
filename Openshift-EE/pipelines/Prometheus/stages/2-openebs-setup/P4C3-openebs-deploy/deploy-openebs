@@ -1,0 +1,151 @@
+#!/bin/bash
+set -x
+pod() {
+echo $CI_JOB_ID
+###clone e2e-openshift-repo
+echo "cloning e2e-openshift repo*************"
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b prometheus https://github.com/openebs/e2e-openshift.git'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/Prometheus/stages/2-openebs-setup/P4C3-openebs-deploy/deploy-openebs node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+}
+
+node() {
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+case_id=P4C3
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+for i in efk-vars.yml efk.yml get_url.yml; do
+  wget https://raw.githubusercontent.com/openebs/e2e-infrastructure/master/workload/efk-client/playbook/$i
+done
+
+echo "EFK: Deploying Aggregrator and Forwarder on client"
+ansible-playbook efk.yml --extra-vars "commit_id=$commit_id pipeline_id=$pipeline_id" 
+
+# Applying e2e-CRD
+echo "***Applying e2e-crd***********"
+kubectl apply -f Openshift-EE/utils/e2e-crd.yml
+
+echo "*****Deploying openebs*******"
+bash Openshift-EE/utils/e2e-cr jobname:s2-j1-openebs-deploy jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:s2-j1-openebs-deploy jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:s2-j3-policies jobphase:Waiting 
+bash Openshift-EE/utils/e2e-cr jobname:s2-j2-cstor-pool jobphase:Waiting 
+
+source ~/.profile
+
+git clone -b $INFRA_BRANCH https://github.com/openebs/e2e-infrastructure.git
+cd e2e-infrastructure/env
+
+##exporting jiva-controller-image as env##
+#export OPENEBS_IO_JIVA_CONTROLLER_IMAGE=openebs/jiva:0.8.2-RC2
+##exporting jiva-replica-image as env##
+#export OPENEBS_IO_JIVA_REPLICA_IMAGE=openebs/jiva:0.8.2-RC2
+##exporting m-apiserver as env##
+#export MAYA_APISERVER_IMAGE=openebs/m-apiserver:0.8.2-RC2
+##exporting maya-volume-exporter as env##
+#export OPENEBS_IO_VOLUME_MONITOR_IMAGE=openebs/m-exporter:0.8.2-RC2
+##exporting istgt-image as env##
+#export OPENEBS_IO_CSTOR_VOLUME_MGMT_IMAGE=openebs/cstor-volume-mgmt:0.8.2-RC2
+##exporting zfs-image as env##
+#export OPENEBS_IO_CSTOR_POOL_MGMT_IMAGE=openebs/cstor-pool-mgmt:0.8.2-RC2
+
+#export OPENEBS_IO_CSTOR_POOL_IMAGE=openebs/cstor-pool:0.8.2-RC2
+##
+#export OPENEBS_IO_CSTOR_TARGET_IMAGE=openebs/cstor-istgt:0.8.2-RC2
+
+#export OPENEBS_IO_CSTOR_POOL_EXPORTER_IMAGE=openebs/m-exporter:0.8.2-RC2
+######################################################
+##exporting jiva-controller-image as env##
+export OPENEBS_IO_JIVA_CONTROLLER_IMAGE=$(eval python env_exporter.py -o jcontroller -fp ../baseline/baseline)
+##exporting jiva-replica-image as env##
+export OPENEBS_IO_JIVA_REPLICA_IMAGE=$(eval python env_exporter.py -o jreplica -fp ../baseline/baseline)
+##exporting m-apiserver as env##
+export MAYA_APISERVER_IMAGE=$(eval python env_exporter.py -o mapi -fp ../baseline/baseline)
+##exporting maya-volume-exporter as env##
+export OPENEBS_IO_VOLUME_MONITOR_IMAGE=$(eval python env_exporter.py -o iovolume -fp ../baseline/baseline)
+##exporting istgt-image as env##
+export OPENEBS_IO_CSTOR_VOLUME_MGMT_IMAGE=$(eval python env_exporter.py -o cvolmgmt -fp ../baseline/baseline)
+##exporting zfs-image as env##
+export OPENEBS_IO_CSTOR_POOL_MGMT_IMAGE=$(eval python env_exporter.py -o cpoolmgmt -fp ../baseline/baseline)
+##
+export OPENEBS_IO_CSTOR_POOL_IMAGE=$(eval python env_exporter.py -o cstorpool -fp ../baseline/baseline)
+##
+export OPENEBS_IO_CSTOR_TARGET_IMAGE=$(eval python env_exporter.py -o target -fp ../baseline/baseline)
+
+export OPENEBS_IO_CSTOR_POOL_EXPORTER_IMAGE=$(eval python env_exporter.py -o iovolume -fp ../baseline/baseline)
+
+export NODE_DISK_MANAGER_IMAGE=v0.3.3
+
+cd ../..
+
+echo "Generating test name***************************"
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebsinstaller metadata="")
+echo $test_name
+
+## Clone the litmus repo, navigate to litmus root 
+
+git clone https://github.com/openebs/litmus.git
+cd litmus
+
+wget https://raw.githubusercontent.com/openebs/e2e-infrastructure/master/env-update/env.py # script to update openebs_setup.yaml
+python3 env.py -f providers/openebs/installers/operator/master/litmusbook/openebs_setup.yaml
+
+echo "updated yaml"
+sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
+-e 's/value: master/value: v0.9.x/g' providers/openebs/installers/operator/master/litmusbook/openebs_setup.yaml
+cat providers/openebs/installers/operator/master/litmusbook/openebs_setup.yaml
+
+#################
+## RUNNER MAIN ##
+#################
+
+echo "Applying rbac.yml********************************"
+kubectl apply -f ./hack/rbac.yaml
+
+echo "Copying kube config for litmus"
+cp ~/.kube/config admin.conf
+kubectl create cm kubeconfig --from-file=admin.conf -n litmus
+
+echo "Running litmus test for openebs deploy.."
+
+run_test=providers/openebs/installers/operator/master/litmusbook/openebs_setup.yaml
+bash ../Openshift-EE/utils/litmus_job_runner label='provider:openebs-setup' job=$run_test
+
+echo "Dumping state of cluster post job run"; echo ""
+bash ../Openshift-EE/utils/dump_cluster_state;
+cd ..
+bash Openshift-EE/utils/event_updater jobname:s2-j1-openebs-deploy $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+#################
+## GET RESULT  ##
+#################
+rc_val=$(echo $?)
+test_case_id="P4C3-$pipeline_id"
+
+## Check the test status & result from the litmus result custom resource
+source ~/.profile
+gittoken=$(echo "$github_token")
+testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+#python3 Openshift-EE/utils/result/result_update.py $job_id P4C3 2-setup "Deploy OpenEBS in OpenShift-EE-3.10 Cluster" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+
+current_time=$(eval $time)
+bash Openshift-EE/utils/e2e-cr jobname:s2-j1-openebs-deploy jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
+
+python3 Openshift-EE/utils/result/result_update.py $job_id P4C3 2-setup "Deploy OpenEBS in OpenShift-EE-3.10 Cluster" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4
+else
+  pod
+fi
