@@ -11,8 +11,8 @@ HUNE-OpenShift-3.10:
   image: openebs/openshift-ci:latest
   stage: CLUSTER-SETUP
   script:     
-    - chmod 755 ./Openshift-EE/pipelines/ElasticSearch/stages/1-cluster-setup/HUNE-cluster-setup/cluster-state
-    - ./Openshift-EE/pipelines/ElasticSearch/stages/1-cluster-setup/HUNE-cluster-setup/cluster-state
+    - chmod 755 ./Openshift-EE/pipelines/ElasticSearch/stages/1-cluster-setup/HUNE-cluster-state/cluster-state
+    - ./Openshift-EE/pipelines/ElasticSearch/stages/1-cluster-setup/HUNE-cluster-state/cluster-state
 
 CRGI-OpenEBS:
   image: openebs/openshift-ci:latest
