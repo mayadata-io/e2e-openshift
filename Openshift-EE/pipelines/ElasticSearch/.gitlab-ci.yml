@@ -73,7 +73,7 @@ CRGI-OpenEBS:
 #       #    - ./Openshift-EE/pipelines/ElasticSearch/stages/3-functional/ENBK-Application-Upgrade/application-upgrade
 
 
-5Q19-Prometheus-Provision:
+5Q19-Elasticsearch-Provision:
   extends: .func_test_template
   script: 	  script: 
     - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/3-functional/5Q19-deploy-elasticsearch/elasticsearch-provision
