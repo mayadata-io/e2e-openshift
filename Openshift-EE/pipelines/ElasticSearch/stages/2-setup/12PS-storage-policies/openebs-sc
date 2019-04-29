@@ -1,0 +1,70 @@
+#!/bin/bash
+set -x
+pod() {
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b elasticsearch https://github.com/openebs/e2e-openshift.git'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/ElasticSearch/stages/2-setup/12PS-storage-policies/openebs-sc node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+}
+
+node() {
+
+time="date"
+current_time=$(eval $time)
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+case_id=12PS
+source ~/.profile
+gittoken=$(echo "$github_token")
+
+present_dir=$(pwd)
+echo $present_dir
+
+#pooling over previous job to complete
+echo "***********Applying openebs-storage-clas********"
+bash Openshift-EE/utils/pooling jobname:s2-j2-cstor-pool
+bash Openshift-EE/utils/e2e-cr jobname:s2-j3-policies jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=cstor-storage-policies metadata="")
+echo $test_name
+
+cd litmus
+echo "Running the litmus test.."
+sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' providers/cstor-storage-policies/run_litmus_test.yml
+run_test=providers/cstor-storage-policies/run_litmus_test.yml
+
+cat $run_test
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:cstor-storage-policy' job=$run_test
+
+echo "Dumping state of cluster post job run"; echo ""
+bash ../Openshift-EE/utils/dump_cluster_state;
+
+cd ..
+bash Openshift-EE/utils/event_updater jobname:s2-j3-policies $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+#################
+## GET RESULT  ##
+#################
+rc_val=$(echo $?)
+
+## Check the test status & result from the litmus result custom resource
+source ~/.profile
+gittoken=$(echo "$github_token")
+testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+#python3 Openshift-EE/utils/result/result_update.py $job_id 12PS 2-setup "Create K8s storage classes adhering the policies supported by OpenEBS" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+
+current_time=$(eval $time)
+bash Openshift-EE/utils/e2e-cr jobname:s2-j3-policies jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass 
+
+python3 Openshift-EE/utils/result/result_update.py $job_id 12PS 2-setup "Create K8s storage classes adhering the policies supported by OpenEBS" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4
+else
+  pod
+fi
