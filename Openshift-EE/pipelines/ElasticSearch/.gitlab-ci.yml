@@ -4,8 +4,8 @@ stages:
   - CLUSTER-SETUP
   - OPENEBS-SETUP
   - FUNCTIONAL
-  - CHAOS
-  - CLEANUP
+  # - CHAOS
+   - CLEANUP
 
 HUNE-OpenShift-3.10:
   image: openebs/openshift-ci:latest

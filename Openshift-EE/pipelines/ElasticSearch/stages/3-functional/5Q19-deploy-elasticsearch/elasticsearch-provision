@@ -6,7 +6,7 @@ echo $CI_JOB_ID
 ###clone e2e-openshift-repo
 echo "cloning e2e-openshift repo*************"
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'git clone https://github.com/openebs/e2e-openshift.git'
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'cd e2e-openshift && git checkout elasticsearch && bash Openshift-EE/pipelines/ElasticSearch/stages/3-functional/ELHN-deploy-prometheus/prometheus-provision node '"'$CI_JOB_ID'"''
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'cd e2e-openshift && git checkout elasticsearch && bash Openshift-EE/pipelines/ElasticSearch/stages/3-functional/5Q19-deploy-elasticsearch/elasticsearch-provision node '"'$CI_JOB_ID'"''
 }
 
  node() {
@@ -30,7 +30,7 @@ echo $test_name
  cd litmus
 
  echo "Running the litmus test.."
-run_test=apps/prometheus/deployers/run_litmus_test.yml
+run_test=apps/elasticsearch/deployers/run_litmus_test.yml
 
  cat $run_test
 
