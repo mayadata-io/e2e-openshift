@@ -1,0 +1,55 @@
+#!/bin/bash
+set -x
+
+pod() {
+echo $CI_JOB_ID
+###clone e2e-openshift-repo
+echo "cloning e2e-openshift repo*************"
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'git clone https://github.com/openebs/e2e-openshift.git'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'cd e2e-openshift && git checkout promethues && bash Openshift-EE/pipelines/Prometheus/stages/3-functional/ELHN-deploy-prometheus/prometheus-provision node '"'$CI_JOB_ID'"''
+}
+
+node() {
+job_id=$(echo $1)
+time="date"
+current_time=$(eval $time)
+echo "*********Applying e2e-crd***********"
+kubectl apply -f Openshift-EE/utils/e2e-crd.yml
+echo "*****Deploying openebs*******"
+bash Openshift-EE/utils/e2e-cr jobname:prometheus-provision jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:prometheus-provision jobphase:Running init_time:"$current_time"
+
+# Removing test_id from e2e-result.yml spec for simple mode
+#sed -i "s/-<job_id>/ /g" Openshift-EE/utils/result-volume-replica-distribution.yml
+
+kubectl apply -f Openshift-EE/utils/result-prometheus-provision.yml
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=prometheus-deployment metadata="")
+echo $test_name
+
+cd litmus
+
+echo "Running the litmus test.."
+run_test=apps/prometheus/deployers/run_litmus_test.yml
+
+cat $run_test
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:prometheus-deployment-litmus' job=$run_test
+
+echo "Dumping state of cluster post job run"; echo ""
+bash ../Openshift-EE/utils/dump_cluster_state;
+
+#################
+## GET RESULT  ##
+#################
+
+## Check the test status & result from the litmus result custom resource
+
+cd .. && bash Openshift-EE/utils/get_litmus_result ${test_name} prometheus-provision
+}
+
+if [ "$1" == "node" ];then
+  node $2
+else
+  pod
+fi
