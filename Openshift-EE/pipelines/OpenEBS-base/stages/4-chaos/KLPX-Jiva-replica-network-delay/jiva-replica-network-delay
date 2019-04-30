@@ -2,9 +2,6 @@
 set -x
 
 pod() {
-echo $CI_JOB_ID
-###clone e2e-openshift-repo
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/openebs/e2e-openshift.git'
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/KLPX-Jiva-replica-network-delay/jiva-replica-network-delay node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
 }
 
@@ -22,8 +19,8 @@ current_time=$(eval $time)
 present_dir=$(pwd)
 echo $present_dir
 
-bash Openshift-EE/utils/e2e-cr jobname:app-replica-network-delay-jiva jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
-bash Openshift-EE/utils/e2e-cr jobname:app-replica-network-delay-jiva jobphase:Running
+bash Openshift-EE/utils/e2e-cr jobname:volume-replica-network-delay-jiva jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:volume-replica-network-delay-jiva jobphase:Running
 
 echo "*******Deploying Busybox Application****"
 
@@ -67,7 +64,7 @@ cat deploy_rep_network_jiva.yml
 bash ../Openshift-EE/utils/litmus_job_runner label='busybox-replica-network-jiva' job=deploy_rep_network_jiva.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
-bash Openshift-EE/utils/event_updater jobname:app-replica-network-delay-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/event_updater jobname:volume-replica-network-delay-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 if [ "$?" != "0" ]; then
 python3 Openshift-EE/utils/result/result_update.py $job_id KLPX 4-chaos "Inject network delay in jiva replica & verify successful recovery" Fail $pipeline_id "$current_time" $commit_id $gittoken
@@ -108,7 +105,7 @@ cat run_rep_network_delay_jiva.yml
 bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-replica-network' job=run_rep_network_delay_jiva.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
-bash Openshift-EE/utils/event_updater jobname:app-replica-network-delay-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/event_updater jobname:volume-replica-network-delay-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 if [ "$?" != "0" ]; then
 python3 Openshift-EE/utils/result/result_update.py $job_id KLPX 4-chaos "Inject network delay in jiva replica & verify successful recovery" Fail $pipeline_id "$current_time" $commit_id $gittoken
@@ -154,7 +151,7 @@ cat deprovision_rep_network_jiva.yml
 bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-deprovision-rep-network' job=deprovision_rep_network_jiva.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
-bash Openshift-EE/utils/event_updater jobname:app-replica-network-delay-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/event_updater jobname:volume-replica-network-delay-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 rc_val=$(echo $?)
 
@@ -164,7 +161,7 @@ rc_val=$(echo $?)
 # fi
 
 current_time=$(eval $time)
-bash Openshift-EE/utils/e2e-cr jobname:app-replica-network-delay-jiva jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
+bash Openshift-EE/utils/e2e-cr jobname:volume-replica-network-delay-jiva jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
 python3 Openshift-EE/utils/result/result_update.py $job_id KLPX 4-chaos "Inject network delay in jiva replica & verify successful recovery" Pass $pipeline_id "$current_time" $commit_id $gittoken
 }
 

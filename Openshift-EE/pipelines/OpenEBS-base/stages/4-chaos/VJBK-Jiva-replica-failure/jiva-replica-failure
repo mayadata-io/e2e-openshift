@@ -27,7 +27,7 @@ bash Openshift-EE/utils/e2e-cr jobname:volume-replica-failure-jiva jobphase:Runn
 
 echo "*******Deploying Busybox Application****"
 
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-app-replica-fail-jiva metadata="") 
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-replica-fail-jiva metadata="") 
 echo $test_name
 
 ################
@@ -43,7 +43,7 @@ cp apps/busybox/deployers/run_litmus_test.yml deploy_run_test_jiva.yml
  | specAttribute     | kind   |         default value               | test specifc value                               |
   ---------------------------------------------------------------------------------------------------------------------|
  | appLabel          | env    | app=busybox-sts                     | app=busybox-replica-fail-jiva                    |
- | appNamespace      | env    | app-busybox-ns                      | app-rep-fail-jiva                                |   
+ | appNamespace      | env    | app-busybox-ns                      | replica-fail-jiva                                |   
  | appPVC            | env    | openebs-busybox                     | openebs-busybox-rep-kill                         |
  | storage class     | env    | openebs-cstor-sparse                | openebs-jiva-default                             |
  | deploy type       | env    | statefulset                         | deployment                                       |
@@ -55,7 +55,7 @@ EOF
 
 sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
 -e 's/generateName: litmus-busybox-deploy/generateName: busybox-provision-app-replica-fail-jiva/g' \
--e 's/value: app-busybox-ns/value: app-replica-fail-jiva/g' \
+-e 's/value: app-busybox-ns/value: replica-fail-jiva/g' \
 -e 's/value: statefulset/value: deployment/g' \
 -e 's/value: openebs-busybox/value: openebs-busybox-rep-kill/g' \
 -e 's/app: busybox-litmus/app: busybox-replica-failure-jiva/g' \
@@ -78,7 +78,7 @@ fi
 # LitmusBook 2 #
 ################
 
-run_id="jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-volume-replica-failure-jiva metadata=${run_id})
+run_id="jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-volume-replica-failure metadata=${run_id})
 echo $test_name
 
 cd litmus
@@ -90,12 +90,12 @@ cp apps/percona/chaos/openebs_volume_replica_failure/run_litmus_test.yml run_rep
   ---------------------------------------------------------------------------------------------------------------------|
  | appLabel          | env    | name=percona                        | app=busybox-rep-fail-jiva                        | 
  | appPVC            | env    | value: percona-mysql-claim          | value: openebs-busybox-rep-kill                  |
- | appNamespace      | env    | app-percona-ns                      | app-replica-fail-jiva                            | 
+ | appNamespace      | env    | app-percona-ns                      | replica-fail-jiva                            | 
   ----------------------------------------------------------------------------------------------------------------------
 EOF
 
 sed -i -e 's/name=percona /app=busybox-rep-fail-jiva/g' \
--e 's/value: app-percona-ns/value: app-replica-fail-jiva/g' \
+-e 's/value: app-percona-ns/value: replica-fail-jiva/g' \
 -e 's/value: percona-mysql-claim/value: openebs-busybox-rep-kill/g' run_rep_fail_test_jiva.yml
 
 sed -i '/command:/i \
@@ -117,7 +117,7 @@ fi
 
 echo "********Deprovisioning Busybox Application*******"
 
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-app-rep-fail-jiva metadata="")
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-replica-fail-jiva metadata="")
 echo $test_name
 
 ################
@@ -132,7 +132,7 @@ cp apps/busybox/deployers/run_litmus_test.yml deprovision_rep_fail_jiva.yml
  | specAttribute     | kind   |         default value               | test specifc value                                 |
   ---------------------------------------------------------------------------------------------------------------------  |
  | appLabel          | env    | app=busybox-sts                     | app=busybox-replica-fail-jiva                          | 
- | appNamespace      | env    | app-busybox-ns                      | app-rep-fail-jiva                                  |   
+ | appNamespace      | env    | app-busybox-ns                      | replica-fail-jiva                                  |   
  | storage clas      | env    | openebs-cstor-sparse                | openebs-jiva-default                               |
  | deploy type       | env    | statefulset                         | deployment                                         |
  | Action            | env    | value: provision                    | value: deprovision                                 |
@@ -142,7 +142,7 @@ cp apps/busybox/deployers/run_litmus_test.yml deprovision_rep_fail_jiva.yml
 EOF
 
 sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovision-app-replica-fail-jiva/g' \
--e 's/value: app-busybox-ns/value: app-replica-fail-jiva/g' \
+-e 's/value: app-busybox-ns/value: replica-fail-jiva/g' \
 -e 's/app: busybox-litmus/app: busybox-deprovision-rep-fail/g' \
 -e 's/value: '\''app=busybox-sts'\''/value: '\''app=busybox-rep-fail-jiva'\''/g' \
 -e 's/value: openebs-cstor-sparse/value: openebs-jiva-default/g' \
