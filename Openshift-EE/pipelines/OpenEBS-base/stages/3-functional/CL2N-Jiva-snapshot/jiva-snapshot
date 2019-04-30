@@ -104,7 +104,7 @@ sed -i -e 's/value: openebs-busybox/value: busybox-jiva-snapshot/g' \
 sed -i '/command:/i \
           - name: RUN_ID\
             value: '"$run_id"'\
-' run_snap_jiva_test.yml
+' run_snap_test_jiva.yml
 
 cat run_snap_test_jiva.yml
 
