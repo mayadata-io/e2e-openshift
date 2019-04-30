@@ -1,0 +1,90 @@
+#!/bin/bash
+set -x
+
+pod() {
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/6RQL-Clone-different-capacity/clone-different-capacity node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+}
+
+node() {
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+source ~/.profile
+gittoken=$(echo "$github_token")
+case_id=6RQL
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+bash Openshift-EE/utils/pooling jobname:snapshot-clone
+bash Openshift-EE/utils/e2e-cr jobname:clone-different-capacity jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+################
+# LitmusBook 1 #
+################
+
+run_id="different-capacity";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=create-clone metadata=${run_id})
+echo $test_name
+
+cd litmus
+cp experiments/functional/clone-creation/run_litmus_test.yml run_diff_vol_size_clone.yml
+
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+  ---------------------------------------------------------------------------------------------------------------------|
+ | appNamespace      | env    | app-busybox-ns                      | busybox-snap                                     |    
+ | appPVC            | env    | openebs-busybox                     | busybox-snapshot                                 |
+ | clonePVC          | env    | clone-busybox                       | clone-different-capacity                         |
+ | volume size       | env    | value: 5G                           | value: 4G                                        |
+ | Litmus job label  | label  | app: litmus-clone                   | app: clone-different-capacity                    |
+ | Litmus Job name   | name   | generateName: litmus-clone-         | generateName: litmus-clone-different-capacity-   |
+  ----------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/value: app-busybox-ns/value: busybox-snap/g' \
+-e 's/value: openebs-busybox/value: busybox-snapshot/g' \
+-e 's/value: clone-busybox/value: clone-different-capacity/g' \
+-e 's/value: 5G/value: 4G/g' \
+-e 's/app: litmus-clone/app: clone-different-capacity/g' \
+-e 's/generateName: litmus-clone-/generateName: litmus-clone-different-capacity-/g' run_diff_vol_size_clone.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' run_diff_vol_size_clone.yml
+
+echo "Running the litmus test for Busybox Deployment Clone.."
+cat run_diff_vol_size_clone.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:clone-different-capacity' job=run_diff_vol_size_clone.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:clone-different-capacity $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id 6RQL 3-functional "Check if the clone can't be created with different volume capacity" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+# testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+
+# if [ "$rc_val" != "0" ]; then
+# exit 1;
+# fi
+
+current_time=$(eval $time)
+bash Openshift-EE/utils/e2e-cr jobname:clone-different-capacity jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
+
+python3 Openshift-EE/utils/result/result_update.py $job_id 6RQL 3-functional "Check if the clone can't be created with different volume capacity" Pass $pipeline_id "$current_time" $commit_id $gittoken
+
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4
+else
+  pod
+fi
