@@ -27,6 +27,7 @@ echo $present_dir
 bash Openshift-EE/utils/e2e-cr jobname:snapshot jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:snapshot jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 bash Openshift-EE/utils/e2e-cr jobname:snapshot-clone jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:clone-different-capacity jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:clone-parent-volume-delete jobphase:Waiting
 
 echo "*******Deploying Busybox Application****"

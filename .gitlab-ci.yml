@@ -55,11 +55,17 @@ ZK9B-Create-Clone:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/ZK9B-snapshot-clone/snapshot-clone
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/ZK9B-snapshot-clone/snapshot-clone
 
-      #5O5V-Parent-Vol-Delete:
-      #  extends: .func_test_template
-      #  script: 
-      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/5O5V-Clone-parent-vol-delete/clone-parent-vol-delete
-      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/5O5V-Clone-parent-vol-delete/clone-parent-vol-delete
+6RQL-Clone-different-capacity:
+  extends: .func_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/6RQL-Clone-different-capacity/clone-different-capacity
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/6RQL-Clone-different-capacity/clone-different-capacity
+
+5O5V-Parent-Volume-Delete:
+  extends: .func_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/5O5V-Clone-parent-vol-delete/clone-parent-vol-delete
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/5O5V-Clone-parent-vol-delete/clone-parent-vol-delete
 
 JAIP-STS-App-Target-Affinity:
   extends: .func_test_template
@@ -91,7 +97,7 @@ ZD8F-App-Scaleup:
       #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/GV2D-Storage-volume-upgrade/storage-volume-upgrade
       #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/GV2D-Storage-volume-upgrade/storage-volume-upgrade
 
-4ZWU-STS-Vol-Distribute:
+4ZWU-STS-Volume-Distribute:
   extends: .func_test_template
   script: 
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/4ZWU-STS-Volume-Distribution/volume-distribution
@@ -188,13 +194,13 @@ VZPY-cStor-target-kill:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/VZPY-target-kill/target-kill
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/VZPY-target-kill/target-kill
 
-GFL0-Target-n/w-Delay:
+GFL0-Target-Network-Delay:
   extends: .chaos_test_template
   script: 
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/GFL0-target-network-delay/target-network-delay
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/GFL0-target-network-delay/target-network-delay
 
-QCA4-Target-n/w-Loss:
+QCA4-Target-Network-Loss:
   extends: .chaos_test_template
   script: 
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/QCA4-target-network-loss/target-network-loss
@@ -307,6 +313,18 @@ TSXL-Jiva-controller-network-delay:
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/TSXL-Jiva-controller-network-delay/controller-network-delay
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/TSXL-Jiva-controller-network-delay/controller-network-delay
+
+KLPX-Jiva-replica-network-delay:
+  extends: .chaos_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/KLPX-Jiva-replica-network-delay/jiva-replica-netork-delay
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/KLPX-Jiva-replica-network-delay/jiva-replica-netork-delay
+
+VJBK-Jiva-replica-failure:
+  extends: .chaos_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/VJBK-Jiva-replica-failure/jiva-replica-failure
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/VJBK-Jiva-replica-failure/jiva-replica-failure
 
 .infra_chaos_test_template:
   image: openebs/openshift-ci:latest
