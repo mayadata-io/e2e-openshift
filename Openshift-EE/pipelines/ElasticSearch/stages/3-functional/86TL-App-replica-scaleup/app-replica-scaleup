@@ -35,7 +35,7 @@ echo $test_name
 ################
 
 cd litmus
-cp apps/cassandra/functional/scale_replicas/run_litmus_test.yml run_scaleup_test.yml
+cp experiments/functional/scale_app_replica/run_litmus_test.yml run_scaleup_test.yml
 
 : << EOF
   ---------------------------------------------------------------------------------------------------------------------

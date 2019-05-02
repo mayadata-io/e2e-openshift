@@ -1,7 +1,10 @@
 #!/bin/bash
 set -x
 pod() {
-
+echo $CI_JOB_ID
+###clone e2e-openshift-repo
+echo "cloning e2e-openshift repo*************"
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'git clone https://github.com/mayadata-io/e2e-openshift.git'
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/ElasticSearch/stages/2-setup/CRGI-openebs-deploy/deploy-openebs node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
 }
 

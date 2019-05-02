@@ -4,8 +4,8 @@ stages:
   - CLUSTER-SETUP
   - OPENEBS-SETUP
   - FUNCTIONAL
-  # - CHAOS
-   - CLEANUP
+  - CHAOS
+  - CLEANUP
 
 HUNE-OpenShift-3.10:
   image: openebs/openshift-ci:latest
@@ -146,18 +146,108 @@ CRGI-OpenEBS:
 #     - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/3-functional/SN3A-Jiva-Memory-Consumption/memory-consumption
 #     - ./Openshift-EE/pipelines/ElasticSearch/stages/3-functional/SN3A-Jiva-Memory-Consumption/memory-consumption      
 
-# .chaos_test_template:
-#   image: openebs/openshift-ci:latest
-#   stage: CHAOS
-#   when: always
-#   dependencies:
-#     - K9YC-OpenEBS
+.chaos_test_template:
+  image: openebs/openshift-ci:latest
+  stage: CHAOS
+  when: always
+  dependencies:
+    - K9YC-OpenEBS
 
-# 1PP5-App-Kill:
-#   extends: .chaos_test_template
-#   script: 
-#     - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/1PP5-app-kill/app-kill
-#     - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/1PP5-app-kill/app-kill
+  
+N4NK-Openebs-Pool-Failure:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/N4NK-openebs-pool-failure/openebs_pool_failure
+    - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/N4NK-opeenbs-pool-failure/openebs_pool_failure
+
+
+3K0C-Openebs-Target-Network-Delay:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/3K0C-openebs-target-network-delay/openebs_target_network_delay
+    - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/3K0C-openebs-target-network-delay/openebs_target_network_delay
+
+
+2YLC-Cstor-Volume-Istgt-Kill:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/2YLI-cstor-volume-istgt-kill/cstor-volume-istgt-kill
+    - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/2YLI-cstor-volume-istgt-kill/cstor-volume-istgt-kill
+
+3K0C-Openebs-Target-Network-Delay:
+   extends: .chaos_test_template
+   script: 
+    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/3K0C-openebs-target-network-delay/openebs-target-network-delay
+    - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/3K0C-openebs-target-network-delay/openebs-target-network-delay
+
+37B3-Openebs-Target-Tailure:
+   extends: .chaos_test_template
+   script: 
+    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/37B3-openebs-target-failure/openebs-target-failure
+    - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/37B3-openebs-target-failure/openebs-target-failure
+    
+401P-Elasticsearch-Pod-Failure:
+   extends: .chaos_test_template
+   script: 
+    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/401P-elasticsearch-pod-failure/elasticsearch-pod-failure
+    - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/401P-elasticsearch-pod-failure/elasticsearch-pod-failure
+
+638K-Cstor-Pool-Kill:
+   extends: .chaos_test_template
+   script: 
+    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/638K-cstor-pool-kill/cstor-pool-kill
+    - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/638K-cstor-pool-kill/cstor-pool-kill
+
+E16S-Cstor-Volume-Mgmt-Kill:
+   extends: .chaos_test_template
+   script: 
+    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/638K-cstor-pool-kill/cstor-pool-kill
+    - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/638K-cstor-pool-kill/cstor-pool-kill
+
+
+II1Z-Pool-Network-Delay:
+   extends: .chaos_test_template
+   script: 
+    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/II1Z-pool-network-delay/pool-network-delay
+    - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/II1Z-pool-network-delay/pool-network-delay
+
+IOWW-cstor-pool-delete:
+   extends: .chaos_test_template
+   script: 
+    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/IOWW-cstor-pool-delete/cstor-pool-delete
+    - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/IOWW-cstor-pool-delete/cstor-pool-delete
+
+
+LY12-target-network-delay:
+   extends: .chaos_test_template
+   script: 
+    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/LY12-target-network-delay/target-network-delay
+    - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/LY12-LY12-target-network-delay/target-network-delay
+
+
+PMIJ-openebs-node-service-failure:
+   extends: .chaos_test_template
+   script: 
+    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/PMIJ-openebs-node-service-failure/openebs-node-service-failure
+    - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/PMIJ-openebs-node-service-failure/openebs-node-service-failure
+
+
+
+QQ9F-pool-network-loss:
+   extends: .chaos_test_template
+   script: 
+    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/QQ9F-pool-network-loss/pool-network-loss
+    - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/QQ9F-pool-network-loss/pool-network-loss
+
+
+SSW7-cstor-volume-istgt-kill:
+   extends: .chaos_test_template
+   script: 
+    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/SSW7-cstor-volume-istgt-kill/cstor-volume-istgt-kill
+    - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/SSW7-cstor-volume-istgt-kill/cstor-volume-istgt-kill
+
+    
+
 
 # PG1D-cStor-istgt-Kill:
 #   extends: .chaos_test_template
