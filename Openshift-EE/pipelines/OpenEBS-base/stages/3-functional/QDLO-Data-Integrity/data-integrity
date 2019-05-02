@@ -2,10 +2,6 @@
 set -x
 
 pod() {
-echo $CI_JOB_ID
-###clone e2e-openshift-repo
-echo "cloning e2e-openshift repo*************"
-#sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/openebs/e2e-openshift.git'
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/QDLO-Data-Integrity/data-integrity node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
 }
 
@@ -29,7 +25,7 @@ bash Openshift-EE/utils/e2e-cr jobname:data-integrity-cstor jobphase:Running
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=fio-data-integrity metadata="")
 echo $test_name
 cd litmus
-cp apps/fio/tests/data-integrity/run_litmus_test.yml data_integrity_cstor.yml
+cp experiments/functional/fio/data-integrity/run_litmus_test.yml data_integrity_cstor.yml
 sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
 -e 's/value: openebs-standard/value: openebs-cstor-disk/g' data_integrity_cstor.yml
 

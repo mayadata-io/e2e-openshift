@@ -79,7 +79,7 @@ run_id="jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=op
 echo $test_name
 
 cd litmus
-cp apps/percona/chaos/openebs_replica_network_delay/run_litmus_test.yml run_rep_network_delay_jiva.yml
+cp experiments/chaos/openebs_replica_network_delay/run_litmus_test.yml run_rep_network_delay_jiva.yml
 
 : << EOF
   ---------------------------------------------------------------------------------------------------------------------

@@ -2,10 +2,6 @@
 set -x
 
 pod() {
-echo $CI_JOB_ID
-###clone e2e-openshift-repo
-echo "cloning e2e-openshift repo*************"
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/openebs/e2e-openshift.git'
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/4ZWU-STS-Volume-Distribution/volume-distribution node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
 }
 
@@ -28,8 +24,8 @@ echo $test_name
 echo "*******Deploying Application and Check the statefulset storage volume distributed************"
 cd litmus
 echo "Running the litmus test.."
-sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' apps/busybox/functional/volume-distribution/run_litmus_test.yml
-run_test=apps/busybox/functional/volume-distribution/run_litmus_test.yml
+sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' experiments/functional/sts-volume-distribution/run_litmus_test.yml
+run_test=experiments/functional/sts-volume-distribution/run_litmus_test.yml
 sed -i -e 's/app: busybox-statefulset-litmus/app: busybox-vol-distribute/g' \
 -e 's/value: openebs-cstor-sparse/value: openebs-cstor-disk/g' \
 -e 's/value: 'app=busybox-sts'/value: 'app=busybox'/g' \

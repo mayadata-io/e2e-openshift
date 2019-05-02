@@ -2,11 +2,7 @@
 set -x
 
 pod() {
-echo $CI_JOB_ID
-###clone e2e-openshift-repo
-echo "cloning e2e-openshift repo*************"
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 ssh root@10.23.1.10 'oc adm policy add-scc-to-user anyuid system:serviceaccount:controller-delay-jiva:default'
-#sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/openebs/e2e-openshift.git'
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/TSXL-Jiva-controller-network-delay/controller-network-delay node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
 }
 
@@ -81,7 +77,7 @@ run_id="jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=op
 echo $test_name
 
 cd litmus
-cp apps/percona/chaos/openebs_target_network_delay/run_litmus_test.yml run_controller_delay_test_jiva.yml
+cp experiments/chaos/openebs_target_network_delay/run_litmus_test.yml run_controller_delay_test_jiva.yml
 
 ################
 # LitmusBook 2 #

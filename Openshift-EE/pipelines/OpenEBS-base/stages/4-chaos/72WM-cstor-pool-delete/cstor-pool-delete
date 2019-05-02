@@ -2,10 +2,6 @@
 set -x
 
 pod() {
-echo $CI_JOB_ID
-###clone e2e-openshift-repo
-echo "cloning e2e-openshift repo*************"
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/openebs/e2e-openshift.git'
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/72WM-cstor-pool-delete/cstor-pool-delete node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
 }
 
@@ -62,7 +58,7 @@ run_id="delete";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=
 echo $test_name
 
 cd litmus
-cp apps/percona/chaos/openebs_pool_failure/run_litmus_test.yml pooldelete.yml
+cp experiments/chaos/openebs_pool_failure/run_litmus_test.yml pooldelete.yml
 
 sed -i -e 's/value: percona-mysql-claim/value: openebs-bb-pooldelete/g' \
 -e 's/name: openebs-pool-failure/name: openebs-pool-delete/g' \

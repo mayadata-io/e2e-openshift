@@ -2,10 +2,6 @@
 set -x
 
 pod() {
-echo $CI_JOB_ID
-###clone e2e-openshift-repo
-echo "cloning e2e-openshift repo*************"
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/openebs/e2e-openshift.git'
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/1PP5-app-kill/app-kill node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
 }
 
@@ -60,7 +56,7 @@ test_name=$(bash Openshift-EE/utils/generate_test_name testcase=application-pod-
 echo $test_name
 
 cd litmus
-cp apps/jenkins/chaos/app_pod_failure/run_litmus_test.yml appkill.yml
+cp experiments/chaos/app_pod_failure/run_litmus_test.yml appkill.yml
 
 sed -i -e 's/app=jenkins-app/app=app-kill/g' \
 -e 's/value: app-jenkins-ns/value: app-kill/g' appkill.yml
