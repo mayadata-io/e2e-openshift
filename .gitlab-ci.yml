@@ -1,82 +1,113 @@
 ## Define the stages & order of execution
 
 stages:
-  - CLUSTER-SETUP
-  - OPENEBS-SETUP
+  # - CLUSTER-SETUP
+  # - OPENEBS-SETUP
   - FUNCTIONAL
   - CHAOS
   - CLEANUP
 
-5MVN-OpenShift-3.10:
-  image: openebs/openshift-ci:latest
-  stage: CLUSTER-SETUP
-  script:     
-    - chmod 755 ./Openshift-EE/pipelines/GitLab/stages/1-cluster-setup/5MVN-cluster-state/cluster-state
-    - ./Openshift-EE/pipelines/GitLab/stages/1-cluster-setup/5MVN-cluster-state/cluster-state
+# 5MVN-OpenShift-3.10:
+#   image: openebs/openshift-ci:latest
+#   stage: CLUSTER-SETUP
+#   script:     
+#     - chmod 755 ./Openshift-EE/pipelines/GitLab/stages/1-cluster-setup/5MVN-cluster-state/cluster-state
+#     - ./Openshift-EE/pipelines/GitLab/stages/1-cluster-setup/5MVN-cluster-state/cluster-state
 
-X404-OpenEBS-v0.8.1:
-  image: openebs/openshift-ci:latest
-  stage: OPENEBS-SETUP
-  script:
-    - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/2-setup/X404-openebs-deploy/deploy-openebs
-    - ./Openshift-EE/pipelines/GitLab/stages/2-setup/X404-openebs-deploy/deploy-openebs
+# X404-OpenEBS-v0.8.1:
+#   image: openebs/openshift-ci:latest
+#   stage: OPENEBS-SETUP
+#   script:
+#     - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/2-setup/X404-openebs-deploy/deploy-openebs
+#     - ./Openshift-EE/pipelines/GitLab/stages/2-setup/X404-openebs-deploy/deploy-openebs
 
-KJV1-OpenEBS-POLICIES:
-  image: openebs/openshift-ci:latest
-  stage: OPENEBS-SETUP
-  script:
-    - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/2-setup/KJV1-storage-policies/openebs-sc
-    - ./Openshift-EE/pipelines/GitLab/stages/2-setup/KJV1-storage-policies/openebs-sc
+# KJV1-OpenEBS-POLICIES:
+#   image: openebs/openshift-ci:latest
+#   stage: OPENEBS-SETUP
+#   script:
+#     - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/2-setup/KJV1-storage-policies/openebs-sc
+#     - ./Openshift-EE/pipelines/GitLab/stages/2-setup/KJV1-storage-policies/openebs-sc
   
-OD9K-CSTOR-POOL:
-  image: openebs/openshift-ci:latest
-  stage: OPENEBS-SETUP
-  script:
-    - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/2-setup/OD9K-create-striped-pool/create-pool
-    - ./Openshift-EE/pipelines/GitLab/stages/2-setup/OD9K-create-striped-pool/create-pool
+# OD9K-CSTOR-POOL:
+#   image: openebs/openshift-ci:latest
+#   stage: OPENEBS-SETUP
+#   script:
+#     - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/2-setup/OD9K-create-striped-pool/create-pool
+#     - ./Openshift-EE/pipelines/GitLab/stages/2-setup/OD9K-create-striped-pool/create-pool
     
 .func_test_template:
   image: openebs/openshift-ci:latest
   stage: FUNCTIONAL
   when: always
-  dependencies:
-    - X404-OpenEBS-v0.8.1
      
-BQKZ-GitLab-Provision:
+BQKZ-GitLab-Unicorn-Scale:
   extends: .func_test_template
   script: 
-    - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/3-functional/BQKZ-deploy-gitlab/deploy-gitlab
-    - ./Openshift-EE/pipelines/GitLab/stages/3-functional/BQKZ-deploy-gitlab/deploy-gitlab
+    - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/3-functional/BQKZ-gitlab-unicorn-scaleup/gitlab-unicorn-scaleup
+    - ./Openshift-EE/pipelines/GitLab/stages/3-functional/BQKZ-gitlab-unicorn-scaleup/gitlab-unicorn-scaleup
 
 .chaos_test_template:
   image: openebs/openshift-ci:latest
   stage: CHAOS
   when: always
-  dependencies:
-    - X404-OpenEBS-v0.8.1
 
 XMSV-App-Kill:
   extends: .chaos_test_template
   script: 
-    - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/4-chaos/XMSV-gitlab-pod-failure/gitlab-pod-kill
+    - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/4-chaos/XMSV-gitlab-unicorn-failure/gitlab-unicorn-kill
     - ./Openshift-EE/pipelines/GitLab/stages/4-chaos/XMSV-gitlab-pod-failure/gitlab-pod-kill
 
-LSCQ-openebs-Uninstall:
+cstor-pool-kill:
+  extends: .chaos_test_template   
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/4-chaos/cstor-pool-kill/cstor-pool-kill
+    - ./Openshift-EE/pipelines/GitLab/stages/4-chaos/cstor-pool-kill/cstor-pool-kill
+
+cStor-Pool-Delete:
+  extends: .chaos_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/4-chaos/cstor-pool-delete/cstor-pool-delete
+    - ./Openshift-EE/pipelines//GitLab/stages/4-chaos/cstor-pool-delte/cstor-pool-delete
+
+prometheus-target-kill:
+  extends: .chaos_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/4-chaos/prometheus-target-kill/target-kill
+    - ./Openshift-EE/pipelines//GitLab/stages/4-chaos/prometheus-target-kill/target-kill
+
+postgres-target-kill:
+  extends: .chaos_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/4-chaos/postgres-target-kill/target-kill
+    - ./Openshift-EE/pipelines//GitLab/stages/4-chaos/postgres-target-kill/target-kill
+
+minio-target-kill:
+  extends: .chaos_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/4-chaos/minio-target-kill/target-kill
+    - ./Openshift-EE/pipelines//GitLab/stages/4-chaos/minio-target-kill/target-kill
+
+redis-target-kill:
+  extends: .chaos_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/4-chaos/redis-target-kill/target-kill
+    - ./Openshift-EE/pipelines//GitLab/stages/4-chaos/redis-target-kill/target-kill    
+
+
+LSCQ-Job-Cleanup:
   image: openebs/openshift-ci:latest
   stage: CLEANUP
   when: always
-  dependencies:
-    - X404-OpenEBS-v0.8.1
   script:
     - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/5-cleanup/LSCQ-openebs-cleanup/openebs-cleanup
     - ./Openshift-EE/pipelines/GitLab/stages/5-cleanup/LSCQ-openebs-cleanup/openebs-cleanup
   
-DNMY-cluster-Delete:
-  image: openebs/openshift-ci:latest
-  stage: CLEANUP
-  when: always
-  dependencies:
-    - 5MVN-OpenShift-3.10
-  script:
-    - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/5-cleanup/DNMY-cluster-cleanup/cluster-delete
-    - ./Openshift-EE/pipelines/GitLab/stages/5-cleanup/DNMY-cluster-cleanup/cluster-delete
+# DNMY-cluster-Delete:
+#   image: openebs/openshift-ci:latest
+#   stage: CLEANUP
+#   when: always
+#   dependencies:
+#     - 5MVN-OpenShift-3.10
+#   script:
+#     - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/5-cleanup/DNMY-cluster-cleanup/cluster-delete
+#     - ./Openshift-EE/pipelines/GitLab/stages/5-cleanup/DNMY-cluster-cleanup/cluster-delete

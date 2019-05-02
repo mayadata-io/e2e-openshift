@@ -1,0 +1,5 @@
+#!/bin/bash
+set -x
+
+echo "***Killing the gitlab unicorn Pod***"
+sleep 2

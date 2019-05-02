@@ -1,5 +1,5 @@
 #!/bin/bash
 set -x
 
-echo "***Setting up the cluser***"
+echo "***Deleting litmus job related resources***"
 sleep 2
