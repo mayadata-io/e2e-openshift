@@ -2,17 +2,17 @@
 set -x
 
 pod() {
-echo $CI_JOB_ID
-###clone e2e-openshift-repo
-echo "cloning e2e-openshift repo*************"
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'git clone https://github.com/openebs/e2e-openshift.git'
+# echo $CI_JOB_ID
+# ###clone e2e-openshift-repo
+# echo "cloning e2e-openshift repo*************"
+# sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'git clone https://github.com/mayadata-io/e2e-openshift.git'
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'cd e2e-openshift && git checkout elasticsearch && bash Openshift-EE/pipelines/ElasticSearch/stages/5-cleanup/638K-cluster-cleanup/cluster-cleanup node '"'$CI_JOB_ID'"''
 }
 
 node() {
 job_id=$(echo $1)
 
-git clone https://github.com/openebs/litmus.git
+git clone https://github.com/litmuschaos/litmus.git
 cd litmus
 
 # Replace the VM IP In csv file
