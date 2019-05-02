@@ -1,0 +1,5 @@
+#!/bin/bash
+set -x
+
+echo "***Scaling Up the Gitlab component***"
+sleep 2

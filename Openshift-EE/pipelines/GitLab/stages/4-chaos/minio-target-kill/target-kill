@@ -1,0 +1,5 @@
+#!/bin/bash
+set -x
+
+echo "***Killing Minio Target pod***"
+sleep 2
