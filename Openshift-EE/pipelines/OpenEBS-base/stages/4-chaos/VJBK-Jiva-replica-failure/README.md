@@ -23,3 +23,7 @@ This test fails the jiva replica in a deployment and check if it is recovered su
 
 #### Test Result
 
+
+| Job ID |   Test Description         | Execution Time |Test Result   |
+ |---------|---------------------------| --------------|--------|
+ |    <a href="https://gitlab.openebs.ci/openebs/e2e-openshift/-/jobs/25115">25115</a>   |  Fails Jiva Replica and verify successful recovery           |  Thu May  2 18:30:10 IST 2019     |<a href="https://e2e-logs.openebs100.io/app/kibana#/discover?_g=(refreshInterval:(pause:!t,value:0),time:(from:now-7d,mode:quick,to:now))&_a=(columns:!(_source),filters:!(('$state':(store:appState),meta:(alias:!n,disabled:!f,index:cluster-logs,key:commit_id,negate:!f,params:(query:6c00f8827288109ef0cb584c0c33fe77dfbe3d1a,type:phrase),type:phrase,value:6c00f8827288109ef0cb584c0c33fe77dfbe3d1a),query:(match:(commit_id:(query:6c00f8827288109ef0cb584c0c33fe77dfbe3d1a,type:phrase)))),('$state':(store:appState),meta:(alias:!n,disabled:!f,index:cluster-logs,key:pipeline_id,negate:!f,params:(query:1171,type:phrase),type:phrase,value:1171),query:(match:(pipeline_id:(query:1171,type:phrase))))),index:cluster-logs,interval:auto,query:(language:lucene,query:''),sort:!('@timestamp',desc))">Fail</a>  |
