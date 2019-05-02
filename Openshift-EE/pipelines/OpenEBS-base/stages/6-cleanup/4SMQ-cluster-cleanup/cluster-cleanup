@@ -44,7 +44,7 @@ sed -i -e 's/snapshot_name: "oc-cluster"/snapshot_name: "cauto"/g' \
 ansible-playbook k8s/on-prem/openshift-installer/revert_cluster_state.yml -vv
 
 #Removimg e2e openshift test repo
-cd  && rm -rf e2e-openshift
+cd  && rm -rf e2e-openshift && rm -rf infra
 }
 
 if [ "$1" == "node" ];then

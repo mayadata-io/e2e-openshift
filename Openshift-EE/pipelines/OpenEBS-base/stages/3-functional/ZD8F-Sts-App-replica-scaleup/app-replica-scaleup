@@ -55,7 +55,7 @@ test_name=$(bash Openshift-EE/utils/generate_test_name testcase=scale-app-replic
 echo $test_name
 
 cd litmus
-cp apps/cassandra/functional/scale_replicas/run_litmus_test.yml run_scaleup_test.yml
+cp experiments/functional/fio/data-integrity/run_litmus_test.yml run_scaleup_test.yml
 
 sed -i -e 's/app: cassandra-scaleup-litmus/app: busybox-scaleup-litmus/g' \
 -e 's/value: '\''app=cassandra'\''/value: '\''app=busybox-scale'\''/g' \

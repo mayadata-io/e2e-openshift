@@ -34,7 +34,7 @@ run_id="jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=fi
 echo $test_name
 cd litmus
 
-cp apps/fio/tests/data-integrity/run_litmus_test.yml data_integrity_test_jiva.yml
+cp experiments/functional/fio/data-integrity/run_litmus_test.yml data_integrity_test_jiva.yml
 
 : << EOF
   --------------------------------------------------------------------------------------------------------------

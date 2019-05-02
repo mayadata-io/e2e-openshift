@@ -2,10 +2,6 @@
 set -x
 
 pod() {
-echo $CI_JOB_ID
-###clone e2e-openshift-repo
-echo "cloning e2e-openshift repo*************"
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/openebs/e2e-openshift.git'
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/QKFK-snap-rebuild-multiple-rep/snap-rebuild-multiple-rep node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
 }
 
@@ -59,7 +55,7 @@ test_name=$(bash Openshift-EE/utils/generate_test_name testcase=snap-rebuild-mul
 echo $test_name
 
 cd litmus
-cp apps/percona/functional/snapshot_rebuild/snap_rebuild_multiple_rep/run_litmus_test.yml run_snap_multiple_rep.yml
+cp experiments/functional/snapshot_rebuild/snap_rebuild_multiple_rep/run_litmus_test.yml run_snap_multiple_rep.yml
 
 sed -i -e 's/value: percona-mysql-claim/value: openebs-bb-snap-multiple-rep/g' \
 -e 's/value: '\''name=percona'\''/value: '\''app=snap-multiple-rep'\''/g' \
