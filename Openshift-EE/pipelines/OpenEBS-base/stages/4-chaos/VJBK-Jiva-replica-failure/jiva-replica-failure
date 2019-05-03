@@ -91,7 +91,7 @@ cp experiments/chaos/openebs_volume_replica_failure/run_litmus_test.yml run_rep_
   ----------------------------------------------------------------------------------------------------------------------
 EOF
 
-sed -i -e 's/name=percona /app=busybox-rep-fail-jiva/g' \
+sed -i -e 's/name=percona/app=busybox-rep-fail-jiva/g' \
 -e 's/value: app-percona-ns/value: replica-fail-jiva/g' \
 -e 's/value: percona-mysql-claim/value: openebs-busybox-rep-kill/g' run_rep_fail_test_jiva.yml
 
@@ -102,7 +102,7 @@ sed -i '/command:/i \
 
 cat run_rep_fail_test_jiva.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-volume-replica-failure-jiva' job=run_rep_fail_test_jiva.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-volume-replica-failure' job=run_rep_fail_test_jiva.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:volume-replica-failure-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
