@@ -56,7 +56,7 @@ test_name=$(bash Openshift-EE/utils/generate_test_name testcase=memcheck-test me
 echo $test_name
 cd litmus
 
-cp apps/prometheus/functional/memcheck/run_litmus_test.yml memcheck_test.yml
+cp experiments/functional/memcheck/run_litmus_test.yml memcheck_test.yml
 
 sed -i -e 's/name=prometheus/app=busybox-mem/g' \
 -e 's/prometheus-claim/openebs-busybox/g' \

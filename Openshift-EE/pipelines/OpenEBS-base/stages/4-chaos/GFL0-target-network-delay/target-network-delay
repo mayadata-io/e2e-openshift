@@ -57,7 +57,7 @@ test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-target-n
 echo $test_name
 
 cd litmus
-cp apps/percona/chaos/openebs_target_network_delay/run_litmus_test.yml run_targetdelay_test.yml
+cp experiments/chaos/openebs_target_network_delay/run_litmus_test.yml run_targetdelay_test.yml
 
 sed -i -e 's/value: percona-mysql-claim/value: openebs-bb-targetdelay/g' \
 -e 's/value: '\''name=percona'\''/value: '\''app=target-delay'\''/g' \
