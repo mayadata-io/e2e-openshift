@@ -61,7 +61,7 @@ sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
 
 cat deploy_rep_network_jiva.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='busybox-replica-network-jiva' job=deploy_rep_network_jiva.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-replica-network-jiva' job=deploy_rep_network_jiva.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:volume-replica-network-delay-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
@@ -91,7 +91,7 @@ cp experiments/chaos/openebs_replica_network_delay/run_litmus_test.yml run_rep_n
   ----------------------------------------------------------------------------------------------------------------------
 EOF
 
-sed -i -e 's/name=percona /app=busybox-rep-network-jiva/g' \
+sed -i -e 's/name=percona/app=busybox-rep-network-jiva/g' \
 -e 's/value: app-percona-ns/value: rep-network-delay-jiva/g' \
 -e 's/value: percona-mysql-claim/value: openebs-busybox-rep-network/g' run_rep_network_delay_jiva.yml
 
