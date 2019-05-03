@@ -26,3 +26,6 @@ This test induces network delay on one of the jiva replica pods and check if it 
 
 
  
+| Job ID |   Test Description         | Execution Time |Test Result   |
+ |---------|---------------------------| --------------|--------|
+ |    <a href="https://gitlab.openebs.ci/openebs/e2e-openshift/-/jobs/26735">26735</a>   |  Inject network delay in jiva replica & verify successful recovery           |  Fri May  3 19:33:10 IST 2019     |<a href="https://e2e-logs.openebs100.io/app/kibana#/discover?_g=(refreshInterval:(pause:!t,value:0),time:(from:now-7d,mode:quick,to:now))&_a=(columns:!(_source),filters:!(('$state':(store:appState),meta:(alias:!n,disabled:!f,index:cluster-logs,key:commit_id,negate:!f,params:(query:a3659d67674a285c3e823edb6d05ee54038a958a,type:phrase),type:phrase,value:a3659d67674a285c3e823edb6d05ee54038a958a),query:(match:(commit_id:(query:a3659d67674a285c3e823edb6d05ee54038a958a,type:phrase)))),('$state':(store:appState),meta:(alias:!n,disabled:!f,index:cluster-logs,key:pipeline_id,negate:!f,params:(query:1217,type:phrase),type:phrase,value:1217),query:(match:(pipeline_id:(query:1217,type:phrase))))),index:cluster-logs,interval:auto,query:(language:lucene,query:''),sort:!('@timestamp',desc))">Fail</a>  |
