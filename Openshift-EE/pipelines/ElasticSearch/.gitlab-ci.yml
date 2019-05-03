@@ -211,21 +211,21 @@ II1Z-Pool-Network-Delay:
     - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/II1Z-pool-network-delay/pool-network-delay
     - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/II1Z-pool-network-delay/pool-network-delay
 
-IOWW-cstor-pool-delete:
+IOWW-Cstor-Pool-Delete:
    extends: .chaos_test_template
    script: 
     - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/IOWW-cstor-pool-delete/cstor-pool-delete
     - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/IOWW-cstor-pool-delete/cstor-pool-delete
 
 
-LY12-target-network-delay:
+LY12-Target-Network-Delay:
    extends: .chaos_test_template
    script: 
     - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/LY12-target-network-delay/target-network-delay
-    - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/LY12-LY12-target-network-delay/target-network-delay
+    - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/LY12-target-network-delay/target-network-delay
 
 
-PMIJ-openebs-node-service-failure:
+PMIJ-Openebs-Node-Service-Failure:
    extends: .chaos_test_template
    script: 
     - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/PMIJ-openebs-node-service-failure/openebs-node-service-failure
@@ -233,14 +233,14 @@ PMIJ-openebs-node-service-failure:
 
 
 
-QQ9F-pool-network-loss:
+QQ9F-Pool-Network-Loss:
    extends: .chaos_test_template
    script: 
     - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/QQ9F-pool-network-loss/pool-network-loss
     - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/QQ9F-pool-network-loss/pool-network-loss
 
 
-SSW7-cstor-volume-istgt-kill:
+SSW7-Cstor-Volume-Istgt-Kill:
    extends: .chaos_test_template
    script: 
     - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/SSW7-cstor-volume-istgt-kill/cstor-volume-istgt-kill
