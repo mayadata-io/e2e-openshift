@@ -2,7 +2,7 @@
 set -x
 
 pod() {
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 ssh root@10.23.1.10 'oc adm policy add-scc-to-user anyuid system:serviceaccount:rep-network-delay-jiva:default'	
+#sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 ssh root@10.23.1.10 'oc adm policy add-scc-to-user anyuid system:serviceaccount:rep-network-delay-jiva:default'	
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/KLPX-Jiva-replica-network-delay/jiva-replica-network-delay node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
 }
 
@@ -35,7 +35,9 @@ echo $test_name
 cd litmus
 echo "Running the litmus test for Busybox Deployment.."
 cp apps/busybox/deployers/run_litmus_test.yml deploy_rep_network_jiva.yml
-oc adm policy add-scc-to-user anyuid system:serviceaccount:rep-network-delay-jiva:default
+
+ssh root@10.23.1.10 'oc adm policy add-scc-to-user anyuid system:serviceaccount:rep-network-delay-jiva:default'
+
 : << EOF
   --------------------------------------------------------------------------------------------------------------------------|
  | specAttribute     | kind   |         default value               | test specifc value                                    |
