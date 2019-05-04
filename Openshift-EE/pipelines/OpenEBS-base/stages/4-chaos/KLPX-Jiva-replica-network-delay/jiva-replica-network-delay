@@ -20,8 +20,8 @@ current_time=$(eval $time)
 present_dir=$(pwd)
 echo $present_dir
 
-bash Openshift-EE/utils/e2e-cr jobname:volume-replica-network-delay-jiva jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
-bash Openshift-EE/utils/e2e-cr jobname:volume-replica-network-delay-jiva jobphase:Running
+bash Openshift-EE/utils/pooling jobname:controller-network-delay-jiva
+bash Openshift-EE/utils/e2e-cr jobname:volume-replica-network-delay-jiva jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 echo "*******Deploying Busybox Application****"
 
