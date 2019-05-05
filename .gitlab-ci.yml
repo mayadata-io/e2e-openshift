@@ -314,11 +314,11 @@ TSXL-Jiva-controller-network-delay:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/TSXL-Jiva-controller-network-delay/controller-network-delay
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/TSXL-Jiva-controller-network-delay/controller-network-delay
 
-KLPX-Jiva-replica-network-delay:
-  extends: .chaos_test_template
-  script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/KLPX-Jiva-replica-network-delay/jiva-replica-network-delay
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/KLPX-Jiva-replica-network-delay/jiva-replica-network-delay
+      #KLPX-Jiva-replica-network-delay:
+      #  extends: .chaos_test_template
+      #  script:
+      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/KLPX-Jiva-replica-network-delay/jiva-replica-network-delay
+      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/KLPX-Jiva-replica-network-delay/jiva-replica-network-delay
 
 VJBK-Jiva-replica-failure:
   extends: .chaos_test_template
