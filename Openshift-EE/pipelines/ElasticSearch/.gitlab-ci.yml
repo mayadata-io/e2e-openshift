@@ -35,12 +35,12 @@ CRGI-OpenEBS:
     - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/2-setup/2RWJ-create-striped-pool/create-pool
     - ./Openshift-EE/pipelines/ElasticSearch/stages/2-setup/2RWJ-create-striped-pool/create-pool
     
-# .func_test_template:
-#   image: openebs/openshift-ci:latest
-#   stage: FUNCTIONAL
-#   when: always
-#   dependencies:
-#     - K9YC-OpenEBS
+.func_test_template:
+  image: openebs/openshift-ci:latest
+  stage: FUNCTIONAL
+  when: always
+  dependencies:
+    - K9YC-OpenEBS
      
 # 9AKX-Create-Snapshot:
 #   extends: .func_test_template
@@ -168,17 +168,11 @@ N4NK-Openebs-Pool-Failure:
     - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/3K0C-openebs-target-network-delay/openebs_target_network_delay
 
 
-2YLC-Cstor-Volume-Istgt-Kill:
+2YLI-Cstor-Volume-Istgt-Kill:
   extends: .chaos_test_template
   script: 
     - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/2YLI-cstor-volume-istgt-kill/cstor-volume-istgt-kill
     - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/2YLI-cstor-volume-istgt-kill/cstor-volume-istgt-kill
-
-3K0C-Openebs-Target-Network-Delay:
-   extends: .chaos_test_template
-   script: 
-    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/3K0C-openebs-target-network-delay/openebs-target-network-delay
-    - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/3K0C-openebs-target-network-delay/openebs-target-network-delay
 
 37B3-Openebs-Target-Tailure:
    extends: .chaos_test_template
