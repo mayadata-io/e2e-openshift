@@ -234,15 +234,6 @@ QQ9F-Pool-Network-Loss:
     - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/QQ9F-pool-network-loss/pool-network-loss
 
 
-SSW7-Cstor-Volume-Istgt-Kill:
-   extends: .chaos_test_template
-   script: 
-    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/SSW7-cstor-volume-istgt-kill/cstor-volume-istgt-kill
-    - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/SSW7-cstor-volume-istgt-kill/cstor-volume-istgt-kill
-
-    
-
-
 # PG1D-cStor-istgt-Kill:
 #   extends: .chaos_test_template
 #   script: 

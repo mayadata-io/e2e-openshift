@@ -1,5 +1,0 @@
-#!/bin/bash
-set -x
-
-echo "**cstor volume kstgt kill***"
-sleep 2
