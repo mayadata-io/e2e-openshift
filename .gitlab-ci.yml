@@ -75,7 +75,7 @@ CRGI-OpenEBS:
 
 5Q19-Elasticsearch-Provision:
   extends: .func_test_template
-  script: 	  script: 
+  script: 	
     - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/3-functional/5Q19-deploy-elasticsearch/elasticsearch-provision
     - ./Openshift-EE/pipelines/ElasticSearch/stages/3-functional/5Q19-deploy-elasticsearch/elasticsearch-provision
 
