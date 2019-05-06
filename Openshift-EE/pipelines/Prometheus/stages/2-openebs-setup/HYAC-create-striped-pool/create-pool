@@ -1,7 +1,7 @@
 #!/bin/bash
 set -x
 pod() {
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b prometheus https://github.com/openebs/e2e-openshift.git'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b prometheus https://github.com/mayadata-io/e2e-openshift.git'
 
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/Prometheus/stages/2-openebs-setup/HYAC-create-striped-pool/create-pool node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
 
@@ -60,7 +60,7 @@ testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-column
 current_time=$(eval $time)
 bash Openshift-EE/utils/e2e-cr jobname:s2-j2-cstor-pool jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
 
-python3 Openshift-EE/utils/result/result_update.py $job_id HYAC 2-openebs-setup "Create cStor based Striped storage pool on disks." $testResult $pipeline_id "$current_time" $commit_id $gittoken
+#python3 Openshift-EE/utils/result/result_update.py $job_id HYAC 2-openebs-setup "Create cStor based Striped storage pool on disks." $testResult $pipeline_id "$current_time" $commit_id $gittoken
 if [ "$rc_val" != "0" ]; then
 exit 1;
 fi

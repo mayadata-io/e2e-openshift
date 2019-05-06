@@ -4,7 +4,7 @@ stages:
   - CLUSTER-SETUP
   - OPENEBS-SETUP
   - FUNCTIONAL
-# - CHAOS
+  - CHAOS
   - CLEANUP
 
 RLFO-OpenShift-3.10:
@@ -13,6 +13,7 @@ RLFO-OpenShift-3.10:
   script:     
     - chmod 755 ./Openshift-EE/pipelines/Prometheus/stages/1-cluster-setup/RLFO-cluster-state/cluster-state
     - ./Openshift-EE/pipelines/Prometheus/stages/1-cluster-setup/RLFO-cluster-state/cluster-state
+
 
 P4C3-OpenEBS:
   image: openebs/openshift-ci:latest
@@ -71,7 +72,88 @@ ELHN-Prometheus-Provision:
 #   script:
 #     - chmod 775 ./Openshift-EE/pipelines/Prometheus/stages/5-cleanup/7OQT-openebs-cleanup/openebs-cleanup
 #     - ./Openshift-EE/pipelines/Prometheus/stages/5-cleanup/7OQT-openebs-cleanup/openebs-cleanup
+
+.chaos_test_template:
+  image: openebs/openshift-ci:latest
+  stage: CHAOS
+  when: always
+  dependencies:
+    - P4C3-OpenEBS
   
+SSU1-Openebs-Pool-Failure:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/Prometheus/stages/4-chaos/SSU1-openebs-pool-failure/openebs_pool_failure
+    - ./Openshift-EE/pipelines/Prometheus/stages/4-chaos/SSU1-opeenbs-pool-failure/openebs_pool_failure
+
+Q8ML-Cstor-Volume-Istgt-Kill:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/Prometheus/stages/4-chaos/Q8ML-cstor-volume-istgt-kill/cstor-volume-istgt-kill
+    - ./Openshift-EE/pipelines/Prometheus/stages/4-chaos/Q8ML-cstor-volume-istgt-kill/cstor-volume-istgt-kill
+
+K2IK-Openebs-Target-Network-Delay:
+   extends: .chaos_test_template
+   script: 
+    - chmod 775 ./Openshift-EE/pipelines/Prometheus/stages/4-chaos/K2IK-openebs-target-network-delay/openebs-target-network-delay
+    - ./Openshift-EE/pipelines/Prometheus/stages/4-chaos/K2IK-openebs-target-network-delay/openebs-target-network-delay
+
+9T5R-Openebs-Target-Failure:
+   extends: .chaos_test_template
+   script: 
+    - chmod 775 ./Openshift-EE/pipelines/Prometheus/stages/4-chaos/9T5R-openebs-target-failure/openebs-target-failure
+    - ./Openshift-EE/pipelines/Prometheus/stages/4-chaos/9T5R-openebs-target-failure/openebs-target-failure
+
+9WLQ-Prometheus-Pod-Failure:
+   extends: .chaos_test_template
+   script: 
+    - chmod 775 ./Openshift-EE/pipelines/Prometheus/stages/4-chaos/9WLQ-Prometheus-pod-failure/Prometheus-pod-failure
+    - ./Openshift-EE/pipelines/Prometheus/stages/4-chaos/9WLQ-Prometheus-pod-failure/Prometheus-pod-failure
+
+N6AV-Cstor-Pool-Kill:
+   extends: .chaos_test_template
+   script: 
+    - chmod 775 ./Openshift-EE/pipelines/Prometheus/stages/4-chaos/N6AV-cstor-pool-kill/cstor-pool-kill
+    - ./Openshift-EE/pipelines/Prometheus/stages/4-chaos/N6AV-cstor-pool-kill/cstor-pool-kill
+
+IV2U-Cstor-Volume-Mgmt-Kill:
+   extends: .chaos_test_template
+   script: 
+    - chmod 775 ./Openshift-EE/pipelines/Prometheus/stages/4-chaos/IV2U-cstor-vol-mgmt-kill/cstor-vol-mgmt-kill
+    - ./Openshift-EE/pipelines/Prometheus/stages/4-chaos/IV2U-cstor-vol-mgmt-kill/cstor-vol-mgmt-kill
+
+
+7GIL-Pool-Network-Delay:
+   extends: .chaos_test_template
+   script: 
+    - chmod 775 ./Openshift-EE/pipelines/Prometheus/stages/4-chaos/7GIL-pool-network-delay/pool-network-delay
+    - ./Openshift-EE/pipelines/Prometheus/stages/4-chaos/7GIL-pool-network-delay/pool-network-delay
+
+8LJS-Cstor-Pool-Delete:
+   extends: .chaos_test_template
+   script: 
+    - chmod 775 ./Openshift-EE/pipelines/Prometheus/stages/4-chaos/8LJS-cstor-pool-delete/cstor-pool-delete
+    - ./Openshift-EE/pipelines/Prometheus/stages/4-chaos/8LJS-cstor-pool-delete/cstor-pool-delete
+
+9DN9-Openebs-Node-Service-Failure:
+   extends: .chaos_test_template
+   script: 
+    - chmod 775 ./Openshift-EE/pipelines/Prometheus/stages/4-chaos/9DN9-openebs-node-service-failure/openebs-node-service-failure
+    - ./Openshift-EE/pipelines/Prometheus/stages/4-chaos/9DN9-openebs-node-service-failure/openebs-node-service-failure
+
+7O0S-Pool-Network-Loss:
+   extends: .chaos_test_template
+   script: 
+    - chmod 775 ./Openshift-EE/pipelines/Prometheus/stages/4-chaos/7O0S-pool-network-loss/pool-network-loss
+    - ./Openshift-EE/pipelines/Prometheus/stages/4-chaos/7O0S-pool-network-loss/pool-network-loss
+
+
+3W02-Cstor-Volume-Istgt-Kill:
+   extends: .chaos_test_template
+   script: 
+    - chmod 775 ./Openshift-EE/pipelines/Prometheus/stages/4-chaos/3W02-cstor-volume-istgt-kill/cstor-volume-istgt-kill
+    - ./Openshift-EE/pipelines/Prometheus/stages/4-chaos/3W02-cstor-volume-istgt-kill/cstor-volume-istgt-kill
+
 DB1T-cluster-Delete:
   image: openebs/openshift-ci:latest
   stage: CLEANUP

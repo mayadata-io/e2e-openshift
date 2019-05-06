@@ -1,0 +1,5 @@
+#!/bin/bash
+set -x
+
+echo "***Performing pool network loss***"
+sleep 2
