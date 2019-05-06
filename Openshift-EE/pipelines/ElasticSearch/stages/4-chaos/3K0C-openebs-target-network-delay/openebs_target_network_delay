@@ -1,0 +1,5 @@
+#!/bin/bash
+set -x
+
+echo "***openebs target network delay***"
+sleep 2
