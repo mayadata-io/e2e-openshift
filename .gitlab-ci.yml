@@ -11,8 +11,8 @@ RLFO-OpenShift-3.10:
   image: openebs/openshift-ci:latest
   stage: CLUSTER-SETUP
   script:     
-    - chmod 755 ./Openshift-EE/pipelines/Prometheus/stages/1-cluster-setup/RLFO-cluster-state
-    - ./Openshift-EE/pipelines/Prometheus/stages/1-cluster-setup/RLFO-cluster-state
+    - chmod 755 ./Openshift-EE/pipelines/Prometheus/stages/1-cluster-setup/RLFO-cluster-state/cluster-state
+    - ./Openshift-EE/pipelines/Prometheus/stages/1-cluster-setup/RLFO-cluster-state/cluster-state
 
 P4C3-OpenEBS:
   image: openebs/openshift-ci:latest
