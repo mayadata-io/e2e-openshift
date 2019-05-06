@@ -45,7 +45,7 @@ CRGI-OpenEBS:
 
 5Q19-Elasticsearch-Provision:
   extends: .func_test_template
-  script: 	
+  script: 	 
     - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/3-functional/5Q19-deploy-elasticsearch/elasticsearch-provision
     - ./Openshift-EE/pipelines/ElasticSearch/stages/3-functional/5Q19-deploy-elasticsearch/elasticsearch-provision
 
@@ -55,8 +55,8 @@ CRGI-OpenEBS:
   script: 
     - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/3-functional/86TL-App-replica-scaleup/app-replica-scaleup
     - ./Openshift-EE/pipelines/ElasticSearch/stages/3-functional/86TL-App-replica-scaleup/app-replica-scaleup
-  
-     
+
+
 .chaos_test_template:
   image: openebs/openshift-ci:latest
   stage: CHAOS
@@ -143,6 +143,7 @@ QQ9F-Pool-Network-Loss:
    script: 
     - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/QQ9F-pool-network-loss/pool-network-loss
     - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/QQ9F-pool-network-loss/pool-network-loss
+
 
 
 638K-cluster-Delete:
