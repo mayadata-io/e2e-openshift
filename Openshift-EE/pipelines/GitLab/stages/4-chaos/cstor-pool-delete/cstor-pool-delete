@@ -1,5 +1,0 @@
-#!/bin/bash
-set -x
-
-echo "***Deleting Cstor pool pods***"
-sleep 2
