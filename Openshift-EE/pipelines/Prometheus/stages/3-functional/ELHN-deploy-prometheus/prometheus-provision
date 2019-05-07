@@ -45,7 +45,7 @@ bash Openshift-EE/utils/event_updater jobname:prometheus-provisioning $test_name
 if [ "$?" != "0" ]; then
 #python3 Openshift-EE/utils/result/result_update.py $job_id ELHN 3-functional "Deploying prometheus application" Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
-be
+fi
 
 
 echo "*******Deploying Prometheus Loadgen Application****"

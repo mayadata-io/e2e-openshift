@@ -83,7 +83,7 @@ SSU1-Openebs-Pool-Failure:
   extends: .chaos_test_template
   script: 
     - chmod 775 ./Openshift-EE/pipelines/Prometheus/stages/4-chaos/SSU1-openebs-pool-failure/openebs_pool_failure
-    - ./Openshift-EE/pipelines/Prometheus/stages/4-chaos/SSU1-opeenbs-pool-failure/openebs_pool_failure
+    - ./Openshift-EE/pipelines/Prometheus/stages/4-chaos/SSU1-openebs-pool-failure/openebs_pool_failure
 
 Q8ML-Cstor-Volume-Istgt-Kill:
   extends: .chaos_test_template
@@ -161,4 +161,4 @@ DB1T-cluster-Delete:
     - RLFO-OpenShift-3.10
   script:
     - chmod 775 ./Openshift-EE/pipelines/Prometheus/stages/5-cleanup/DB1T-cluster-cleanup/cluster-cleanup
-    - ./Openshift-EE/pipelines/Prometheus/stages/5-cleanup/DB1Ts-cluster-cleanup/cluster-cleanup
+    - ./Openshift-EE/pipelines/Prometheus/stages/5-cleanup/DB1T-cluster-cleanup/cluster-cleanup
