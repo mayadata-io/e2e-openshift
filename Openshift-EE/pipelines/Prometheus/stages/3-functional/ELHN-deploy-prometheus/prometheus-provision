@@ -6,7 +6,7 @@ echo $CI_JOB_ID
 ###clone e2e-openshift-repo
 echo "cloning e2e-openshift repo*************"
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'git clone https://github.com/mayadata-io/e2e-openshift.git'
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'cd e2e-openshift && git checkout promethues && bash Openshift-EE/pipelines/Prometheus/stages/3-functional/ELHN-deploy-prometheus/prometheus-provision node '"'$CI_JOB_ID'"''
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'cd e2e-openshift && git checkout prometheus && bash Openshift-EE/pipelines/Prometheus/stages/3-functional/ELHN-deploy-prometheus/prometheus-provision node '"'$CI_JOB_ID'"''
 }
 
 node() {
