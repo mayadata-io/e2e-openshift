@@ -35,10 +35,11 @@ run_test=apps/prometheus/deployers/run_litmus_test.yml
 
 cat $run_test
 
-cd ..
-bash Openshift-EE/utils/litmus_job_runner label='app:prometheus-deployment-litmus' job=$run_test
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:prometheus-deployment-litmus' job=$run_test
 
 echo "Dumping state of cluster post job run"; echo ""
+cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:prometheus-provisioning $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
@@ -62,10 +63,10 @@ run_test=apps/prometheus/loadgen/run_litmus_test.yml
 
 cat $run_test
 
-cd ..
-bash Openshift-EE/utils/litmus_job_runner label='app:prometheus-loadgen-litmus' job=$run_test 
+bash ../Openshift-EE/utils/litmus_job_runner label='app:prometheus-loadgen-litmus' job=$run_test 
 
 echo "Dumping state of cluster post job run"; echo ""
+cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:prometheus-provisioning $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
