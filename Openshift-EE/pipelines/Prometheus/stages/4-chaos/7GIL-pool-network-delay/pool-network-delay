@@ -1,0 +1,5 @@
+#!/bin/bash
+set -x
+
+echo "***Performing pool network delay***"
+sleep 2

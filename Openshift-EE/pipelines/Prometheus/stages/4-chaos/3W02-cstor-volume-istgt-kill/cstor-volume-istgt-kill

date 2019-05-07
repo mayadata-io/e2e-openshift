@@ -1,0 +1,5 @@
+#!/bin/bash
+set -x
+
+echo "***Performing cstor volume istgt kill***"
+sleep 2
