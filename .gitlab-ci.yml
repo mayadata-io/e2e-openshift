@@ -45,7 +45,7 @@ CRGI-OpenEBS:
 
 5Q19-Elasticsearch-Provision:
   extends: .func_test_template
-  script: 	 
+  script: 	
     - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/3-functional/5Q19-deploy-elasticsearch/elasticsearch-provision
     - ./Openshift-EE/pipelines/ElasticSearch/stages/3-functional/5Q19-deploy-elasticsearch/elasticsearch-provision
 
@@ -55,8 +55,8 @@ CRGI-OpenEBS:
   script: 
     - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/3-functional/86TL-App-replica-scaleup/app-replica-scaleup
     - ./Openshift-EE/pipelines/ElasticSearch/stages/3-functional/86TL-App-replica-scaleup/app-replica-scaleup
-
-
+  
+     
 .chaos_test_template:
   image: openebs/openshift-ci:latest
   stage: CHAOS
@@ -68,15 +68,15 @@ CRGI-OpenEBS:
 N4NK-Openebs-Pool-Failure:
   extends: .chaos_test_template
   script: 
-    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/N4NK-openebs-pool-failure/openebs_pool_failure
-    - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/N4NK-opeenbs-pool-failure/openebs_pool_failure
+    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/N4NK-openebs-pool-failure/openebs-pool-failure
+    - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/N4NK-opeenbs-pool-failure/openebs-pool-failure
 
 
 3K0C-Openebs-Target-Network-Delay:
   extends: .chaos_test_template
   script: 
-    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/3K0C-openebs-target-network-delay/openebs_target_network_delay
-    - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/3K0C-openebs-target-network-delay/openebs_target_network_delay
+    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/3K0C-openebs-target-network-delay/openebs-target-network-delay
+    - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/3K0C-openebs-target-network-delay/openebs-target-network-delay
 
 
 2YLI-Cstor-Volume-Istgt-Kill:
@@ -143,7 +143,6 @@ QQ9F-Pool-Network-Loss:
    script: 
     - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/QQ9F-pool-network-loss/pool-network-loss
     - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/QQ9F-pool-network-loss/pool-network-loss
-
 
 
 638K-cluster-Delete:

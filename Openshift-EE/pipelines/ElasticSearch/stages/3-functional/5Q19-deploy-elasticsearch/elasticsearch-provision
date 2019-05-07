@@ -22,7 +22,7 @@ bash Openshift-EE/utils/e2e-cr jobname:elasticsearch-provision jobphase:Running 
  # Removing test_id from e2e-result.yml spec for simple mode
 #sed -i "s/-<job_id>/ /g" Openshift-EE/utils/result-volume-replica-distribution.yml
 
- kubectl apply -f Openshift-EE/utils/result-elasticsearch-provision.yml
+ #kubectl apply -f Openshift-EE/utils/result-elasticsearch-provision.yml
 
  test_name=$(bash Openshift-EE/utils/generate_test_name testcase=elasticsearch-deployment metadata="")
 echo $test_name
@@ -45,7 +45,7 @@ bash ../Openshift-EE/utils/dump_cluster_state;
 
  ## Check the test status & result from the litmus result custom resource
 
- cd .. && bash Openshift-EE/utils/get_litmus_result ${test_name} elasticsearch-provision
+ cd .. && bash Openshift-EE/utils/get_litmus_result ${test_name} elasticsearch-deployment 
 }
 
  if [ "$1" == "node" ];then

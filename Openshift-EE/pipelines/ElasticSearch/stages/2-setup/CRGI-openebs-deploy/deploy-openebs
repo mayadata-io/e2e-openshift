@@ -1,10 +1,7 @@
 #!/bin/bash
 set -x
 pod() {
-echo $CI_JOB_ID
-###clone e2e-openshift-repo
-echo "cloning e2e-openshift repo*************
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b elasticsearch https://github.com/mayadata-io/e2e-openshift.git
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b elasticsearch https://github.com/mayadata-io/e2e-openshift.git'
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/ElasticSearch/stages/2-setup/CRGI-openebs-deploy/deploy-openebs node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
 }
 
@@ -131,12 +128,12 @@ test_case_id="CRGI-$pipeline_id"
 source ~/.profile
 gittoken=$(echo "$github_token")
 testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
-##python3 Openshift-EE/utils/result/result_update.py $job_id CRGI 2-setup "Deploy OpenEBS in OpenShift-EE-3.10 Cluster" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+#python3 Openshift-EE/utils/result/result_update.py $job_id CRGI 2-setup "Deploy OpenEBS in OpenShift-EE-3.10 Cluster" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 
 current_time=$(eval $time)
 bash Openshift-EE/utils/e2e-cr jobname:s2-j1-openebs-deploy jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
 
-## python3 Openshift-EE/utils/result/result_update.py $job_id CRGI 2-setup "Deploy OpenEBS in OpenShift-EE-3.10 Cluster" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+#python3 Openshift-EE/utils/result/result_update.py $job_id CRGI 2-setup "Deploy OpenEBS in OpenShift-EE-3.10 Cluster" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 
 if [ "$rc_val" != "0" ]; then
 exit 1;
