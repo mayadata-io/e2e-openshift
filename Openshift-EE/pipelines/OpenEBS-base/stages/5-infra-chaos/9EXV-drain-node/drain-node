@@ -1,0 +1,111 @@
+#!/bin/bash
+set -x
+
+pod() {
+### Tainting the node to run infra chaos test scripts
+echo "******* Tainting node ********"
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port "node_name=$(cat infra/node_name)"
+
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/5-infra-chaos/PC78-drain-node/drain-node node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$node_name'"'
+}
+
+node() {
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+source ~/.profile
+gittoken=$(echo "$github_token")
+case_id=PC78
+observer_node=$4
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+bash Openshift-EE/utils/pooling jobname:taint-node
+bash Openshift-EE/utils/e2e-cr jobname:drain-node jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+echo "*******Deploying Busybox-Deployment****"
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-drain-node metadata="")
+echo $test_name
+
+cd litmus
+echo "Running the litmus test for Busybox Deployment.."
+cp apps/busybox/deployers/run_litmus_test.yml deploy_drain_test.yml
+
+sed -i -e 's/app-busybox-ns/drain-node/g' \
+-e 's/busybox-litmus/busybox-drain/g' \
+-e 's/statefulset/deployment/g' deploy_drain_test.yml
+
+cat deploy_drain_test.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-drain' deploy_drain_test.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:drain-node $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id PC78 5-infra-chaos "Drain the node where the application is running and check the behaviour" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+echo "******DRAIN NODE**********"
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=node-failure-drain metadata="")
+echo $test_name
+
+cd litmus
+cp experiments/chaos/drain_node/run_litmus_test.yml run_drain_test.yml
+
+sed -i -e 's/value: app-percona-ns/value: drain-node/g' \
+-e 's/name=percona/app=busybox-sts/g' \
+-e 's/value: "enable"/value:/g' \
+-e 's/liveness=percona-liveness/liveness=/g' run_drain_test.yml
+
+sed -i -e "s|#nodeSelector|nodeSelector|g" \
+-e "s|#  kubernetes.io/hostname:|  kubernetes.io/hostname: ${observer_node}|g" run_drain_test.yml
+
+cat run_evict_test.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='name:node-failure-drain' run_drain_test.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:drain-node $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id PC78 5-infra-chaos "Drain the node where the application is running and check the behaviour" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+echo "********Deprovisioning Busybox Application*******"
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-drain-node metadata="")
+echo $test_name
+
+cd litmus
+cp apps/busybox/deployers/run_litmus_test.yml deprovision_drain_node.yml
+
+sed -i -e 's/generateName: litmus-busybox-deploy/generateName: litmus-busybox-deprovision/g' \
+-e 's/app-busybox-ns/drain-node/g' \
+-e 's/busybox-litmus/busybox-deprovision-drain/g' \
+-e 's/value: provision/value: deprovision/g' deprovision_drain_node.yml
+
+cat deprovision_drain_node.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-deprovision-drain' deprovision_drain_node.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:drain-node $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+current_time=$(eval $time)
+bash Openshift-EE/utils/e2e-cr jobname:drain-node jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
+python3 Openshift-EE/utils/result/result_update.py $job_id PC78 5-infra-chaos "Drain the node where the application is running and check the behaviour" Pass $pipeline_id "$current_time" $commit_id $gittoken
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4 $5
+else
+  pod
+fi
