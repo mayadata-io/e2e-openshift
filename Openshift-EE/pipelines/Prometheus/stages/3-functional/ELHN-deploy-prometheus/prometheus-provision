@@ -15,7 +15,7 @@ time="date"
 current_time=$(eval $time)
 echo "*********Applying e2e-crd***********"
 kubectl apply -f Openshift-EE/utils/e2e-crd.yml
-echo "*****Deploying openebs*******"
+
 bash Openshift-EE/utils/e2e-cr jobname:prometheus-provision jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:prometheus-provision jobphase:Running init_time:"$current_time"
 
@@ -23,7 +23,7 @@ bash Openshift-EE/utils/e2e-cr jobname:prometheus-provision jobphase:Running ini
 #sed -i "s/-<job_id>/ /g" Openshift-EE/utils/result-volume-replica-distribution.yml
 
 echo "*******Deploying Prometheus Application****"
-kubectl apply -f Openshift-EE/utils/result-prometheus-provision.yml
+#kubectl apply -f Openshift-EE/utils/result-prometheus-provision.yml
 
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=prometheus-deployment metadata="")
 echo $test_name
@@ -35,10 +35,11 @@ run_test=apps/prometheus/deployers/run_litmus_test.yml
 
 cat $run_test
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:prometheus-deployment-litmus' job=$run_test
+cd ..
+bash Openshift-EE/utils/litmus_job_runner label='app:prometheus-deployment-litmus' job=$run_test
 
 echo "Dumping state of cluster post job run"; echo ""
-bash ../Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:prometheus-provisioning $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 
@@ -49,7 +50,7 @@ fi
 
 
 echo "*******Deploying Prometheus Loadgen Application****"
-kubectl apply -f Openshift-EE/utils/result-loadgen-provision.yml
+#kubectl apply -f Openshift-EE/utils/result-loadgen-provision.yml
 
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=prometheus-loadgen metadata="")
 echo $test_name
@@ -61,10 +62,11 @@ run_test=apps/prometheus/loadgen/run_litmus_test.yml
 
 cat $run_test
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:prometheus-loadgen-litmus' job=$run_test 
+cd ..
+bash Openshift-EE/utils/litmus_job_runner label='app:prometheus-loadgen-litmus' job=$run_test 
 
 echo "Dumping state of cluster post job run"; echo ""
-bash ../Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:prometheus-provisioning $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 if [ "$?" != "0" ]; then
