@@ -1,7 +1,7 @@
 #!/bin/bash
 set -x
 
- pod() {
+pod() {
 echo $CI_JOB_ID
 ###clone e2e-openshift-repo
 echo "cloning e2e-openshift repo*************"
@@ -9,47 +9,41 @@ sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'git clone ht
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'cd e2e-openshift && git checkout elasticsearch && bash Openshift-EE/pipelines/ElasticSearch/stages/3-functional/5Q19-deploy-elasticsearch/elasticsearch-provision node '"'$CI_JOB_ID'"''
 }
 
- node() {
+node() {
 job_id=$(echo $1)
 time="date"
 current_time=$(eval $time)
 echo "*********Applying e2e-crd***********"
 kubectl apply -f Openshift-EE/utils/e2e-crd.yml
-echo "*****Deploying openebs*******"
+
 bash Openshift-EE/utils/e2e-cr jobname:elasticsearch-provision jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:elasticsearch-provision jobphase:Running init_time:"$current_time"
 
- # Removing test_id from e2e-result.yml spec for simple mode
+# Removing test_id from e2e-result.yml spec for simple mode
 #sed -i "s/-<job_id>/ /g" Openshift-EE/utils/result-volume-replica-distribution.yml
 
- #kubectl apply -f Openshift-EE/utils/result-elasticsearch-provision.yml
+echo "*******Deploying Elasticsearch Application****"
+#kubectl apply -f Openshift-EE/utils/result-elasticsearch-provision.yml
 
- test_name=$(bash Openshift-EE/utils/generate_test_name testcase=elasticsearch-deployment metadata="")
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=elasticsearch-deployment metadata="")
 echo $test_name
 
- cd litmus
+cd litmus
 
- echo "Running the litmus test.."
+echo "Running the litmus test.."
 run_test=apps/elasticsearch/deployers/run_litmus_test.yml
 
- cat $run_test
+cat $run_test
 
- bash ../Openshift-EE/utils/litmus_job_runner label='app:elasticsearch-deployment-litmus' job=$run_test
+cd ..
+bash Openshift-EE/utils/litmus_job_runner label='app:elasticsearch-deployment-litmus' job=$run_test
 
- echo "Dumping state of cluster post job run"; echo ""
-bash ../Openshift-EE/utils/dump_cluster_state;
+echo "Dumping state of cluster post job run"; echo ""
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:elasticsearch-provisioning $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
- #################
-## GET RESULT  ##
-#################
 
- ## Check the test status & result from the litmus result custom resource
-
- cd .. && bash Openshift-EE/utils/get_litmus_result ${test_name} elasticsearch-deployment 
-}
-
- if [ "$1" == "node" ];then
-  node $2
-else
-  pod
+if [ "$?" != "0" ]; then
+#python3 Openshift-EE/utils/result/result_update.py $job_id 5Q19 3-functional "Deploying elasticsearch application" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
 fi
