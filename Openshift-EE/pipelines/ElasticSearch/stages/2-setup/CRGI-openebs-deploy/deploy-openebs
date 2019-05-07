@@ -1,4 +1,4 @@
-#!/bin/bash
+!/bin/bash
 set -x
 pod() {
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b elasticsearch https://github.com/mayadata-io/e2e-openshift.git'
@@ -40,44 +40,25 @@ git clone -b $INFRA_BRANCH https://github.com/openebs/e2e-infrastructure.git
 cd e2e-infrastructure/env
 
 ##exporting jiva-controller-image as env##
-#export OPENEBS_IO_JIVA_CONTROLLER_IMAGE=openebs/jiva:0.8.2-RC2
+export OPENEBS_IO_JIVA_CONTROLLER_IMAGE=openebs/jiva:0.9.0-RC1 
 ##exporting jiva-replica-image as env##
-#export OPENEBS_IO_JIVA_REPLICA_IMAGE=openebs/jiva:0.8.2-RC2
+export OPENEBS_IO_JIVA_REPLICA_IMAGE=openebs/jiva:0.9.0-RC1 
 ##exporting m-apiserver as env##
-#export MAYA_APISERVER_IMAGE=openebs/m-apiserver:0.8.2-RC2
+export MAYA_APISERVER_IMAGE=openebs/m-apiserver:0.9.0-RC1 
 ##exporting maya-volume-exporter as env##
-#export OPENEBS_IO_VOLUME_MONITOR_IMAGE=openebs/m-exporter:0.8.2-RC2
+export OPENEBS_IO_VOLUME_MONITOR_IMAGE=openebs/m-exporter:0.9.0-RC1 
 ##exporting istgt-image as env##
-#export OPENEBS_IO_CSTOR_VOLUME_MGMT_IMAGE=openebs/cstor-volume-mgmt:0.8.2-RC2
+export OPENEBS_IO_CSTOR_VOLUME_MGMT_IMAGE=openebs/cstor-volume-mgmt:0.9.0-RC1 
 ##exporting zfs-image as env##
-#export OPENEBS_IO_CSTOR_POOL_MGMT_IMAGE=openebs/cstor-pool-mgmt:0.8.2-RC2
+export OPENEBS_IO_CSTOR_POOL_MGMT_IMAGE=openebs/cstor-pool-mgmt:0.9.0-RC1 
 
-#export OPENEBS_IO_CSTOR_POOL_IMAGE=openebs/cstor-pool:0.8.2-RC2
+export OPENEBS_IO_CSTOR_POOL_IMAGE=openebs/cstor-pool:0.9.0-RC1 
 ##
-#export OPENEBS_IO_CSTOR_TARGET_IMAGE=openebs/cstor-istgt:0.8.2-RC2
+export OPENEBS_IO_CSTOR_TARGET_IMAGE=openebs/cstor-istgt:0.9.0-RC1 
 
-#export OPENEBS_IO_CSTOR_POOL_EXPORTER_IMAGE=openebs/m-exporter:0.8.2-RC2
+export OPENEBS_IO_CSTOR_POOL_EXPORTER_IMAGE=openebs/m-exporter:0.9.0-RC1 
 ######################################################
-##exporting jiva-controller-image as env##
-export OPENEBS_IO_JIVA_CONTROLLER_IMAGE=$(eval python env_exporter.py -o jcontroller -fp ../baseline/baseline)
-##exporting jiva-replica-image as env##
-export OPENEBS_IO_JIVA_REPLICA_IMAGE=$(eval python env_exporter.py -o jreplica -fp ../baseline/baseline)
-##exporting m-apiserver as env##
-export MAYA_APISERVER_IMAGE=$(eval python env_exporter.py -o mapi -fp ../baseline/baseline)
-##exporting maya-volume-exporter as env##
-export OPENEBS_IO_VOLUME_MONITOR_IMAGE=$(eval python env_exporter.py -o iovolume -fp ../baseline/baseline)
-##exporting istgt-image as env##
-export OPENEBS_IO_CSTOR_VOLUME_MGMT_IMAGE=$(eval python env_exporter.py -o cvolmgmt -fp ../baseline/baseline)
-##exporting zfs-image as env##
-export OPENEBS_IO_CSTOR_POOL_MGMT_IMAGE=$(eval python env_exporter.py -o cpoolmgmt -fp ../baseline/baseline)
-##
-export OPENEBS_IO_CSTOR_POOL_IMAGE=$(eval python env_exporter.py -o cstorpool -fp ../baseline/baseline)
-##
-export OPENEBS_IO_CSTOR_TARGET_IMAGE=$(eval python env_exporter.py -o target -fp ../baseline/baseline)
-
-export OPENEBS_IO_CSTOR_POOL_EXPORTER_IMAGE=$(eval python env_exporter.py -o iovolume -fp ../baseline/baseline)
-
-export NODE_DISK_MANAGER_IMAGE=v0.3.3
+export NODE_DISK_MANAGER_IMAGE=v0.3.5
 
 cd ../..
 
