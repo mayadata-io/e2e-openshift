@@ -7,12 +7,12 @@ stages:
   - CHAOS
   # - CLEANUP
 
-5MVN-OpenShift-3.10:
-  image: openebs/openshift-ci:latest
-  stage: CLUSTER-SETUP
-  script:     
-    - chmod 755 ./Openshift-EE/pipelines/GitLab/stages/1-cluster-setup/5MVN-cluster-state/cluster-state
-    - ./Openshift-EE/pipelines/GitLab/stages/1-cluster-setup/5MVN-cluster-state/cluster-state
+# 5MVN-OpenShift-3.10:
+#   image: openebs/openshift-ci:latest
+#   stage: CLUSTER-SETUP
+#   script:     
+#     - chmod 755 ./Openshift-EE/pipelines/GitLab/stages/1-cluster-setup/5MVN-cluster-state/cluster-state
+#     - ./Openshift-EE/pipelines/GitLab/stages/1-cluster-setup/5MVN-cluster-state/cluster-state
 
 # X404-OpenEBS-v0.8.1:
 #   image: openebs/openshift-ci:latest
@@ -59,11 +59,13 @@ XMSV-App-Kill:
     - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/4-chaos/XMSV-gitlab-unicorn-failure/gitlab-unicorn-kill
     - ./Openshift-EE/pipelines/GitLab/stages/4-chaos/XMSV-gitlab-pod-failure/gitlab-unicorn-kill
 
+
 cstor-pool-kill:
   extends: .chaos_test_template   
   script: 
     - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/4-chaos/BWE5-cstor-pool-kill/cstor-pool-kill
     - ./Openshift-EE/pipelines/GitLab/stages/4-chaos/BWE5-cstor-pool-kill/cstor-pool-kill
+
 
 cStor-Pool-Delete:
   extends: .chaos_test_template
