@@ -53,7 +53,7 @@ fi
 echo "*******Deploying Prometheus Loadgen Application****"
 #kubectl apply -f Openshift-EE/utils/result-loadgen-provision.yml
 
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase=prometheus-loadgen metadata="")
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=avalanche-deployment metadata="")
 echo $test_name
 
 cd litmus
