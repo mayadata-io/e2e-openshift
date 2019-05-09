@@ -4,7 +4,7 @@ set -x
 pod() {
 ### Drain the node to run infra chaos test scripts
 echo "******* Drain node for maintainence ********"
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port "node_name=$(cat infra/node_name)"
+node_name=$(sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port "cat infra/node_name")
 echo $node_name
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/5-infra-chaos/PC78-drain-node/drain-node node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$node_name'"'
 }
@@ -62,7 +62,7 @@ cp experiments/chaos/drain_node/run_litmus_test.yml run_drain_test.yml
 sed -i -e 's/value: app-percona-ns/value: drain-node/g' \
 -e 's/name=percona/app=busybox-sts/g' \
 -e 's/value: "enable"/value:/g' \
--e 's/liveness=percona-liveness/liveness=/g' run_drain_test.yml
+-e 's/liveness=percona-liveness//g' run_drain_test.yml
 
 sed -i -e "s|#nodeSelector|nodeSelector|g" \
 -e "s|#  kubernetes.io/hostname:|  kubernetes.io/hostname: ${observer_node}|g" run_drain_test.yml
