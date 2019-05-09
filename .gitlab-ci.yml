@@ -339,6 +339,12 @@ BF12-Taint-app-Node:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/5-infra-chaos/BF12-taint-node/node-taint
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/5-infra-chaos/BF12-taint-node/node-taint
 
+PC78-Drain-app-Node:
+  extends: .infra_chaos_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/5-infra-chaos/PC78-drain-node/drain-node
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/5-infra-chaos/PC78-drain-node/drain-node
+
       #GP95-openebs-Uninstall:
       #  image: openebs/openshift-ci:latest
       #  stage: CLEANUP
