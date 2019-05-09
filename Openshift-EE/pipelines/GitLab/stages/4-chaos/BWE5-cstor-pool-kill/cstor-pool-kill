@@ -3,7 +3,7 @@
 set -x
 
 pod() {
-sshpass -p $pass_e2e ssh -o StrictHostKeyChecking=no $user_e2e@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/BWE5-cstor-pool-delete/cstor-pool-delete node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+sshpass -p $pass_e2e ssh -o StrictHostKeyChecking=no $user_e2e@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/Gitlab/stages/4-chaos/BWE5-cstor-pool-kill/cstor-pool-kill node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
 }
 
 node() {
@@ -25,7 +25,7 @@ bash Openshift-EE/utils/e2e-cr jobname:cstor_pool_kill jobphase:Running init_tim
 
 echo "*******Performing Cstor pool delete**********"
 
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-pool-failure metadata="")
+run_id="delete";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-pool-failure metadata=${run_id})
 echo $test_name
 
 cd litmus
@@ -36,6 +36,11 @@ sed -i -e 's/value: percona-mysql-claim/value: repo-data-gitlab-openshift-gitaly
 -e 's/value: '\''name=percona'\''/value: '\''app=gitaly'\''/g' \
 -e 's/enable//g' \
 -e 's/value: app-percona-ns/value: default/g' cstor_pool_kill.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' cstor_pool_kill.yml
 
 echo "Running the litmus test for cstor pool failure"
 cat cstor_pool_kill.yml
