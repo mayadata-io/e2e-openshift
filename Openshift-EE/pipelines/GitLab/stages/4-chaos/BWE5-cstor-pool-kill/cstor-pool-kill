@@ -1,5 +1,4 @@
 #!/bin/bash
-#!/bin/bash
 set -x
 
 pod() {
@@ -51,7 +50,7 @@ bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:cstor_pool_kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 if [ "$?" != "0" ]; then
-python3 Openshift-EE/utils/result/result_update.py $job_id BWE5 4-chaos "Kill cStor Pool" Fail $pipeline_id "$current_time" $commit_id $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id BWE5 4-chaos "Induce failure on cStor pool container and check if it is recovered successfully and verify that the application is not impacted" Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 
@@ -64,13 +63,13 @@ gitlab_test_result=Pass;
 else
 echo "Gitlab Service is Unreachable"
 gitlab_test_result=Fail;
-python3 Openshift-EE/utils/result/result_update.py $job_id BWE5 4-chaos "Kill cStor Pool" $gitlab_test_result $pipeline_id "$current_time" $commit_id $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id BWE5 4-chaos "Induce failure on cStor pool container and check if it is recovered successfully and verify that the application is not impacted" $gitlab_test_result $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 
 current_time=$(eval $time)
 bash Openshift-EE/utils/e2e-cr jobname:cstor_pool_kill jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
-python3 Openshift-EE/utils/result/result_update.py $job_id BWE5 4-chaos "Kill cStor Pool" $gitlab_test_result $pipeline_id "$current_time" $commit_id $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id BWE5 4-chaos "Induce failure on cStor pool container and check if it is recovered successfully and verify that the application is not impacted" $gitlab_test_result $pipeline_id "$current_time" $commit_id $gittoken
 
 }
 
