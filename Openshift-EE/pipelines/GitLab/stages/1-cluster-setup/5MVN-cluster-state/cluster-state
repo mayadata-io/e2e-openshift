@@ -1,5 +1,59 @@
 #!/bin/bash
 set -x
 
-echo "***Setting up the cluser***"
-sleep 2
+time="$(TZ=IST date)"
+current_time=$time
+echo $current_time
+
+echo "***Checking the cluster is Engaged or not*"
+
+state="sshpass -p $pass_e2e ssh -o StrictHostKeyChecking=no $user_e2e@$ip -p 1658 'ls | grep e2e-openshift'"
+cluster_state=$(eval $state)
+
+while [ "${cluster_state}" == "e2e-openshift" ]; do
+  echo "***cluster is Engaged******"
+  wait=1
+  cluster_state=$(eval $state)
+  sleep 30
+done
+
+if [ "$wait" == "1" ]; then
+sleep 120
+fi
+
+echo "*************************Checking the Cluster's Health********************"
+
+echo "Checking for the number of nodes in ready state*******************************"
+ready_nodes=$(sshpass -p $pass_e2e ssh -o StrictHostKeyChecking=no $user_e2e@$ip -p 1658 kubectl get nodes | grep Ready | wc -l)
+
+git_token=$(sshpass -p $pass_e2e ssh -o StrictHostKeyChecking=no $user_e2e@$ip -p 1658 'cat ~/.profile | grep github_token | cut -d= -f2')
+gittoken=$(echo $git_token | tr -d '"')
+
+if [ "$ready_nodes" -eq 4 ]; then
+echo "Number of nodes in ready state is $ready_nodes"
+echo "******Cluster is in Healthy state****"
+
+echo "*************Dumping cluster state********"
+sshpass -p $pass_e2e ssh -o StrictHostKeyChecking=no $user_e2e@$ip -p 1658 kubectl get nodes
+sshpass -p $pass_e2e ssh -o StrictHostKeyChecking=no $user_e2e@$ip -p 1658 kubectl get pod --all-namespaces
+else
+echo "All nodes are not ready"
+echo "******Cluster is in Unhealthy state*******"
+exit;
+fi
+
+echo "Checking gitlab service is accessible*************"
+curl -k https://gitlab.litmuschaos.io:9443
+
+if [ "$?" != "0" ]; then
+echo "Gitlab service is Unreachable"
+exit 1;
+else
+echo "cloning e2e-openshift repo*************"
+sshpass -p $pass_e2e ssh -o StrictHostKeyChecking=no $user_e2e@$ip -p $port 'git clone -b gitlab https://github.com/mayadata-io/e2e-openshift.git'
+echo "Deploying Fluend Forwarder and Aggregator*********"
+sshpass -p $pass_e2e ssh -o StrictHostKeyChecking=no $user_e2e@$ip -p $port 'ansible-playbook efk/efk.yml --extra-vars "commit_id='"'$CI_COMMIT_SHA'"' pipeline_id='"'$CI_PIPELINE_ID'"'"'
+# Applying e2e-CRD
+echo "***Applying e2e-crd***********"
+sshpass -p $pass_e2e ssh -o StrictHostKeyChecking=no $user_e2e@$ip -p $port 'kubectl apply -f e2e-openshift/Openshift-EE/utils/e2e-crd.yml'
+fi

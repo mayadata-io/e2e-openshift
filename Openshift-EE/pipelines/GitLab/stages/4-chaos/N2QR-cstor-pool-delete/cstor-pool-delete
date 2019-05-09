@@ -1,0 +1,85 @@
+#!/bin/bash
+set -x
+
+pod() {
+sshpass -p $pass_e2e ssh -o StrictHostKeyChecking=no $user_e2e@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/Gitlab/stages/4-chaos/N2QR-cstor-pool-delete/cstor-pool-delete node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+}
+
+node() {
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+source ~/.profile
+gittoken=$(echo "$github_token")
+case_id=N2QR
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+#pooling over cstor-pool-delete job
+bash Openshift-EE/utils/pooling jobname:cstor_pool_kill
+
+bash Openshift-EE/utils/e2e-cr jobname:cstor_pool_delete jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:cstor_pool_delete jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+echo "*******Performing Cstor pool delete**********"
+
+run_id="delete";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-pool-failure metadata=${run_id})
+echo $test_name
+
+cd litmus
+cp experiments/chaos/openebs_pool_failure/run_litmus_test.yml cstor_pool_failure.yml
+
+sed -i -e 's/value: percona-mysql-claim/value: repo-data-gitlab-openshift-gitaly-0/g' \
+-e 's/name: openebs-pool-failure/name: openebs-pool-delete/g' \
+-e 's/value: '\''name=percona'\''/value: '\''app=gitaly'\''/g' \
+-e 's/pool-kill/pool-delete/g' \
+-e 's/enable//g' \
+-e 's/value: app-percona-ns/value: default/g' cstor_pool_failure.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' cstor_pool_failure.yml
+
+
+echo "Running the litmus test for cstor pool failure"
+cat cstor_pool_failure.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-pool-delete' job=cstor_pool_failure.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:cstor_pool_delete $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id N2QR 4-chaos "Delete cstor-pool pod and check if it is recovered successfully and verify that the application is not impacted" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+
+gitlab_service=$(curl -k https://gitlab.litmuschaos.io)
+
+if [ "$testResult" == "Pass" ] && [ "$?" == "0" ]; then
+gitlab_test_result=Pass;
+else
+echo "Gitlab Service is Unreachable"
+gitlab_test_result=Fail;
+python3 Openshift-EE/utils/result/result_update.py $job_id N2QR 4-chaos "Delete cstor-pool pod and check if it is recovered successfully and verify that the application is not impacted" $gitlab_test_result $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+current_time=$(eval $time)
+bash Openshift-EE/utils/e2e-cr jobname:cstor_pool_delete jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
+python3 Openshift-EE/utils/result/result_update.py $job_id N2QR 4-chaos "Delete cstor-pool pod and check if it is recovered successfully and verify that the application is not impacted" $gitlab_test_result $pipeline_id "$current_time" $commit_id $gittoken
+
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4
+else
+  pod
+fi
