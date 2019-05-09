@@ -18,8 +18,8 @@ KJV1-Openebs-upgrade:
   image: openebs/openshift-ci:latest
   stage: OPENEBS-UPGRADE
   script: 
-    - chmod 755 ./Openshift-EE/pipelines/GitLab/stages/2-setup/KJV1-openebs-upgrade/cluster-state
-    - ./Openshift-EE/pipelines/GitLab/stages/2-setup/KJV1-openebs-upgrade/cluster-state
+    - chmod 755 ./Openshift-EE/pipelines/GitLab/stages/2-setup/KJV1-openebs-upgrade/openebs-upgrade
+    - ./Openshift-EE/pipelines/GitLab/stages/2-setup/KJV1-openebs-upgrade/openebs-upgrade
 
 # X404-OpenEBS-v0.8.1:
 #   image: openebs/openshift-ci:latest
