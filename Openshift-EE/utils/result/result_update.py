@@ -25,7 +25,7 @@ efk_url = "<a href={0}>{1}</a>".format(efk_link,test_result)
 git_auth = github.Github(token)
 
 # repo-name 
-username = "openebs"
+username = "mayadata-io"
 repos = "e2e-openshift"
 repo = git_auth.get_repo("{owner}/{repo_name}".format(owner=username, repo_name=repos))
 path = 'Openshift-EE/pipelines/OpenEBS-base/stages/{}'.format(stage)
