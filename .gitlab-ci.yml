@@ -64,7 +64,7 @@ XMSV-Unicorn-App-Kill:
   extends: .chaos_test_template
   script: 
     - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/4-chaos/XMSV-gitlab-unicorn-failure/gitlab-unicorn-kill
-    - ./Openshift-EE/pipelines/GitLab/stages/4-chaos/XMSV-gitlab-pod-failure/gitlab-unicorn-kill
+    - ./Openshift-EE/pipelines/GitLab/stages/4-chaos/XMSV-gitlab-unicorn-failure/gitlab-unicorn-kill
 
 
 BWE5-cstor-pool-kill:
@@ -80,22 +80,22 @@ N2QR-cStor-Pool-Delete:
     - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/4-chaos/N2QR-cstor-pool-delete/cstor-pool-delete
     - ./Openshift-EE/pipelines//GitLab/stages/4-chaos/N2QR-cstor-pool-delete/cstor-pool-delete
 
-FEIN-prometheus-target-kill:
+L7JN-prometheus-target-kill:
   extends: .chaos_test_template
   script:
-    - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/4-chaos/FEIN-prometheus-target-kill/target-kill
-    - ./Openshift-EE/pipelines//GitLab/stages/4-chaos/FEIN-prometheus-target-kill/target-kill
+    - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/4-chaos/L7JN-prometheus-target-kill/target-kill
+    - ./Openshift-EE/pipelines//GitLab/stages/4-chaos/L7JN-prometheus-target-kill/target-kill
 
-L7JN-postgres-target-kill:
+FEIN-postgres-target-kill:
   extends: .chaos_test_template
   script:
-    - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/4-chaos/L7JN-postgres-target-kill/target-kill
-    - ./Openshift-EE/pipelines//GitLab/stages/4-chaos/L7JN-postgres-target-kill/target-kill
+    - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/4-chaos/FEIN-postgres-target-kill/target-kill
+    - ./Openshift-EE/pipelines//GitLab/stages/4-chaos/FEIN-postgres-target-kill/target-kill
 
 Y5E0-minio-target-kill:
   extends: .chaos_test_template
   script:
-    - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/4-chaos/L7JN-minio-target-kill/target-kill
+    - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/4-chaos/Y5E0-minio-target-kill/target-kill
     - ./Openshift-EE/pipelines//GitLab/stages/4-chaos/Y5E0-minio-target-kill/target-kill
 
 B0P0-redis-target-kill:
