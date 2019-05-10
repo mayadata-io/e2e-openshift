@@ -101,6 +101,16 @@ cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:drain-node $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
+rc_val=$(echo $?)
+
+
+# testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+
+if [ "$rc_val" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id PC78 5-infra-chaos "Drain the node where the application is running and check the behaviour" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
 current_time=$(eval $time)
 bash Openshift-EE/utils/e2e-cr jobname:drain-node jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
 python3 Openshift-EE/utils/result/result_update.py $job_id PC78 5-infra-chaos "Drain the node where the application is running and check the behaviour" Pass $pipeline_id "$current_time" $commit_id $gittoken
