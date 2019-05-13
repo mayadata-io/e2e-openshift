@@ -11,12 +11,16 @@ sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'cd e2e-opens
 
 node() {
 job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+case_id=ELHN
+
 time="date"
 current_time=$(eval $time)
 
 bash Openshift-EE/utils/e2e-cr jobname:prometheus-provision jobphase:Waiting
-bash Openshift-EE/utils/e2e-cr jobname:prometheus-provision jobphase:Running init_time:"$current_time"
-
+bash Openshift-EE/utils/e2e-cr jobname:prometheus-provision jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" 
+ 
 # Removing test_id from e2e-result.yml spec for simple mode
 #sed -i "s/-<job_id>/ /g" Openshift-EE/utils/result-volume-replica-distribution.yml
 
