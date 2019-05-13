@@ -6,23 +6,25 @@ echo $CI_JOB_ID
 ###clone e2e-openshift-repo
 echo "cloning e2e-openshift repo*************"
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'git clone https://github.com/mayadata-io/e2e-openshift.git'
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'cd e2e-openshift && git checkout elasticsearch && bash Openshift-EE/pipelines/ElasticSearch/stages/3-functional/5Q19-deploy-elasticsearch/elasticsearch-provision node '"'$CI_JOB_ID'"''
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'cd e2e-openshift && git checkout elasticsearch && bash Openshift-EE/pipelines/ElasticSearch/stages/3-functional/5Q19-deploy-elasticsearch/elasticsearch-provision node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
 }
 
 node() {
 job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+case_id=5Q19
+
 time="date"
 current_time=$(eval $time)
-echo "*********Applying e2e-crd***********"
-kubectl apply -f Openshift-EE/utils/e2e-crd.yml
 
 bash Openshift-EE/utils/e2e-cr jobname:elasticsearch-provision jobphase:Waiting
-bash Openshift-EE/utils/e2e-cr jobname:elasticsearch-provision jobphase:Running init_time:"$current_time"
-
+bash Openshift-EE/utils/e2e-cr jobname:elasticsearch-provision jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" 
+ 
 # Removing test_id from e2e-result.yml spec for simple mode
 #sed -i "s/-<job_id>/ /g" Openshift-EE/utils/result-volume-replica-distribution.yml
 
-echo "*******Deploying Elasticsearch Application****"
+echo "*******Deploying elasticsearch Application****"
 #kubectl apply -f Openshift-EE/utils/result-elasticsearch-provision.yml
 
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=elasticsearch-deployment metadata="")
@@ -35,10 +37,11 @@ run_test=apps/elasticsearch/deployers/run_litmus_test.yml
 
 cat $run_test
 
-cd ..
-bash Openshift-EE/utils/litmus_job_runner label='app:elasticsearch-deployment-litmus' job=$run_test
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:elasticsearch-deployment-litmus' job=$run_test
 
 echo "Dumping state of cluster post job run"; echo ""
+cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:elasticsearch-provisioning $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
@@ -47,3 +50,4 @@ if [ "$?" != "0" ]; then
 #python3 Openshift-EE/utils/result/result_update.py $job_id 5Q19 3-functional "Deploying elasticsearch application" Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
+
