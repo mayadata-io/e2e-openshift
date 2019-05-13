@@ -114,9 +114,10 @@ rc_val=$(echo $?)
 
 # testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
 
-# if [ "$rc_val" != "0" ]; then
-# exit 1;
-# fi
+if [ "$rc_val" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id 72WM 4-chaos "Delete cStor Pool" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
 
 current_time=$(eval $time)
 bash Openshift-EE/utils/e2e-cr jobname:pool-delete jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
