@@ -49,8 +49,9 @@ if [ "$?" != "0" ]; then
 echo "Gitlab service is Unreachable"
 exit 1;
 else
-echo "cloning e2e-openshift repo*************"
+echo "cloning e2e-openshift & litmus repo*************"
 sshpass -p $pass_e2e ssh -o StrictHostKeyChecking=no $user_e2e@$ip -p $port 'git clone -b gitlab https://github.com/mayadata-io/e2e-openshift.git'
+sshpass -p $pass_e2e ssh -o StrictHostKeyChecking=no $user_e2e@$ip -p $port 'cd e2e-openshift && git clone -b master https://github.com/litmuschaos/litmus.git'
 echo "Deploying Fluend Forwarder and Aggregator*********"
 sshpass -p $pass_e2e ssh -o StrictHostKeyChecking=no $user_e2e@$ip -p $port 'ansible-playbook efk/efk.yml --extra-vars "commit_id='"'$CI_COMMIT_SHA'"' pipeline_id='"'$CI_PIPELINE_ID'"'"'
 # Applying e2e-CRD
