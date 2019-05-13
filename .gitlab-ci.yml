@@ -86,11 +86,13 @@ L7JN-prometheus-target-kill:
     - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/4-chaos/L7JN-prometheus-target-kill/target-kill
     - ./Openshift-EE/pipelines/GitLab/stages/4-chaos/L7JN-prometheus-target-kill/target-kill
 
+
 FEIN-postgres-target-kill:
   extends: .chaos_test_template
   script:
     - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/4-chaos/FEIN-postgres-target-kill/target-kill
     - ./Openshift-EE/pipelines/GitLab/stages/4-chaos/FEIN-postgres-target-kill/target-kill
+
 
 Y5E0-minio-target-kill:
   extends: .chaos_test_template
