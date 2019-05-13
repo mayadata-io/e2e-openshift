@@ -61,6 +61,36 @@ RJKZ-App-pod-kill:
     - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/RJKZ-cassandra-pod-failure/app-pod-kill
     - ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/RJKZ-cassandra-pod-failure/app-pod-kill
 
+Z0KY-cassandra-app-scaleup:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/Z0KY-cassandra-app-scaleup/cassandra-app-scaleup
+    - ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/Z0KY-cassandra-app-scaleup/cassandra-app-scaleup
+
+78JT-cstor-target-kill:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/78JT-cstor-target-kill/cstor-target-kill
+    - ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/78JT-cstor-target-kill/cstor-target-kill
+
+NGGB-cstor-pool-kill:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/NGGB-cstor-pool-kill/cstor-pool-kill
+    - ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/NGGB-cstor-pool-kill/cstor-pool-kill
+
+OI4T-cstor-target-network-delay:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/OI4T-cstor-target-network-delay/cstor-target-network-delay
+    - ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/OI4T-cstor-target-network-delay/cstor-target-network-delay
+
+Q3ZJ-cstor-pool-delete:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/Q3ZJ-cstor-pool-delete/cstor-pool-delete
+    - ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/Q3ZJ-cstor-pool-delete/cstor-pool-delete
+
 WWDM-openebs-Uninstall:
   image: openebs/openshift-ci:latest
   stage: CLEANUP
