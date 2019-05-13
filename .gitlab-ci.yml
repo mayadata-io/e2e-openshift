@@ -78,31 +78,31 @@ N2QR-cStor-Pool-Delete:
   extends: .chaos_test_template
   script:
     - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/4-chaos/N2QR-cstor-pool-delete/cstor-pool-delete
-    - ./Openshift-EE/pipelines//GitLab/stages/4-chaos/N2QR-cstor-pool-delete/cstor-pool-delete
+    - ./Openshift-EE/pipelines/GitLab/stages/4-chaos/N2QR-cstor-pool-delete/cstor-pool-delete
 
 L7JN-prometheus-target-kill:
   extends: .chaos_test_template
   script:
     - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/4-chaos/L7JN-prometheus-target-kill/target-kill
-    - ./Openshift-EE/pipelines//GitLab/stages/4-chaos/L7JN-prometheus-target-kill/target-kill
+    - ./Openshift-EE/pipelines/GitLab/stages/4-chaos/L7JN-prometheus-target-kill/target-kill
 
 FEIN-postgres-target-kill:
   extends: .chaos_test_template
   script:
     - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/4-chaos/FEIN-postgres-target-kill/target-kill
-    - ./Openshift-EE/pipelines//GitLab/stages/4-chaos/FEIN-postgres-target-kill/target-kill
+    - ./Openshift-EE/pipelines/GitLab/stages/4-chaos/FEIN-postgres-target-kill/target-kill
 
 Y5E0-minio-target-kill:
   extends: .chaos_test_template
   script:
     - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/4-chaos/Y5E0-minio-target-kill/target-kill
-    - ./Openshift-EE/pipelines//GitLab/stages/4-chaos/Y5E0-minio-target-kill/target-kill
+    - ./Openshift-EE/pipelines/GitLab/stages/4-chaos/Y5E0-minio-target-kill/target-kill
 
 B0P0-redis-target-kill:
   extends: .chaos_test_template
   script:
     - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/4-chaos/B0P0-redis-target-kill/target-kill
-    - ./Openshift-EE/pipelines//GitLab/stages/4-chaos/B0P0-redis-target-kill/target-kill    
+    - ./Openshift-EE/pipelines/GitLab/stages/4-chaos/B0P0-redis-target-kill/target-kill    
 
 
 LSCQ-Job-Cleanup:
