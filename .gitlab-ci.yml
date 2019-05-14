@@ -53,14 +53,7 @@ CRGI-OpenEBS:
     - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/3-functional/5Q19-deploy-elasticsearch/elasticsearch-provision
     - ./Openshift-EE/pipelines/ElasticSearch/stages/3-functional/5Q19-deploy-elasticsearch/elasticsearch-provision
 
-
-86TL-App-Scaleup:
-  extends: .func_test_template
-  script: 
-    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/3-functional/86TL-App-replica-scaleup/app-replica-scaleup
-    - ./Openshift-EE/pipelines/ElasticSearch/stages/3-functional/86TL-App-replica-scaleup/app-replica-scaleup  
-
-     
+   
 .chaos_test_template:
   image: openebs/openshift-ci:latest
   stage: CHAOS

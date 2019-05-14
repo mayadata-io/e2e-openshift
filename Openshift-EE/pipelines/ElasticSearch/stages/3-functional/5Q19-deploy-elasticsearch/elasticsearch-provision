@@ -24,7 +24,7 @@ bash Openshift-EE/utils/e2e-cr jobname:elasticsearch-provision jobphase:Running 
 # Removing test_id from e2e-result.yml spec for simple mode
 #sed -i "s/-<job_id>/ /g" Openshift-EE/utils/result-volume-replica-distribution.yml
 
-echo "*******Deploying elasticsearch Application****"
+echo "*******Deploying Elasticsearch Application****"
 #kubectl apply -f Openshift-EE/utils/result-elasticsearch-provision.yml
 
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=elasticsearch-deployment metadata="")
@@ -47,7 +47,6 @@ bash Openshift-EE/utils/event_updater jobname:elasticsearch-provisioning $test_n
 
 
 if [ "$?" != "0" ]; then
-#python3 Openshift-EE/utils/result/result_update.py $job_id 5Q19 3-functional "Deploying elasticsearch application" Fail $pipeline_id "$current_time" $commit_id $gittoken
+#python3 Openshift-EE/utils/result/result_update.py $job_id ELHN 3-functional "Deploying elasticsearch application" Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
-
