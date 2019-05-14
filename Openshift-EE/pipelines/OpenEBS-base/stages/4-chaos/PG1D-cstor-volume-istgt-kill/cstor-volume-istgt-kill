@@ -86,7 +86,7 @@ fi
 
 echo "********Deprovisioning Busybox Application*******"
 
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-target-istgt-kill metadata="")
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-istgt-kill metadata="")
 echo $test_name
 
 cd litmus
@@ -110,7 +110,6 @@ bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:target-istgt-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 rc_val=$(echo $?)
-
 
 # testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
 
