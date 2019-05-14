@@ -43,10 +43,17 @@ bash ../Openshift-EE/utils/litmus_job_runner label='app:elasticsearch-deployment
 echo "Dumping state of cluster post job run"; echo ""
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
-bash Openshift-EE/utils/event_updater jobname:elasticsearch-provisioning $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/event_updater jobname:elasticsearch-provision $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 
 if [ "$?" != "0" ]; then
-#python3 Openshift-EE/utils/result/result_update.py $job_id ELHN 3-functional "Deploying elasticsearch application" Fail $pipeline_id "$current_time" $commit_id $gittoken
+#python3 Openshift-EE/utils/result/result_update.py $job_id 5Q19 3-functional "Deploying elasticsearch application" Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
+fi
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4
+else
+  pod
 fi
