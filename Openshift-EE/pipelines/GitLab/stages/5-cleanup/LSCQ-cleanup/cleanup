@@ -20,6 +20,7 @@ kubectl delete ds,deployments,svc --all -n logging
 sleep 10
 kubectl delete ns logging
 kubectl delete job --all -n litmus
+kubectl delete e2er --all
 cd ..
 rm -rf e2e-openshift
 }
