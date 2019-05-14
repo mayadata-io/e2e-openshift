@@ -1,5 +1,0 @@
-#!/bin/bash
-set -x
-
-echo "***Deleting litmus job related resources***"
-sleep 2

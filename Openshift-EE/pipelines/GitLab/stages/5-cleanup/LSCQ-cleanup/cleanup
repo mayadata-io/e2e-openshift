@@ -1,0 +1,31 @@
+#!/bin/bash
+set -x
+
+pod() {
+sshpass -p $pass_e2e ssh -o StrictHostKeyChecking=no $user_e2e@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/GitLab/stages/5-cleanup/LSCQ-cleanup/cleanup node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+}
+
+node() {
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+source ~/.profile
+gittoken=$(echo "$github_token")
+case_id=LSCQ
+
+time="date"
+current_time=$(eval $time)
+
+kubectl delete ds,deployments,svc --all -n logging
+sleep 10
+kubectl delete ns logging
+kubectl delete job --all -n litmus
+cd ..
+rm -rf e2e-openshift
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4
+else
+  pod
+fi
