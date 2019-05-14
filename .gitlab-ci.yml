@@ -14,6 +14,7 @@ HUNE-OpenShift-3.10:
     - chmod 755 ./Openshift-EE/pipelines/ElasticSearch/stages/1-cluster-setup/HUNE-cluster-state/cluster-state
     - ./Openshift-EE/pipelines/ElasticSearch/stages/1-cluster-setup/HUNE-cluster-state/cluster-state
 
+
 CRGI-OpenEBS:
   image: openebs/openshift-ci:latest
   stage: OPENEBS-SETUP
@@ -21,12 +22,14 @@ CRGI-OpenEBS:
     - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/2-setup/CRGI-openebs-deploy/deploy-openebs
     - ./Openshift-EE/pipelines/ElasticSearch/stages/2-setup/CRGI-openebs-deploy/deploy-openebs
 
+
 12PS-OpenEBS-POLICIES:
   image: openebs/openshift-ci:latest
   stage: OPENEBS-SETUP
   script:
     - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/2-setup/12PS-storage-policies/openebs-sc
     - ./Openshift-EE/pipelines/ElasticSearch/stages/2-setup/12PS-storage-policies/openebs-sc
+
   
 2RWJ-CSTOR-POOL:
   image: openebs/openshift-ci:latest
@@ -34,6 +37,7 @@ CRGI-OpenEBS:
   script:
     - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/2-setup/2RWJ-create-striped-pool/create-pool
     - ./Openshift-EE/pipelines/ElasticSearch/stages/2-setup/2RWJ-create-striped-pool/create-pool
+
     
 .func_test_template:
   image: openebs/openshift-ci:latest
@@ -41,11 +45,11 @@ CRGI-OpenEBS:
   when: always
   dependencies:
     - CRGI-OpenEBS
-     
+
 
 5Q19-Elasticsearch-Provision:
   extends: .func_test_template
-  script: 	 
+  script: 	
     - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/3-functional/5Q19-deploy-elasticsearch/elasticsearch-provision
     - ./Openshift-EE/pipelines/ElasticSearch/stages/3-functional/5Q19-deploy-elasticsearch/elasticsearch-provision
 
@@ -54,9 +58,9 @@ CRGI-OpenEBS:
   extends: .func_test_template
   script: 
     - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/3-functional/86TL-App-replica-scaleup/app-replica-scaleup
-    - ./Openshift-EE/pipelines/ElasticSearch/stages/3-functional/86TL-App-replica-scaleup/app-replica-scaleup
+    - ./Openshift-EE/pipelines/ElasticSearch/stages/3-functional/86TL-App-replica-scaleup/app-replica-scaleup  
 
-
+     
 .chaos_test_template:
   image: openebs/openshift-ci:latest
   stage: CHAOS
@@ -68,15 +72,15 @@ CRGI-OpenEBS:
 N4NK-Openebs-Pool-Failure:
   extends: .chaos_test_template
   script: 
-    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/N4NK-openebs-pool-failure/openebs_pool_failure
-    - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/N4NK-opeenbs-pool-failure/openebs_pool_failure
+    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/N4NK-openebs-pool-failure/openebs-pool-failure
+    - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/N4NK-opeenbs-pool-failure/openebs-pool-failure
 
 
 3K0C-Openebs-Target-Network-Delay:
   extends: .chaos_test_template
   script: 
-    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/3K0C-openebs-target-network-delay/openebs_target_network_delay
-    - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/3K0C-openebs-target-network-delay/openebs_target_network_delay
+    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/3K0C-openebs-target-network-delay/openebs-target-network-delay
+    - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/3K0C-openebs-target-network-delay/openebs-target-network-delay
 
 
 2YLI-Cstor-Volume-Istgt-Kill:
@@ -85,11 +89,13 @@ N4NK-Openebs-Pool-Failure:
     - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/2YLI-cstor-volume-istgt-kill/cstor-volume-istgt-kill
     - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/2YLI-cstor-volume-istgt-kill/cstor-volume-istgt-kill
 
+
 37B3-Openebs-Target-Tailure:
    extends: .chaos_test_template
    script: 
     - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/37B3-openebs-target-failure/openebs-target-failure
     - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/37B3-openebs-target-failure/openebs-target-failure
+
     
 401P-Elasticsearch-Pod-Failure:
    extends: .chaos_test_template
@@ -97,24 +103,27 @@ N4NK-Openebs-Pool-Failure:
     - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/401P-elasticsearch-pod-failure/elasticsearch-pod-failure
     - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/401P-elasticsearch-pod-failure/elasticsearch-pod-failure
 
+
 638K-Cstor-Pool-Kill:
    extends: .chaos_test_template
    script: 
     - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/638K-cstor-pool-kill/cstor-pool-kill
     - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/638K-cstor-pool-kill/cstor-pool-kill
 
+
 E16S-Cstor-Volume-Mgmt-Kill:
    extends: .chaos_test_template
-   script: 
-    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/638K-cstor-pool-kill/cstor-pool-kill
-    - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/638K-cstor-pool-kill/cstor-pool-kill
+   script:
+    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/E16S-cstor-volume-mgmt-kill/cstor-volume-mgmt-kill
+    - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/E16S-cstor-volume-mgmt-kill/cstor-volume-mgmt-kill
 
-
+    
 II1Z-Pool-Network-Delay:
    extends: .chaos_test_template
    script: 
     - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/II1Z-pool-network-delay/pool-network-delay
     - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/II1Z-pool-network-delay/pool-network-delay
+
 
 IOWW-Cstor-Pool-Delete:
    extends: .chaos_test_template
@@ -137,14 +146,12 @@ PMIJ-Openebs-Node-Service-Failure:
     - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/PMIJ-openebs-node-service-failure/openebs-node-service-failure
 
 
-
 QQ9F-Pool-Network-Loss:
    extends: .chaos_test_template
    script: 
     - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/QQ9F-pool-network-loss/pool-network-loss
     - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/QQ9F-pool-network-loss/pool-network-loss
-
-
+    
 
 638K-cluster-Delete:
   image: openebs/openshift-ci:latest

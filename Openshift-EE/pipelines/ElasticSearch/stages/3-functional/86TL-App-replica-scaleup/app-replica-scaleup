@@ -3,7 +3,7 @@ set -x
 
 pod() {
 
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/ElasticSearch/stages/86TL-App-replica-scaleup/app-replica-scaleup node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/ElasticSearch/stages/3-functional/86TL-App-replica-scaleup/app-replica-scaleup node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
 }
 
 node() {
@@ -65,7 +65,7 @@ bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:app-replica-scaleup $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 if [ "$?" != "0" ]; then
-python3 Openshift-EE/utils/result/result_update.py $job_id 86TL 3-functional "Scale the statefulset application replicas and verify the ring configuration" Fail $pipeline_id "$current_time" $commit_id $gittoken
+## python3 Openshift-EE/utils/result/result_update.py $job_id 86TL 3-functional "Scale the statefulset application replicas and verify the ring configuration" Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 
