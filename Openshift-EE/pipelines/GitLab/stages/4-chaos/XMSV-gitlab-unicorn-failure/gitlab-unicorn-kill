@@ -2,7 +2,7 @@
 set -x
 
 pod() {
-sshpass -p $pass_e2e ssh -o StrictHostKeyChecking=no $user_e2e@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/Gitlab/stages/4-chaos/1PP5-app-kill/app-kill node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+sshpass -p $pass_e2e ssh -o StrictHostKeyChecking=no $user_e2e@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/Gitlab/stages/4-chaos/XMSV-gitlab-unicorn-failure/gitlab-unicorn-kill node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
 }
 
 node() {

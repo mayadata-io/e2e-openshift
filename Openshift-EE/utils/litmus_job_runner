@@ -36,13 +36,16 @@ jobStateCmd="kubectl get pod ${litmus_pod} --no-headers -n litmus -o custom-colu
 
 while true; do
   cstate=$(eval ${containerStateCmd}); rc=$?
-  if [[ $rc -eq 0 && ! -z $cstate ]]; then
-    if [[ ! $cstate =~ 'terminated' ]]; then
-      sleep 10
-    else break;
+  if [[ $rc -eq 0 && ! $cstate ]]; then
+    sleep 10
+    else if [[ $rc -eq 0 && ! -z $cstate ]]; then
+      if [[ ! $cstate =~ 'terminated' ]]; then
+        sleep 10
+      else break;
+      fi
+    else
+      echo "unable to get litmus container status"; exit 1
     fi
-  else
-    echo "unable to get litmus container status"; exit 1
   fi
 done
 
