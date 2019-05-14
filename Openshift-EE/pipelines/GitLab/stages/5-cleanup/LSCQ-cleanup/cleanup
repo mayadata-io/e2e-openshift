@@ -21,6 +21,7 @@ sleep 10
 kubectl delete ns logging
 kubectl delete job --all -n litmus
 kubectl delete e2er --all
+kubectl delete ds pumba -n openebs
 cd ..
 rm -rf e2e-openshift
 }
