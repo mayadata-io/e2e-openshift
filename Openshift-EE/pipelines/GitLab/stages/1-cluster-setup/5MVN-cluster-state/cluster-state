@@ -21,6 +21,9 @@ if [ "$wait" == "1" ]; then
 sleep 120
 fi
 
+echo "Setting Up the cluster kube-config**"
+sshpass -p $pass_e2e ssh -o StrictHostKeyChecking=no $user_e2e@$ip -p 1658 bash setup.sh
+
 echo "*************************Checking the Cluster's Health********************"
 
 echo "Checking for the number of nodes in ready state*******************************"
