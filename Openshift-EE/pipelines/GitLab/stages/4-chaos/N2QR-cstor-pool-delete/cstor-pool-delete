@@ -20,7 +20,7 @@ present_dir=$(pwd)
 echo $present_dir
 
 #pooling over cstor-pool-delete job
-bash Openshift-EE/utils/pooling jobname:cstor_pool_kill
+bash Openshift-EE/utils/pooling jobname:cstor-pool-kill
 
 bash Openshift-EE/utils/e2e-cr jobname:cstor-pool-delete jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:cstor-pool-delete jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
