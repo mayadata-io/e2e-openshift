@@ -43,7 +43,7 @@ bash ../Openshift-EE/utils/litmus_job_runner label='app:prometheus-deployment-li
 echo "Dumping state of cluster post job run"; echo ""
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
-bash Openshift-EE/utils/event_updater jobname:prometheus-provisioning $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/event_updater jobname:prometheus-provision $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 
 if [ "$?" != "0" ]; then
@@ -70,7 +70,7 @@ bash ../Openshift-EE/utils/litmus_job_runner label='app:prometheus-loadgen-litmu
 echo "Dumping state of cluster post job run"; echo ""
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
-bash Openshift-EE/utils/event_updater jobname:prometheus-provisioning $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/event_updater jobname:prometheus-provision $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 if [ "$?" != "0" ]; then
 #python3 Openshift-EE/utils/result/result_update.py $job_id ELHN 3-functional "Deploying prometheus loadgen application" Fail $pipeline_id "$current_time" $commit_id $gittoken
@@ -78,7 +78,7 @@ exit 1;
 fi
 
 current_time=$(eval $time)
-bash Openshift-EE/utils/e2e-cr jobname:prometheus-provisioning jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
+bash Openshift-EE/utils/e2e-cr jobname:prometheus-provision jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
 #python3 Openshift-EE/utils/result/result_update.py $job_id ELHN 3-functional "Scale the statefulset application replicas and verify the ring configuration" Pass $pipeline_id "$current_time" $commit_id $gittoken
 
 }
