@@ -84,7 +84,7 @@ bash Openshift-EE/utils/e2e-cr jobname:prometheus-provisioning jobphase:Complete
 }
 
 if [ "$1" == "node" ];then
-  node $2
+  node $2 $3 $4
 else
   pod
 fi
