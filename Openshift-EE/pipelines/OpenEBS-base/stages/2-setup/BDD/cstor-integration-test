@@ -1,2 +1,46 @@
 #!/bin/bash
-echo "Performing cstor integration test"
+#!/bin/bash
+set -x
+pod() {
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/cstor-integration-test node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+}
+
+node() {
+
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+case_id=HC5P
+commit_id=$(echo $3)
+source ~/.profile
+gittoken=$(echo "$github_token")
+
+time="date"
+current_time=$(eval $time)
+
+#pooling over previous job to complete
+echo "*******Creating cstor-pool**************"
+bash Openshift-EE/utils/pooling jobname:s2-j1-openebs-deploy
+
+cd /home/devuser/go/src/github.com/openebs
+
+git clone https://github.com/openebs/maya.git
+
+cd maya/integration-tests
+
+ginkgo -v
+
+if [ "$?" != "0" ];then
+  echo "test-failed"
+  exit 1;
+fi
+  
+}
+
+
+
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4
+else
+  pod
+fi
