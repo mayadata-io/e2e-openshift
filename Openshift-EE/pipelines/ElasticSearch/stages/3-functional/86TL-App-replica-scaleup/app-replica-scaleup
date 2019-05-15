@@ -20,9 +20,9 @@ current_time=$(eval $time)
 present_dir=$(pwd)
 echo $present_dir
 
+bash Openshift-EE/utils/pooling jobname:elasticsearch-provision
 bash Openshift-EE/utils/e2e-cr jobname:app-replica-scaleup jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 bash Openshift-EE/utils/e2e-cr jobname:app-replica-scaleup jobphase:Running
-
 
 
 echo "*******Scaling Application replicas**********"
