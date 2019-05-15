@@ -51,7 +51,7 @@ sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
 -e 's/value: app-busybox-ns/value: target-affinity/g' \
 -e 's/value: openebs-busybox/value: busybox-target-affinity/g' \
 -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deploy-affinity/g' \
--e 's/statefulset/deployment/g' \
+-e 's/value: statefulset/value: deployment/g' \
 -e 's/value: openebs-cstor-sparse/value: openebs-cstor-disk/g' deploy_affinity_test.yml
 
 cat deploy_affinity_test.yml
@@ -137,6 +137,7 @@ sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovisi
 -e 's/value: '\''app=busybox-sts'\''/value: '\''app=target-affinity'\''/g' \
 -e 's/value: app-busybox-ns/value: target-affinity/g' \
 -e 's/value: openebs-busybox/value: busybox-target-affinity/g' \
+-e 's/value: statefulset/value: deployment/g' \
 -e 's/value: openebs-cstor-sparse/value: openebs-cstor-disk/g' \
 -e 's/value: provision/value: deprovision/g' deprovision_affinity.yml
 

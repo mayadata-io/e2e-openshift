@@ -52,7 +52,7 @@ sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
 -e 's/app: busybox-litmus/app: busybox-litmus-target-jiva/g' \
 -e 's/value: '\''app=busybox-sts'\''/value: '\''app=target-affinity-jiva'\''/g' \
 -e 's/value: app-busybox-ns/value: target-affinity-jiva/g' \
--e 's/value: deployment/value: statefulset/g' \
+-e 's/value: statefulset/value: deployment/g' \
 -e 's/value: openebs-busybox/value: busybox-target-affinity-jiva/g' \
 -e 's/value: openebs-cstor-sparse/value: openebs-jiva-default/g' deploy_affinity_test_jiva.yml
 
@@ -145,7 +145,7 @@ sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovisi
 -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
 -e 's/value: '\''app=busybox-sts'\''/value: '\''app=target-affinity-jiva'\''/g' \
 -e 's/value: app-busybox-ns/value: target-affinity-jiva/g' \
--e 's/value: deployment/value: statefulset/g' \
+-e 's/value: statefulset/value: deployment/g' \
 -e 's/app: busybox-litmus/app: busybox-deprovision-affinity-jiva/g' \
 -e 's/value: openebs-busybox/value: busybox-target-affinity-jiva/g' \
 -e 's/value: openebs-cstor-sparse/value: openebs-jiva-default/g' \
