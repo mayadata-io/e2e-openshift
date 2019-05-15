@@ -8,7 +8,7 @@ This test checks if the application pod and its corresponding jiva controller ar
 
 - OpenShift Cluster should be created and have the dependencies installed.
 - Jiva based storage pool should have been created.
-- OpenEBS storage class using jivs cas-type should be created.
+- OpenEBS storage class using jiva cas-type should be created.
 
 #### Procedure
 
