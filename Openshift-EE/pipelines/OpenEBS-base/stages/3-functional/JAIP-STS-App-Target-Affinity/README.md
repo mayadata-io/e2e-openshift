@@ -1,4 +1,4 @@
-### JAIP-Verify if the statefulset application and target are scheduled on same node.
+### JAIP-Verify if the statefulset application and cStor target are scheduled on same node.
 
 #### Description
 
