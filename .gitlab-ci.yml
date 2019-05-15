@@ -112,6 +112,6 @@ LSCQ-Job-Cleanup:
   stage: CLEANUP
   when: always
   script:
-    - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/5-cleanup/LSCQ-openebs-cleanup/openebs-cleanup
-    - ./Openshift-EE/pipelines/GitLab/stages/5-cleanup/LSCQ-openebs-cleanup/openebs-cleanup
+    - chmod 775 ./Openshift-EE/pipelines/GitLab/stages/5-cleanup/LSCQ-cleanup/openebs-cleanup
+    - ./Openshift-EE/pipelines/GitLab/stages/5-cleanup/LSCQ-cleanup/openebs-cleanup
   
