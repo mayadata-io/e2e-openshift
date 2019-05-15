@@ -73,6 +73,12 @@ JAIP-STS-App-Target-Affinity:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/JAIP-STS-App-Target-Affinity/sts-app-target-affinity
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/JAIP-STS-App-Target-Affinity/sts-app-target-affinity
 
+VZFL-App-Target-Affinity:
+  extends: .func_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/VZFL-App-Target-affinity/app-target-affinity
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/VZFL-App-Target-affinity/app-target-affinity
+
       #ENBK-App-Upgrade:
       #  extends: .func_test_template
       #  script: 
@@ -138,6 +144,12 @@ UURF-Jiva-STS-App-Target-Affinity:
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UURF-Jiva-sts-App-Target-Affinity/sts-app-target-affinity
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UURF-Jiva-sts-App-Target-Affinity/sts-app-target-affinity
+
+FSJT-Jiva-App-Target-affinity:
+  extends: .func_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/FSJT-Jiva-App-Target-affinity/app-target-affinity
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/FSJT-Jiva-App-Target-affinity/app-target-affinity
 
 SN3A-Jiva-Memory-Consumption:
   extends: .func_test_template
