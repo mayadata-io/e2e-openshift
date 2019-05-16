@@ -2,10 +2,6 @@
 set -x
 
 pod() {
-echo $CI_JOB_ID
-###clone e2e-openshift-repo
-echo "cloning e2e-openshift repo*************"
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/openebs/e2e-openshift.git'
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/ZD8F-Sts-App-replica-scaleup/app-replica-scaleup node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
 }
 
@@ -36,6 +32,7 @@ echo "Running the litmus test for Busybox Deployment.."
 cp apps/busybox/deployers/run_litmus_test.yml deploy_run_test.yml
 sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
 -e 's/value: '\''app=busybox-sts'\''/value: '\''app=busybox-scale'\''/g' \
+-e 's/value: '\''replicas=2'\''/value: '\''replicas=1'\''/g' \
 -e 's/value: openebs-cstor-sparse/value: cstor-disk-standalone/g' deploy_run_test.yml
 cat deploy_run_test.yml
 
@@ -85,10 +82,10 @@ cp apps/busybox/deployers/run_litmus_test.yml deprovision_scaleup.yml
 sed -i -e 's/generateName: litmus-busybox-deploy/generateName: litmus-busybox-deprovision/g' \
 -e 's/app: busybox-litmus/app: busybox-deprovision-litmus/g' \
 -e 's/value: '\''app=busybox-sts'\''/value: '\''app=busybox-scale'\''/g' \
+-e 's/value: '\''replicas=2'\''/value: '\''replicas=1'\''/g' \
 -e 's/value: openebs-cstor-sparse/value: cstor-disk-standalone/g' \
 -e 's/value: provision/value: deprovision/g' deprovision_scaleup.yml
 
-echo "Running the litmus test for Busybox Deployment Scaleup.."
 cat deprovision_scaleup.yml
 
 bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-deprovision-litmus' job=deprovision_scaleup.yml
