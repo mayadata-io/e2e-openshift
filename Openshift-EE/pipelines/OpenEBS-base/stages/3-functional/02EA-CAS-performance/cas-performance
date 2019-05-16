@@ -1,0 +1,177 @@
+#!/bin/bash
+set -x
+
+pod() {
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/02EA-CAS-performance/cas-performance node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+}
+
+node() {
+job_id=$1 #Gitlab job id obtain from the gitlab env ($CI_JOB_ID).
+pipeline_id=$2 # Gitlab pipeline id obtained from gitlab env ($CI_PIPELINE_ID).
+commit_id=$3 #Gitlab commit id Obtained fron gilab env ($CI_COMMIT_SHA).
+case_id=02EA  #test case ID.
+gitlab_stage=3-functional # Gitlab stage where this test case is running.
+
+source ~/.profile
+#github token to push the test result into github mayadata-io/e2e-openshift repository.
+#This token is set as an env in ~/.profile in the test cluster.
+gitToken=$github_token
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+#Creating e2e custom resoure result for the test.
+
+bash Openshift-EE/utils/e2e-cr jobname:cas-performance jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:cas-performance jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+################
+# LitmusBook 1 #
+################
+
+#### Deploy BusyBox application
+
+#testcase name for the busybox deployer will be append with busybox-{{ action }}- {{ app-namespace }}.
+#action will be provision or deprovision.
+#app-namespaces is namespace of the application deployment.
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-cas-performance metadata="")
+echo $test_name
+
+cd litmus
+# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parametes.
+cp apps/busybox/deployers/run_litmus_test.yml deploy_busybox_cas_performance.yml
+
+# Update the environmental vartiables in litmus job spec.
+: << EOF
+  --------------------------------------------------------------------------------------------------------------------     
+ | specAttribute     | kind   |         default value               | test specifc value                              |
+  ------------------------------------------------------------------------------------------------------------------- |
+ | Litmus job label  | label  | app: busybox-litmus                 | app: deploy-busybox-cas                         |
+ | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName: busybox-provision-cas-performance |
+ | appLabel          | env    | app=busybox-sts                     | app=busybox-cas-performance                     |
+ | deploy type       | env    | statefulset                         | deployment                                      |
+ | ImagePullPolicy   | value  | Always                              | IfNotPresent                                    |
+ | pvcName           | env    | openebs-busybox                     | busybox-cas-performance                         | 
+ | storage clas      | env    | openebs-cstor-sparse                | cstor-performance-config                        |
+ | appNamespace      | env    | app-busybox-ns                      | busybox-cas-performance                         |
+  ---------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/app: busybox-litmus/app: deploy-busybox-cas/g' \
+-e 's/generateName: litmus-busybox-deploy/generateName: busybox-provision-cas-performance/g' \
+-e 's/app=busybox-sts/app=busybox-cas-performance/g' \
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
+-e 's/value: openebs-busybox/value: busybox-cas-performance/g' \
+-e 's/value: openebs-cstor-sparse/value: cstor-performance-config/g' \
+-e 's/value: app-busybox-ns/value: busybox-cas-performance/g' deploy_busybox_cas_performance.yml
+
+cat deploy_busybox_cas_performance.yml
+
+# Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
+bash ../Openshift-EE/utils/litmus_job_runner label='app:deploy-busybox-cas' job=deploy_busybox_cas_performance.yml
+cd ..
+
+# Get the cluster state Once the litmus jobs completed.
+bash Openshift-EE/utils/dump_cluster_state;
+# Update the e2e event for the job
+bash Openshift-EE/utils/event_updater jobname:cas-performance $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+rc_val=$(echo $?)
+# Obtain the status of the test using litmusresult(lr) 
+testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+
+# Update the result of the test case in github mayadata-io/e2e-openshift repository.
+if [ "$rc_val" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id $case_id 3-functional "Check if the application is successfully deployed usin CAS performance tuning parameters" $testResult $pipeline_id "$current_time" $commit_id $gitToken
+exit 1;
+fi
+
+#TODO: Include performance specific functional cases 
+
+################
+# LitmusBook 2 #
+################
+
+#### Deprovision BusyBox application
+
+#testcase name for the busybox deployer will be append with busybox-{{ action }}- {{ app-namespace }}.
+#action will be provision or deprovision.
+#app-namespaces is namespace of the application deployment.
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-cas-performance metadata="")
+echo $test_name
+
+cd litmus
+# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parametes.
+cp apps/busybox/deployers/run_litmus_test.yml deprovision_busybox_cas_performance.yml
+
+# Update the environmental vartiables in litmus job spec.
+
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------------     
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+  -------------------------------------------------------------------------------------------------------------------- |
+ | Litmus job label  | label  | app: busybox-litmus                 | app: deprovision-busybox-cas                     |
+ | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName: busybox-deprovision-cas-performance|
+ | appLabel          | env    | app=busybox-sts                     | app=busybox-cas-performance                      |
+ | deploy type       | env    | statefulset                         | deployment                                       |
+ | action            | env    | provision                           | deprovision                                      |
+ | ImagePullPolicy   | value  | Always                              | IfNotPresent                                     |
+ | pvcName           | env    | openebs-busybox                     | busybox-cas-performance                          | 
+ | storage clas      | env    | openebs-cstor-sparse                | cstor-performance-config                         |
+ | appNamespace      | env    | app-busybox-ns                      | busybox-cas-performance                          |
+  ----------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/app: busybox-litmus/app: deprovision-busybox-cas/g' \
+-e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovision-cas-performance/g' \
+-e 's/app=busybox-sts/app=busybox-cas-performance/g' \
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/value: provision/value: deprovision/g' \
+-e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
+-e 's/value: openebs-busybox/value: busybox-cas-performance/g' \
+-e 's/value: openebs-cstor-sparse/value: cstor-performance-config/g' \
+-e 's/value: app-busybox-ns/value: busybox-cas-performance/g' deprovision_busybox_cas_performance.yml
+
+cat deprovision_busybox_cas_performance.yml
+
+# Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
+bash ../Openshift-EE/utils/litmus_job_runner label='app:deprovision-busybox-cas' job=deprovision_busybox_cas_performance.yml
+cd ..
+
+#Get the cluster state Once the litmus jobs completed.
+bash Openshift-EE/utils/dump_cluster_state;
+
+#Update the e2e event for the job
+bash Openshift-EE/utils/event_updater jobname:cas-performance $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+rc_val=$(echo $?)
+
+# Obtain the status of the test using litmusresult(lr) 
+testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+
+# Update the result of the test case in github mayadata-io/e2e-openshift repository.
+if [ "$rc_val" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id $case_id 3-functional "Check if the application is successfully deployed usin CAS performance tuning parameters" $testResult $pipeline_id "$current_time" $commit_id $gitToken
+exit 1;
+fi
+
+# Update the e2e cr once the job is completed
+bash Openshift-EE/utils/e2e-cr jobname:cas-performance jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:$testResult
+
+python3 Openshift-EE/utils/result/result_update.py $job_id $case_id 3-functional "Check if the application is successfully deployed usin CAS performance tuning parameters" $testResult $pipeline_id "$current_time" $commit_id $gitToken
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4
+else
+  pod
+fi
