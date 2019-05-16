@@ -52,6 +52,7 @@ sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
 -e 's/generateName: litmus-busybox-deploy/generateName: busybox-provision-app-replica/g' \
 -e 's/value: app-busybox-ns/value: app-scale-jiva/g' \
 -e 's/app: busybox-litmus/app: busybox-replica-scale-jiva/g' \
+-e 's/value: '\''replicas=2'\''/value: '\''replicas=1'\''/g' \
 -e 's/value: '\''app=busybox-sts'\''/value: '\''app=busybox-scale-jiva'\''/g' \
 -e 's/value: openebs-cstor-sparse/value: openebs-jiva-standalone/g' deploy_run_test_jiva.yml
 
@@ -141,6 +142,7 @@ sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovisi
 -e 's/value: app-busybox-ns/value: app-scale-jiva/g' \
 -e 's/app: busybox-litmus/app: busybox-deprovision-litmus-jiva/g' \
 -e 's/value: '\''app=busybox-sts'\''/value: '\''app=busybox-scale-jiva'\''/g' \
+-e 's/value: '\''replicas=2'\''/value: '\''replicas=1'\''/g' \
 -e 's/value: openebs-cstor-sparse/value: openebs-jiva-standalone/g' \
 -e 's/value: provision/value: deprovision/g' deprovision_scaleup_jiva.yml
 
@@ -156,9 +158,10 @@ bash Openshift-EE/utils/event_updater jobname:app-replica-scaleup-jiva $test_nam
 rc_val=$(echo $?)
 
 # testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
-# if [ "$rc_val" != "0" ]; then
-# exit 1;
-# fi
+if [ "$rc_val" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id KUL9 3-functional "Scale the statefulset application replicas and verify the ring configuration" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
 
 current_time=$(eval $time)
 bash Openshift-EE/utils/e2e-cr jobname:app-replica-scaleup-jiva jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass

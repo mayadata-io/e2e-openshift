@@ -2,7 +2,6 @@
 set -x
 
 pod() {
-#sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 ssh root@10.23.1.10 'oc adm policy add-scc-to-user anyuid system:serviceaccount:rep-network-delay-jiva:default'	
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/KLPX-Jiva-replica-network-delay/jiva-replica-network-delay node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
 }
 
@@ -20,8 +19,8 @@ current_time=$(eval $time)
 present_dir=$(pwd)
 echo $present_dir
 
-bash Openshift-EE/utils/pooling jobname:controller-network-delay-jiva
-bash Openshift-EE/utils/e2e-cr jobname:volume-replica-network-delay-jiva jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:volume-replica-network-delay-jiva jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:volume-replica-network-delay-jiva jobphase:Running
 
 echo "*******Deploying Busybox Application****"
 
@@ -35,8 +34,6 @@ echo $test_name
 cd litmus
 echo "Running the litmus test for Busybox Deployment.."
 cp apps/busybox/deployers/run_litmus_test.yml deploy_rep_network_jiva.yml
-
-ssh root@10.23.1.10 'oc adm policy add-scc-to-user anyuid system:serviceaccount:rep-network-delay-jiva:default'
 
 : << EOF
   --------------------------------------------------------------------------------------------------------------------------|
@@ -159,9 +156,10 @@ bash Openshift-EE/utils/event_updater jobname:volume-replica-network-delay-jiva 
 rc_val=$(echo $?)
 
 # testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
-# if [ "$rc_val" != "0" ]; then
-# exit 1;
-# fi
+if [ "$rc_val" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id KLPX 4-chaos "Inject network delay in jiva replica & verify successful recovery" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
 
 current_time=$(eval $time)
 bash Openshift-EE/utils/e2e-cr jobname:volume-replica-network-delay-jiva jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
