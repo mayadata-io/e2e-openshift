@@ -56,7 +56,7 @@ cp apps/busybox/deployers/run_litmus_test.yml deploy_busybox_cas_performance.yml
  | ImagePullPolicy   | value  | Always                              | IfNotPresent                                    |
  | pvcName           | env    | openebs-busybox                     | busybox-cas-performance                         | 
  | storage clas      | env    | openebs-cstor-sparse                | cstor-performance-config                        |
- | appNamespace      | env    | app-busybox-ns                      | busybox-cas-performance                         |
+ | appNamespace      | env    | app-busybox-ns                      | cas-performance                                 |
   ---------------------------------------------------------------------------------------------------------------------
 EOF
 
@@ -67,7 +67,7 @@ sed -i -e 's/app: busybox-litmus/app: deploy-busybox-cas/g' \
 -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
 -e 's/value: openebs-busybox/value: busybox-cas-performance/g' \
 -e 's/value: openebs-cstor-sparse/value: cstor-performance-config/g' \
--e 's/value: app-busybox-ns/value: busybox-cas-performance/g' deploy_busybox_cas_performance.yml
+-e 's/value: app-busybox-ns/value: cas-performance/g' deploy_busybox_cas_performance.yml
 
 cat deploy_busybox_cas_performance.yml
 
@@ -122,7 +122,7 @@ cp apps/busybox/deployers/run_litmus_test.yml deprovision_busybox_cas_performanc
  | ImagePullPolicy   | value  | Always                              | IfNotPresent                                     |
  | pvcName           | env    | openebs-busybox                     | busybox-cas-performance                          | 
  | storage clas      | env    | openebs-cstor-sparse                | cstor-performance-config                         |
- | appNamespace      | env    | app-busybox-ns                      | busybox-cas-performance                          |
+ | appNamespace      | env    | app-busybox-ns                      | cas-performance                                  |
   ----------------------------------------------------------------------------------------------------------------------
 EOF
 
@@ -134,7 +134,7 @@ sed -i -e 's/app: busybox-litmus/app: deprovision-busybox-cas/g' \
 -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
 -e 's/value: openebs-busybox/value: busybox-cas-performance/g' \
 -e 's/value: openebs-cstor-sparse/value: cstor-performance-config/g' \
--e 's/value: app-busybox-ns/value: busybox-cas-performance/g' deprovision_busybox_cas_performance.yml
+-e 's/value: app-busybox-ns/value: cas-performance/g' deprovision_busybox_cas_performance.yml
 
 cat deprovision_busybox_cas_performance.yml
 
