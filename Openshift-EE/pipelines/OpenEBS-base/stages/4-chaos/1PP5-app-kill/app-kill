@@ -22,6 +22,10 @@ echo $present_dir
 bash Openshift-EE/utils/e2e-cr jobname:app-kill jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:app-kill jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
+################
+# LitmusBook 1 #
+################
+
 echo "*******Deploying Busybox Application****"
 
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-app-kill metadata="")
@@ -50,7 +54,40 @@ python3 Openshift-EE/utils/result/result_update.py $job_id 1PP5 4-chaos "Induce 
 exit 1;
 fi
 
-echo "*******Performing Application POd Chaos**********"
+################
+# LitmusBook 2 #
+################
+
+echo "*******Deploying Busybox Loadgen****"
+
+run_id="app-kill";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+echo $test_name
+
+cd litmus
+cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_app_kill.yml
+
+sed -i -e 's/value: app-busybox-ns/value: app-kill/g' \
+-e 's/app=busybox-sts/app=app-kill/g' \
+-e 's/liveness: litmus-busybox-liveness/liveness: busybox-liveness-appkill/g' busybox_loadgen_app_kill.yml
+
+cat busybox_loadgen_app_kill.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='liveness:busybox-liveness-appkill' job=busybox_loadgen_app_kill.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:app-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id 1PP5 4-chaos "Induce application pod failure and check if it is recovered successfully" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+
+################
+# LitmusBook 3 #
+################
+
+echo "*******Performing Application Pod Chaos**********"
 
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=application-pod-failure metadata="")
 echo $test_name
@@ -73,6 +110,40 @@ if [ "$?" != "0" ]; then
 python3 Openshift-EE/utils/result/result_update.py $job_id 1PP5 4-chaos "Induce application pod failure and check if it is recovered successfully" Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
+
+
+################
+# LitmusBook 4 #
+################
+
+echo "********Deprovisioning Busybox Loadgen*******"
+run_id="app-kill";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+echo $test_name
+
+cd litmus
+cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_deprovision_app_kill.yml
+
+sed -i -e 's/value: app-busybox-ns/value: app-kill/g' \
+-e '/svalue: provision/value: deprovision/g' \
+-e 's/liveness: litmus-busybox-liveness/liveness: busybox-liveness-deprovision-appkill/g' busybox_loadgen_deprovision_app_kill.yml
+
+cat busybox_loadgen_deprovision_app_kill.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='liveness:busybox-liveness-deprovision-appkill' job=appkill.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:app-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+
+if [ "$rc_val" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id 1PP5 4-chaos "Induce application pod failure and check if it is recovered successfully" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# LitmusBook 5 #
+################
 
 echo "********Deprovisioning Busybox Application*******"
 
