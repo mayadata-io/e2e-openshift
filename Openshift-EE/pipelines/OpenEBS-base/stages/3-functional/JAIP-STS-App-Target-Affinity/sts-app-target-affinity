@@ -94,7 +94,7 @@ EOF
 
 sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
 -e 's/value: app=busybox-sts/value: app=sts-target-affinity/g' \
--e 's/value: app: litmus-affinity/app: litmus-sts-affinity/g' \
+-e 's/app: litmus-affinity/app: litmus-sts-affinity/g' \
 -e 's/value: deployment/value: statefulset/g' \
 -e 's/generateName: litmus-app-target-affinity-/generateName: litmus-sts-target-affinity-/g' \
 -e 's/value: app-busybox-ns/value: sts-target-affinity/g' run_sts_affinity_test.yml
