@@ -35,6 +35,13 @@ HC5P-CSTOR-POOL:
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/HC5P-create-striped-pool/create-pool
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/HC5P-create-striped-pool/create-pool
+
+BDD:
+  image: openebs/openshift-ci:latest
+  stage: OPENEBS-SETUP
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/cstor-integration-test
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/cstor-integration-test
     
 .func_test_template:
   image: openebs/openshift-ci:latest

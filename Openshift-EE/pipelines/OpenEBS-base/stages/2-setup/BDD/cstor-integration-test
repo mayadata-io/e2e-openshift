@@ -1,0 +1,48 @@
+#!/bin/bash
+set -x
+pod() {
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/cstor-integration-test node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+}
+
+node() {
+
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+case_id=HC5P          # This need to be changed
+commit_id=$(echo $3)
+source ~/.profile
+gittoken=$(echo "$github_token")
+time="date"
+current_time=$(eval $time)
+
+#pooling over previous job to complete
+bash Openshift-EE/utils/pooling jobname:s2-j1-openebs-deploy
+bash Openshift-EE/utils/e2e-cr jobname:cstor-integration-test jobphase:Running init_time:"$current_time"
+
+
+cd /home/devuser/go/src/github.com/openebs
+
+git clone https://github.com/openebs/maya.git
+
+cd maya/integration-tests
+
+ginkgo -v
+
+if [ "$?" != "0" ];then
+  echo "test-failed"
+  current_time=$(eval $time)
+  bash Openshift-EE/utils/e2e-cr jobname:cstor-integration-test jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Fail
+  exit 1;
+else
+  echo "test-passed"
+  current_time=$(eval $time)
+  bash Openshift-EE/utils/e2e-cr jobname:cstor-integration-test jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
+fi
+  
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4
+else
+  pod
+fi
