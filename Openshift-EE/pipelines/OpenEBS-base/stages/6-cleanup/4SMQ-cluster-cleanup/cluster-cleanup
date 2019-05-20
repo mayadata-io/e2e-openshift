@@ -45,6 +45,7 @@ ansible-playbook k8s/on-prem/openshift-installer/revert_cluster_state.yml -vv
 
 #Removimg e2e openshift test repo
 cd  && rm -rf e2e-openshift && rm -rf infra
+cd /home/devuser/go/src/github.com/openebs && rm -rf maya
 }
 
 if [ "$1" == "node" ];then
