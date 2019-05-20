@@ -3,8 +3,8 @@ set -x
 
 pod() {
 echo $CI_JOB_ID
-###clone e2e-openshift-repo
-echo "cloning e2e-openshift repo*************"
+
+# cloning e2e-openshift repo
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'git clone https://github.com/mayadata-io/e2e-openshift.git'
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'cd e2e-openshift && git checkout prometheus && bash Openshift-EE/pipelines/Prometheus/stages/3-functional/ELHN-deploy-prometheus/prometheus-provision node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
 }
@@ -27,7 +27,7 @@ bash Openshift-EE/utils/e2e-cr jobname:prometheus-provision jobphase:Running ini
 # LitmusBook 1 #
 ################
 
-''' Deploying Prometheus Application '''
+# Deploying Prometheus Application 
 
 #testcase for prometheus deployment is derived from  litmus job test_vars.yml
 
@@ -36,7 +36,7 @@ echo $test_name
 
 cd litmus
 
-echo "Running the litmus test.."
+# Running the litmus test
 run_test=apps/prometheus/deployers/run_litmus_test.yml
 
 cat $run_test
@@ -44,7 +44,7 @@ cat $run_test
 # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
 bash ../Openshift-EE/utils/litmus_job_runner label='app:prometheus-deployment-litmus' job=$run_test
 
-echo "Dumping state of cluster post job run"; echo ""
+# Dumping state of cluster post job run
 cd ..
 # Get the cluster state Once the litmus jobs completed.
 bash Openshift-EE/utils/dump_cluster_state;
@@ -61,7 +61,7 @@ fi
 # LitmusBook 2 #
 ################
 
-''' Deploying Prometheus Loadgen Application '''
+# Deploying Prometheus Loadgen Application 
 
 #testcase for prometheus loadgen is derived from  litmus job test_vars.yml
 
@@ -70,7 +70,7 @@ echo $test_name
 
 cd litmus
 
-echo "Running the litmus test.."
+# Running the litmus test.. 
 run_test=apps/prometheus/loadgen/run_litmus_test.yml
 
 cat $run_test
@@ -79,7 +79,7 @@ cat $run_test
 bash ../Openshift-EE/utils/litmus_job_runner label='app:prometheus-loadgen-litmus' job=$run_test 
 
 
-echo "Dumping state of cluster post job run"; echo ""
+# Dumping state of cluster post job run 
 cd ..
 #Get the cluster state Once the litmus jobs completed.
 bash Openshift-EE/utils/dump_cluster_state;
@@ -96,7 +96,7 @@ fi
 # LitmusBook 3 #
 ################
 
-''' Deploying Prometheus Liveness Job '''
+# Deploying Prometheus Liveness Job 
 
 # testcase for prometheus liveness is derived from litmus job vars.yml
 
@@ -105,7 +105,7 @@ echo $test_name
 
 cd litmus
 
-echo "Running the litmus test.."
+# Running the litmus test
 run_test=apps/prometheus/liveness/run_litmus_test.yml
 
 cat $run_test
@@ -114,7 +114,7 @@ cat $run_test
 bash ../Openshift-EE/utils/litmus_job_runner label='app:litmus-prometheus-liveness' job=$run_test 
 
 
-echo "Dumping state of cluster post job run"; echo ""
+# Dumping state of cluster post job run
 cd ..
 #Get the cluster state Once the litmus jobs completed.
 bash Openshift-EE/utils/dump_cluster_state;
