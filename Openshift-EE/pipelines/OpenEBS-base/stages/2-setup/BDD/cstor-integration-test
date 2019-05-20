@@ -24,18 +24,20 @@ cd /home/devuser/go/src/github.com/openebs
 
 git clone https://github.com/openebs/maya.git
 
-cd maya/integration-tests
+cd maya/tests/cstor-pool/
 
 ginkgo -v
 
 if [ "$?" != "0" ];then
   echo "test-failed"
   current_time=$(eval $time)
+  cd /home/devuser/e2e-openshift
   bash Openshift-EE/utils/e2e-cr jobname:cstor-integration-test jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Fail
   exit 1;
 else
   echo "test-passed"
   current_time=$(eval $time)
+  cd /home/devuser/e2e-openshift
   bash Openshift-EE/utils/e2e-cr jobname:cstor-integration-test jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
 fi
   
