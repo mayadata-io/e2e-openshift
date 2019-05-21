@@ -140,8 +140,9 @@ cp apps/busybox/deployers/run_litmus_test.yml deprovision_rep_node_affinity.yml
  | specAttribute     | kind   |         default value               | test specifc value                                       |
   -----------------------------------------------------------------------------------------------------------------------------|
  | appLabel          | env    | app=busybox-sts                     | app=busybox-rep-node-affinity-jiva                       | 
+ | appPVC            | env    | openebs-busybox                     | openebs-busybox-rep-affinity                             |
  | appNamespace      | env    | app-busybox-ns                      | rep-node-affinity-jiva                                   |   
- | storage clas      | env    | openebs-cstor-sparse                | openebs-jiva-default                                     |
+ | storage class     | env    | openebs-cstor-sparse                | openebs-jiva-default                                     |
  | deploy type       | env    | statefulset                         | deployment                                               |
  | Action            | env    | value: provision                    | value: deprovision                                       |
  | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName: busybox-deprovision-rep-node-affinity-jiva |
@@ -151,6 +152,7 @@ EOF
 
 sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovision-rep-node-affinity-jiva /g' \
 -e 's/value: app-busybox-ns/value: rep-node-affinity-jiva/g' \
+-e 's/value: openebs-busybox/value: openebs-busybox-rep-affinity/g' \
 -e 's/app: busybox-litmus/app:  busybox-deprovision-rep-node-affinity/g' \
 -e 's/value: statefulset/value: deployment/g' \
 -e 's/value: '\''app=busybox-sts'\''/value: '\''app=busybox-rep-node-affinity-jiva'\''/g' \
