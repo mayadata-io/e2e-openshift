@@ -7,22 +7,22 @@ sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-open
 
 node() {
 source ~/.profile
+#github token to push the test result into github mayadata-io/e2e-openshift repository.
+#This token is set as an env in ~/.profile in the test cluster.
 gittoken=$(echo "$github_token")
-job_id=$(echo $1)
-pipeline_id=$(echo $2)
-commit_id=$(echo $3)
-case_id=PX1D
+job_id=$(echo $1) #Gitlab job id obtain from the gitlab env ($CI_JOB_ID).
+pipeline_id=$(echo $2) # Gitlab pipeline id obtained from gitlab env ($CI_PIPELINE_ID).
+commit_id=$(echo $3) #Gitlab commit id Obtained fron gilab env ($CI_COMMIT_SHA).
+case_id=PX1D #test case ID.
 
 time="date"
 current_time=$(eval $time)
 
 present_dir=$(pwd)
 echo $present_dir
-
+#Creating e2e custom resource result for the test.
 bash Openshift-EE/utils/e2e-cr jobname:jiva-replica-node-affinity jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 bash Openshift-EE/utils/e2e-cr jobname:jiva-replica-node-affinity jobphase:Running
-
-echo "*******Deploying Busybox Application****"
 
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-replica-node-affinity-jiva metadata="") 
 echo $test_name
@@ -32,9 +32,10 @@ echo $test_name
 ################
 
 cd litmus
-echo "Running the litmus test for Busybox Deployment.."
+# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
 cp apps/busybox/deployers/run_litmus_test.yml deploy_rep_node_affinity.yml
 
+# Update the environmental variables in litmus job spec.
 : << EOF
   ------------------------------------------------------------------------------------------------------------------------------|
  | specAttribute     | kind   |         default value               | test specifc value                                        |
@@ -60,11 +61,15 @@ sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
 
 cat deploy_rep_node_affinity.yml
 
+# Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
 bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-replica-node-affiniy-jiva' job=deploy_rep_node_affinity.yml
 cd ..
+# Get the cluster state Once the litmus jobs completed.
 bash Openshift-EE/utils/dump_cluster_state;
+# Update the e2e event for the job.
 bash Openshift-EE/utils/event_updater jobname:jiva-replica-node-affinity $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
+# Update result of the test case in github mayadata-io/e2e-openshift repository.
 if [ "$?" != "0" ]; then
 python3 Openshift-EE/utils/result/result_update.py $job_id PX1D 4-chaos "Jiva replica node affinity" Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
@@ -77,9 +82,13 @@ fi
 run_id="jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-replica-network-delay metadata=${run_id})
 echo $test_name
 
+# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
 cd litmus
+# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
 cp experiments/chaos/replica_node_affinity/run_litmus_test.yml run_rep_node_affinity_jiva.yml
 
+
+# Update the environmental variables in litmus job spec.
 : << EOF
   ---------------------------------------------------------------------------------------------------------------------
  | specAttribute     | kind   |         default value               | test specifc value                               |
@@ -103,15 +112,16 @@ cat run_rep_network_delay_jiva.yml
 
 bash ../Openshift-EE/utils/litmus_job_runner label='app:node-affinity' job=run_rep_network_delay_jiva.yml
 cd ..
+#Get the cluster state Once the litmus jobs completed.
 bash Openshift-EE/utils/dump_cluster_state;
+#Update the e2e event for the job
 bash Openshift-EE/utils/event_updater jobname:jiva-replica-node-affinity $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
+# Update the result of the test case in github mayadata-io/e2e-openshift repository.
 if [ "$?" != "0" ]; then
 python3 Openshift-EE/utils/result/result_update.py $job_id PX1D 4-chaos "Jiva replica node affinity" Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
-
-echo "********Deprovisioning Busybox Application*******"
 
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase= busybox-deprovision-rep-node-affinity-jiva metadata="")
 echo $test_name
@@ -121,8 +131,10 @@ echo $test_name
 ################
 
 cd litmus
+# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
 cp apps/busybox/deployers/run_litmus_test.yml deprovision_rep_node_affinity.yml
 
+# Update the environmental variables in litmus job spec.
 : << EOF
   -----------------------------------------------------------------------------------------------------------------------------
  | specAttribute     | kind   |         default value               | test specifc value                                       |
@@ -149,6 +161,7 @@ cat deprovision_rep_node_affinity.yml
 
 bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-deprovision-rep-node-affinity' job=deprovision_rep_node_affinity.yml
 cd ..
+#Get the cluster state Once the litmus jobs completed
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:jiva-replica-node-affinity $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
@@ -161,7 +174,9 @@ exit 1;
 fi
 
 current_time=$(eval $time)
+#Update the e2e event for the job
 bash Openshift-EE/utils/e2e-cr jobname:jiva-replica-node-affinity jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
+# Update the result of the test case in github mayadata-io/e2e-openshift repository.
 python3 Openshift-EE/utils/result/result_update.py $job_id PX1D 4-chaos "Jiva replica node affinity" Pass $pipeline_id "$current_time" $commit_id $gittoken
 }
 
