@@ -33,7 +33,7 @@ cp experiments/chaos/openebs_pool_failure/run_litmus_test.yml cstor_pool_kill.ym
 sed -i -e 's/value: percona-mysql-claim/value: repo-data-gitlab-openshift-gitaly-0/g' \
 -e 's/name: openebs-pool-failure/name: openebs-pool-kill/g' \
 -e 's/value: '\''name=percona'\''/value: '\''app=gitaly'\''/g' \
--e 's/enable//g' \
+-e 's/enable/disable/g' \
 -e 's/value: app-percona-ns/value: default/g' cstor_pool_kill.yml
 
 sed -i '/command:/i \
