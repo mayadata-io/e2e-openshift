@@ -42,7 +42,7 @@ bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:unicorn-app-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 if [ "$?" != "0" ]; then
-python3 Openshift-EE/utils/result/result_update.py $job_id XMSV 4-chaos "Induce application pod failure and check if it is recovered successfully" Fail $pipeline_id "$current_time" $commit_id $gittoken
+# python3 Openshift-EE/utils/result/result_update.py $job_id XMSV 4-chaos "Induce application pod failure and check if it is recovered successfully" Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 
@@ -55,13 +55,13 @@ gitlab_test_result=Pass;
 else
 echo "Gitlab Service is Unreachable"
 gitlab_test_result=Fail;
-python3 Openshift-EE/utils/result/result_update.py $job_id XMSV 4-chaos "Induce application pod failure and check if it is recovered successfully" $gitlab_test_result $pipeline_id "$current_time" $commit_id $gittoken
+# python3 Openshift-EE/utils/result/result_update.py $job_id XMSV 4-chaos "Induce application pod failure and check if it is recovered successfully" $gitlab_test_result $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 
 current_time=$(eval $time)
 bash Openshift-EE/utils/e2e-cr jobname:unicorn-app-kill jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
-python3 Openshift-EE/utils/result/result_update.py $job_id XMSV 4-chaos "Induce application pod failure and check if it is recovered successfully" $gitlab_test_result $pipeline_id "$current_time" $commit_id $gittoken
+# python3 Openshift-EE/utils/result/result_update.py $job_id XMSV 4-chaos "Induce application pod failure and check if it is recovered successfully" $gitlab_test_result $pipeline_id "$current_time" $commit_id $gittoken
 
 }
 

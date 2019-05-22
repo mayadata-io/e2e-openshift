@@ -33,7 +33,7 @@ echo $test_name
 cd litmus
 cp experiments/chaos/openebs_pool_failure/run_litmus_test.yml cstor_pool_failure.yml
 
-sed -i -e 's/value: percona-mysql-claim/value: repo-data-gitlab-openshift-gitaly-0/g' \
+sed -i -e 's/value: percona-mysql-claim/value: repo-data-gitlab-gitaly-0/g' \
 -e 's/name: openebs-pool-failure/name: openebs-pool-delete/g' \
 -e 's/value: '\''name=percona'\''/value: '\''app=gitaly'\''/g' \
 -e 's/pool-kill/pool-delete/g' \
@@ -55,7 +55,7 @@ bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:cstor-pool-delete $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 if [ "$?" != "0" ]; then
-python3 Openshift-EE/utils/result/result_update.py $job_id N2QR 4-chaos "Delete cstor-pool pod and check if it is recovered successfully and verify that the application is not impacted" Fail $pipeline_id "$current_time" $commit_id $gittoken
+# python3 Openshift-EE/utils/result/result_update.py $job_id N2QR 4-chaos "Delete cstor-pool pod and check if it is recovered successfully and verify that the application is not impacted" Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 
@@ -68,13 +68,13 @@ gitlab_test_result=Pass;
 else
 echo "Gitlab Service is Unreachable"
 gitlab_test_result=Fail;
-python3 Openshift-EE/utils/result/result_update.py $job_id N2QR 4-chaos "Delete cstor-pool pod and check if it is recovered successfully and verify that the application is not impacted" $gitlab_test_result $pipeline_id "$current_time" $commit_id $gittoken
+# python3 Openshift-EE/utils/result/result_update.py $job_id N2QR 4-chaos "Delete cstor-pool pod and check if it is recovered successfully and verify that the application is not impacted" $gitlab_test_result $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 
 current_time=$(eval $time)
 bash Openshift-EE/utils/e2e-cr jobname:cstor-pool-delete jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
-python3 Openshift-EE/utils/result/result_update.py $job_id N2QR 4-chaos "Delete cstor-pool pod and check if it is recovered successfully and verify that the application is not impacted" $gitlab_test_result $pipeline_id "$current_time" $commit_id $gittoken
+# python3 Openshift-EE/utils/result/result_update.py $job_id N2QR 4-chaos "Delete cstor-pool pod and check if it is recovered successfully and verify that the application is not impacted" $gitlab_test_result $pipeline_id "$current_time" $commit_id $gittoken
 
 }
 
