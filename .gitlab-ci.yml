@@ -351,6 +351,12 @@ VJBK-Jiva-replica-failure:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/VJBK-Jiva-replica-failure/jiva-replica-failure
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/VJBK-Jiva-replica-failure/jiva-replica-failure
 
+PX1D-Jiva-replica-node-affinity:
+  extends: .chaos_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/PX1D-jiva-replica-node-affinity/replica-node-affinity
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/PX1D-jiva-replica-node-affinity/replica-node-affinity
+
 .infra_chaos_test_template:
   image: openebs/openshift-ci:latest
   stage: INFRA-CHAOS
