@@ -37,7 +37,7 @@ sed -i -e 's/value: percona-mysql-claim/value: repo-data-gitlab-openshift-gitaly
 -e 's/name: openebs-pool-failure/name: openebs-pool-delete/g' \
 -e 's/value: '\''name=percona'\''/value: '\''app=gitaly'\''/g' \
 -e 's/pool-kill/pool-delete/g' \
--e 's/enable/disable/g' \
+-e 's/enable//g' \
 -e 's/value: app-percona-ns/value: default/g' cstor_pool_failure.yml
 
 sed -i '/command:/i \
