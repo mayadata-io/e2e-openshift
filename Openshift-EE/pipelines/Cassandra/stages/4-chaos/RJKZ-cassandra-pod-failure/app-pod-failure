@@ -2,7 +2,7 @@
 set -x
 
 pod() {
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/Cassandra/stages/4-chaos/78JT-cstor-target-kill/cstor-target-kill node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/Cassandra/stages/4-chaos/RJKZ-cassandra-pod-failure/app-pod-failure node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
 }
 
 node() {
@@ -17,7 +17,7 @@ pipeline_id=$2
 commit_id=$3 
 
 #test case ID.
-case_id=78JT
+case_id=RJKZ
 
 #github token to push the test result into github mayadata-io/e2e-openshift repository.
 #This token is set as an env in ~/.profile file in the test cluster.
@@ -34,17 +34,21 @@ echo $present_dir
 #Creating e2e custom resource result for all the tests running in this stage.
 #In Gitlab, all the jobs in a stage runs parallely. Inorder to run this serially, each job in the stage waits for the other to get completed.
 
-bash Openshift-EE/utils/pooling jobname:cassandra-pod-failure
-bash Openshift-EE/utils/e2e-cr jobname:cstor-target-kill jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:cassandra-pod-failure jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:cassandra-pod-failure jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:cstor-target-kill jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:cstor-pool-kill jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:cstor-target-network-delay jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:cstor-pool-delete jobphase:Waiting
 
 #### Generating test name using test case name
 
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-target-failure metadata="")
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=application-pod-failure metadata="")
 echo $test_name
 
 cd litmus
-# copy the content of chaos `run_litmus_test.yml` litmusbook into a different file to update the test specific parameters.
-cp experiments/chaos/app_pod_failure/run_litmus_test.yml target_kill.yml
+# copy the content of application pod failure chaos `run_litmus_test.yml` into a different file to update the test specific parameters.
+cp experiments/chaos/app_pod_failure/run_litmus_test.yml cassandra_failure.yml
 
 # Update the environmental variables in litmus job spec.
 : << EOF
@@ -59,21 +63,21 @@ cp experiments/chaos/app_pod_failure/run_litmus_test.yml target_kill.yml
 EOF
 # Replacing the namespace, label and mode of deployment in the litmus book
 
-sed -i -e 's/value: app-percona-ns/value: app-cass-ns/g'\
-	-i -e 's/value: name=percona/value: app=cassandra/g'\
-	-i -e 's/value: percona-mysql-claim/openebs-cassandra-0/g' target_kill.yml
+sed -i -e 's/value: app-jenkins-ns/value: app-cass-ns/g'\
+	-i -e 's/value: app=jenkins-app/value: app=cassandra/g'\
+	-i -e 's/value: deployment/value: statefulset/g' cassandra_failure.yml
 
-cat target_kill.yml
+cat cassandra_failure.yml
 
 # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
-bash ../Openshift-EE/utils/litmus_job_runner label='name: openebs-target-failure' job=target_kill.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='name:application-pod-failure' job=cassandra_failure.yml
 cd ..
 
 # Get the cluster state Once the litmus jobs completed.
 bash Openshift-EE/utils/dump_cluster_state;
 
 # Update the e2e event for the job.
-bash Openshift-EE/utils/event_updater jobname:cstor-target-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/event_updater jobname:cassandra-pod-failure $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 rc_val=$(echo $?)
 
@@ -81,9 +85,9 @@ rc_val=$(echo $?)
 testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
 
 # Update the e2e cr once the job is completed
-bash Openshift-EE/utils/e2e-cr jobname:cstor-target-kill jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:$testResult
+bash Openshift-EE/utils/e2e-cr jobname:cassandra-pod-failure jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:$testResult
 
-python3 Openshift-EE/utils/result/result_update.py $job_id $case_id 4-chaos "Verify application availablity post cstor target pod kill." $testResult $pipeline_id "$current_time" $commit_id $gitToken
+python3 Openshift-EE/utils/result/result_update.py $job_id $case_id 3-functional "Induce Cassandra pod failure and check if it can be recovered successfully." $testResult $pipeline_id "$current_time" $commit_id $gitToken
 
 if [ "$rc_val" != "0" ]; then
 exit 1;
