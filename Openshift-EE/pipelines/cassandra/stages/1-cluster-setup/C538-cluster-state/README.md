@@ -15,5 +15,3 @@ This stage includes the job that will configure OpenShift-3.10 enterprise cluste
 
 #### Test Result
 
-lt
-
