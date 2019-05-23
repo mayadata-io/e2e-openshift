@@ -1,5 +1,101 @@
 #!/bin/bash
 set -x
 
-echo "**cstor pool delete***"
-sleep 2
+pod() {
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/IOWW-cstor-pool-delete/cstor-pool-delete node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+}
+
+node() {
+
+source ~/.profile
+#github token to push the test result into github mayadata-io/e2e-openshift repository.
+#This token is set as an env in ~/.profile in the test cluster.
+gittoken=$(echo "$github_token")
+job_id=$(echo $1) #Gitlab job id obtain from the gitlab env ($CI_JOB_ID).
+pipeline_id=$(echo $2) # Gitlab pipeline id obtained from gitlab env ($CI_PIPELINE_ID).
+commit_id=$(echo $3) #Gitlab commit id Obtained fron gilab env ($CI_COMMIT_SHA).
+case_id=IOWW #test case ID.
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+#Creating e2e custom resource result for the test.
+bash Openshift-EE/utils/e2e-cr jobname:pool-delete jobphase:Waiting 
+bash Openshift-EE/utils/e2e-cr jobname:pool-delete jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+
+################
+# LitmusBook 1 #
+################
+
+# Performing cStor Pool delete
+# testcase for cStor Pool delete is derived from litmus job test_vars.yml
+run_id="delete";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-pool-failure metadata=${run_id})
+echo $test_name
+
+cd litmus
+# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
+cp experiments/chaos/openebs_pool_failure/run_litmus_test.yml pooldelete.yml
+
+# Update the environmental variables in litmus job spec.
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------------    
+ | specAttribute       | kind   |         default value             | test specifc value                              |
+  --------------------------------------------------------------------------------------------------------------------|
+ | Litmus Job name     | name   | generateName: openebs-pool-failure| generateName: openebs-pool-delete               |
+ | Litmus job label    | label  | name: openebs-pool-failure        | name: openebs-pool-delete                       |
+ | ImagePullPolicy     | value  | Always                            | IfNotPresent                                    |
+ | appNamespace        | env    | app-percona-ns                    | app-esearch-ns                                  |
+ | appLabel            | label  | name=percona                      | name=elasticsearch                              |
+ | pvcName             | name   | percona-mysql-claim               | openebs-esearch-elasticsearch-logging-0         |                            | 
+ | livenessAppLabel    | label  |  ""                               | liveness=elasticsearch-liveness                 |
+ | livenessAppNamespace| env    |  ""                               | app-esearch-ns                                  |
+  ---------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/generateName: openebs-pool-failure-/generateName: openebs-pool-delete-/g' \  
+-e 's/name: openebs-pool-failure/name: openebs-pool-delete/g' \ 
+-e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
+-e 's/value: app-percona-ns/value: app-esearch-ns/g' \
+-e 's/value: '\''name=percona'\''/value: '\''name=elasticsearch'\''/g' \
+-e 's/value: percona-mysql-claim/value: openebs-esearch-elasticsearch-logging-0/g' \
+-e '/name: LIVENESS_APP_LABEL/!b;n;c\            \ value: "liveness=elasticsearch-liveness"' \
+-e '/name: LIVENESS_APP_NAMESPACE/!b;n;c\            \ value: "app-esearch-ns"' \
+-e 's/pool-kill/pool-delete/g' \
+-e 's/enable//g' pooldelete.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' pooldelete.yml
+
+# Running the litmus test for Busybox Deployment application pod kill. 
+cat pooldelete.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-pool-delete' job=pooldelete.yml
+cd ..
+# Get the cluster state Once the litmus jobs completed.
+bash Openshift-EE/utils/dump_cluster_state;
+# Update the e2e event for the job.
+bash Openshift-EE/utils/event_updater jobname:pool-delete $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id IOWW 4-chaos "Delete cStor Pool" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+current_time=$(eval $time)
+# Update the e2e cr once the job is completed
+testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+bash Openshift-EE/utils/e2e-cr jobname:pool-delete jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:"$testResult"
+#python3 Openshift-EE/utils/result/result_update.py $job_id  4-chaos "Delete cStor Pool" Pass $pipeline_id "$current_time" $commit_id $gittoken
+
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4
+else
+  pod
+fi
