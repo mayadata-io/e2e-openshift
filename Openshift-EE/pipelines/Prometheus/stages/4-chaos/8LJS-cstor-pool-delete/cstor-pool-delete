@@ -24,7 +24,8 @@ echo $present_dir
 #Creating e2e custom resource result for the test.
 bash Openshift-EE/utils/e2e-cr jobname:pool-delete jobphase:Waiting 
 bash Openshift-EE/utils/e2e-cr jobname:pool-delete jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
-
+##Creating e2e custom resource result for the next job pool-kill
+bash Openshift-EE/utils/e2e-cr jobname:pool-kill jobphase:Waiting
 
 ################
 # LitmusBook 1 #
@@ -52,6 +53,8 @@ cp experiments/chaos/openebs_pool_failure/run_litmus_test.yml pooldelete.yml
  | pvcName             | name   | percona-mysql-claim               | prometheus-claim                                | 
  | livenessAppLabel    | label  |  ""                               | liveness=prometheus-liveness                    |
  | livenessAppNamespace| env    |  ""                               | app-prometheus                                  |
+ | chaosType           | env    |  poll-kill                        | pool-delete                                     |
+ | dataPersistency     | env    |  enable                           |                                                 |
   ---------------------------------------------------------------------------------------------------------------------
 EOF
 
@@ -71,7 +74,7 @@ sed -i '/command:/i \
             value: '"$run_id"'\
 ' pooldelete.yml
 
-# Running the litmus test for Busybox Deployment application pod kill. 
+# Running the litmus test for cStor pool pod delete. 
 cat pooldelete.yml
 
 bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-pool-delete' job=pooldelete.yml
@@ -82,7 +85,7 @@ bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:pool-delete $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 if [ "$?" != "0" ]; then
-python3 Openshift-EE/utils/result/result_update.py $job_id 8LJS 4-chaos "Delete cStor Pool" Fail $pipeline_id "$current_time" $commit_id $gittoken
+#python3 Openshift-EE/utils/result/result_update.py $job_id 8LJS 4-chaos "Delete cStor Pool" Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 
