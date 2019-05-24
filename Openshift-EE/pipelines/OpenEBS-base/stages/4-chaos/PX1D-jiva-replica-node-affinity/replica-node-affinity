@@ -24,7 +24,7 @@ echo $present_dir
 bash Openshift-EE/utils/e2e-cr jobname:jiva-replica-node-affinity jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 bash Openshift-EE/utils/e2e-cr jobname:jiva-replica-node-affinity jobphase:Running
 
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-replica-node-affinity-jiva metadata="") 
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-rep-node-affinity-jiva metadata="") 
 echo $test_name
 
 ################

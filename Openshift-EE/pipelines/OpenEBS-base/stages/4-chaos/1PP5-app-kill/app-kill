@@ -169,13 +169,15 @@ cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_deprovision_app_kil
  | specAttribute     | kind   |         default value               | test specifc value                               |
   ---------------------------------------------------------------------------------------------------------------------|
  | appNamespace      | env    | app-busybox-ns                      | app-kill                                         | 
+ | appLabel          | env    | app=busybox-sts                     | app=app-kill                                     |
  | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: busybox-liveness-deprovision-appkill   |
  | action            | env    | provision                           | deprovision                                      | 
   ----------------------------------------------------------------------------------------------------------------------
 EOF
 
 sed -i -e 's/value: app-busybox-ns/value: app-kill/g' \
--e '/svalue: provision/value: deprovision/g' \
+-e 's/app=busybox-sts/app=app-kill/g' \
+-e 's/value: provision/value: deprovision/g' \
 -e 's/liveness: litmus-busybox-liveness/liveness: busybox-liveness-deprovision-appkill/g' busybox_loadgen_deprovision_app_kill.yml
 
 sed -i '/command:/i \
