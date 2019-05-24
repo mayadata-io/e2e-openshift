@@ -22,6 +22,19 @@ test_name=$(bash Openshift-EE/utils/generate_test_name testcase=replica-distribu
 echo $test_name
 
 echo "*******Deploying Application and Check the statefulset storage volume distributed************"
+
+ : << EOF
+  ---------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+  ---------------------------------------------------------------------------------------------------------------------|
+ | imagePullPolicy   | image  | Always                              | IfNotPresent                                     |
+ | Litmus job label  | label  | app:  busybox-statefulset-litmus    | app: busybox-vol-distribute                      |
+ | storage class     | env    | openebs-cstor-sparse                | openebs-cstor-disk                               |
+ | appLabel          | env    | app=busybox-sts                     | app=busybox                                      | 
+ | appNamespace      | env    | app-busybox-ns                      | busybox                                          | 
+  ----------------------------------------------------------------------------------------------------------------------
+EOF
+
 cd litmus
 echo "Running the litmus test.."
 sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' experiments/functional/sts-volume-distribution/run_litmus_test.yml
