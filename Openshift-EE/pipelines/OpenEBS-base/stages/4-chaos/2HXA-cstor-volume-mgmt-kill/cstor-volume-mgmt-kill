@@ -22,15 +22,35 @@ echo $present_dir
 bash Openshift-EE/utils/e2e-cr jobname:target-mgmt-kill jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:target-mgmt-kill jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
-echo "*******Deploying Busybox Application****"
+
+################
+# LitmusBook 1 #
+################
+
+# Deploying Busybox Application
 
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-mgmt-kill metadata="")
 echo $test_name
 
 cd litmus
-echo "Running the litmus test for Busybox Deployment.."
+# Running the litmus test for Busybox Deployment
 
 cp apps/busybox/deployers/run_litmus_test.yml busybox_target_mgmt_kill.yml
+
+# Update the environmental variables in litmus job spec.
+
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+  ---------------------------------------------------------------------------------------------------------------------|
+ | appNamespace      | env    | app-busybox-ns                      | mgmt-kill                                        | 
+ | Litmus job label  | label  | app: busybox-litmus                 | app: deploy-busybox-target-mgmt-kill             |
+ | appLabel          | env    | app=busybox-sts                     | app=target-mgmt-kill                             | 
+ | storage class     | env    | openebs-cstor-sparse                | openebs-cstor-disk                               |
+ | deploy type       | env    | statefulset                         | deployment                                       |
+ | appPVC            | env    | openebs-busybox                     | openebs-bb-mgmt-targetkill                       |
+  ----------------------------------------------------------------------------------------------------------------------
+EOF
 
 sed -i -e 's/app: busybox-litmus/app: deploy-busybox-target-mgmt-kill/g' \
 -e 's/app=busybox-sts/app=target-mgmt-kill/g' \
@@ -40,9 +60,13 @@ sed -i -e 's/app: busybox-litmus/app: deploy-busybox-target-mgmt-kill/g' \
 -e 's/value: app-busybox-ns/value: mgmt-kill/g' busybox_target_mgmt_kill.yml
 cat busybox_target_mgmt_kill.yml
 
+# Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
+
 bash ../Openshift-EE/utils/litmus_job_runner label='app:deploy-busybox-target-mgmt-kill' job=busybox_target_mgmt_kill.yml
 cd ..
+# Get the cluster state Once the litmus jobs completed.
 bash Openshift-EE/utils/dump_cluster_state;
+# Update the e2e event for the job.
 bash Openshift-EE/utils/event_updater jobname:target-mgmt-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 if [ "$?" != "0" ]; then
@@ -50,7 +74,57 @@ python3 Openshift-EE/utils/result/result_update.py $job_id 2HXA 4-chaos "Induce 
 exit 1;
 fi
 
-echo "*******Performing Cstor pool Management kill**********"
+################
+# LitmusBook 2 #
+################
+
+run_id="mgmt-kill";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+echo $test_name
+
+cd litmus
+# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_mgmt_kill.yml
+
+# Update the environmental variables in litmus job spec.
+
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+  ---------------------------------------------------------------------------------------------------------------------|
+ | appNamespace      | env    | app-busybox-ns                      | mgmt-kill                                        | 
+ | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: busybox-liveness-mgmt-kill             |
+ | appLabel          | env    | app=busybox-sts                     | app=target-mgmt-kill                             | 
+  ----------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/value: app-busybox-ns/value: mgmt-kill/g' \
+-e 's/app=busybox-sts/app=target-mgmt-kill/g' \
+-e 's/liveness: litmus-busybox-liveness/liveness: busybox-liveness-mgmt-kill/g' busybox_loadgen_mgmt_kill.yml
+cat busybox_loadgen_mgmt_kill.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' busybox_loadgen_mgmt_kill.yml
+
+# Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
+bash ../Openshift-EE/utils/litmus_job_runner label='liveness:busybox-liveness-mgmt-kill' job=busybox_loadgen_mgmt_kill.yml
+cd ..
+# Get the cluster state Once the litmus jobs completed.
+bash Openshift-EE/utils/dump_cluster_state;
+# Update the e2e event for the job.
+bash Openshift-EE/utils/event_updater jobname:target-mgmt-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id 2HXA 4-chaos "Induce failure on cstor-pool-mgmt container in cstor-pool pod and check if it doesn't affect the application availability" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# LitmusBook 3 #
+################
+
+# Performing Cstor pool Management kill
 
 run_id="mgmt";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-target-failure metadata=${run_id})
 echo $test_name
@@ -68,7 +142,7 @@ sed -i '/command:/i \
             value: '"$run_id"'\
 ' run_targetmgmt_kill_test.yml
 
-echo "Running the litmus test for Busybox Deployment Scaleup.."
+# Running the litmus test for Busybox Deployment Scaleup
 cat run_targetmgmt_kill_test.yml
 
 bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-target-mgmt-failure' job=run_targetmgmt_kill_test.yml
@@ -82,13 +156,84 @@ python3 Openshift-EE/utils/result/result_update.py $job_id 2HXA 4-chaos "Induce 
 exit 1;
 fi
 
-echo "********Deprovisioning Busybox Application*******"
+################
+# LitmusBook 4 #
+################
+
+run_id="deprovision-mgmt-kill";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+echo $test_name
+
+cd litmus
+# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_deprovision_mgmt_kill.yml
+
+# Update the environmental variables in litmus job spec.
+
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+  ---------------------------------------------------------------------------------------------------------------------|
+ | appNamespace      | env    | app-busybox-ns                      | mgmt-kill                                        | 
+ | appLabel          | env    | app=busybox-sts                     | app=target-mgmt-kill                             |
+ | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: busybox-liveness-deprovision-mgmt-kill |
+ | action            | env    | provision                           | deprovision                                      | 
+  ----------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/value: app-busybox-ns/value: mgmt-kill/g' \
+-e 's/app=busybox-sts/app=target-mgmt-kill/g' \
+-e 's/value: provision/value: deprovision/g' \
+-e 's/liveness: litmus-busybox-liveness/liveness: busybox-liveness-deprovision-mgmt-kill/g' busybox_loadgen_deprovision_mgmt_kill.yml
+
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' busybox_loadgen_deprovision_mgmt_kill.yml
+
+cat busybox_loadgen_deprovision_app_kill.yml
+# Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
+bash ../Openshift-EE/utils/litmus_job_runner label='liveness:busybox-liveness-deprovision-mgmt-kill' job=busybox_loadgen_deprovision_mgmt_kill.yml
+cd ..
+# Get the cluster state Once the litmus jobs completed.
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:target-mgmt-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+
+# Update result of the test case in github mayadata-io/e2e-openshift repository.
+if [ "$rc_val" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id 2HXA 4-chaos "Induce failure on cstor-pool-mgmt container in cstor-pool pod and check if it doesn't affect the application availability" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# LitmusBook 5 #
+################
+
+# Deprovisioning Busybox Application
 
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-mgmt-kill metadata="")
 echo $test_name
 
 cd litmus
 cp apps/busybox/deployers/run_litmus_test.yml deprovision_target_mgmt_kill.yml
+
+# Update the environmental variables in litmus job spec.
+
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+  ---------------------------------------------------------------------------------------------------------------------|
+ | appNamespace      | env    | app-busybox-ns                      | mgmt-kill                                        | 
+ | Litmus job label  | label  | app: busybox-litmus                 | app: busybox-deprovision-mgmt-kill               |
+ | appLabel          | env    | app=busybox-sts                     | app=target-mgmt-kill                             | 
+ | storage class     | env    | openebs-cstor-sparse                | openebs-cstor-disk                               |
+ | deploy type       | env    | statefulset                         | deployment                                       |
+ | appPVC            | env    | openebs-busybox                     | openebs-bb-mgmt-targetkill                       |
+ | action            | env    | provision                           | deprovison                                       |
+  ----------------------------------------------------------------------------------------------------------------------
+EOF
 
 sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovision-mgmt-kill/g' \
 -e 's/app: busybox-litmus/app: busybox-deprovision-mgmt-kill/g' \
@@ -99,18 +244,19 @@ sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovisi
 -e 's/value: app-busybox-ns/value: mgmt-kill/g' \
 -e 's/value: provision/value: deprovision/g' deprovision_target_mgmt_kill.yml
 
-echo "Running the litmus test for Busybox Deployment.."
+# Running the litmus test for Busybox Deprovision
 cat deprovision_target_mgmt_kill.yml
-
+# Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
 bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-deprovision-mgmt-kill' job=deprovision_target_mgmt_kill.yml
 cd ..
+# Get the cluster state Once the litmus jobs completed.
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:target-mgmt-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 rc_val=$(echo $?)
 
-
 # testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+# Update result of the test case in github mayadata-io/e2e-openshift repository
 
 if [ "$rc_val" != "0" ]; then
 python3 Openshift-EE/utils/result/result_update.py $job_id 2HXA 4-chaos "Induce failure on cstor-pool-mgmt container in cstor-pool pod and check if it doesn't affect the application availability" Fail $pipeline_id "$current_time" $commit_id $gittoken

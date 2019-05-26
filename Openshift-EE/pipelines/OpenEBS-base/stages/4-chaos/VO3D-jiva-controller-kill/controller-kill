@@ -87,6 +87,53 @@ fi
 ################
 # LitmusBook 2 #
 ################
+
+run_id="controller-kill";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+echo $test_name
+
+cd litmus
+# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_controller_kill.yml
+
+# Update the environmental variables in litmus job spec.
+
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+  ---------------------------------------------------------------------------------------------------------------------|
+ | appNamespace      | env    | app-busybox-ns                      | ctrl-kill                                        | 
+ | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: busybox-liveness-controller-kill       |
+ | appLabel          | env    | app=busybox-sts                     | app=ctrl-kill                                    | 
+  ----------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/value: app-busybox-ns/value: ctrl-kill/g' \
+-e 's/app=busybox-sts/app=ctrl-kill/g' \
+-e 's/liveness: litmus-busybox-liveness/liveness: busybox-liveness-controller-kill/g' busybox_loadgen_controller_kill.yml
+
+cat busybox_loadgen_controller_kill.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' busybox_loadgen_controller_kill.yml
+
+# Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
+bash ../Openshift-EE/utils/litmus_job_runner label='liveness:busybox-liveness-controller-kill' job=busybox_loadgen_controller_kill.yml
+cd ..
+# Get the cluster state Once the litmus jobs completed.
+bash Openshift-EE/utils/dump_cluster_state;
+# Update the e2e event for the job.
+bash Openshift-EE/utils/event_updater jobname:controller-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id $case_id 4-chaos "Induce failure on JIVA controller pod and check if it gets scheduled immediately and the application is available" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# LitmusBook 3 #
+################
 ##### Run the litmus book to perform the controller failure on JIVA
 
 ## testcase name is defined in test_vars of LitmusBook.
@@ -131,8 +178,60 @@ python3 Openshift-EE/utils/result/result_update.py $job_id $case_id $gitlab_stag
 exit 1;
 fi
 
+
 ################
-# LitmusBook 3 #
+# LitmusBook 4 #
+################
+
+run_id="deprovision-controller-kill";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+echo $test_name
+
+cd litmus
+# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_deprovision_controller_kill.yml
+
+# Update the environmental variables in litmus job spec.
+
+: << EOF
+  -----------------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                                      |
+  ----------------------------------------------------------------------------------------------------------------------------|
+ | appNamespace      | env    | app-busybox-ns                      | ctrl-kill                                               | 
+ | appLabel          | env    | app=busybox-sts                     | app=ctrl-kill                                           |
+ | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: busybox-liveness-deprovision-controller-kill   |
+ | action            | env    | provision                           | deprovision                                             | 
+  -----------------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/value: app-busybox-ns/value: ctrl-kill/g' \
+-e 's/app=busybox-sts/app=ctrl-kill/g' \
+-e 's/value: provision/value: deprovision/g' \
+-e 's/liveness: litmus-busybox-liveness/liveness: busybox-liveness-deprovision-controller-kill/g' busybox_loadgen_deprovision_controller_kill.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' busybox_loadgen_deprovision_controller_kill.yml
+
+cat busybox_loadgen_deprovision_controller_kill.yml
+# Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
+bash ../Openshift-EE/utils/litmus_job_runner label='liveness:busybox-liveness-deprovision-controller-kill' job=busybox_loadgen_deprovision_controller_kill.yml
+cd ..
+# Get the cluster state Once the litmus jobs completed.
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:controller-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+
+# Update result of the test case in github mayadata-io/e2e-openshift repository.
+if [ "$rc_val" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id $case_id 4-chaos "Induce failure on JIVA controller pod and check if it gets scheduled immediately and the application is available" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+
+################
+# LitmusBook 5 #
 ################
 # Run the litmus book to Deprovison the busybox deployment
 

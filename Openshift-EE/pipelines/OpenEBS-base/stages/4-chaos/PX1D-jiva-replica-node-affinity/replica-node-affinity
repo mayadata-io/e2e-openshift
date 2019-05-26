@@ -79,6 +79,53 @@ fi
 # LitmusBook 2 #
 ################
 
+run_id="replica-node-affinity";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+echo $test_name
+
+cd litmus
+# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_replica_node_affinity.yml
+
+# Update the environmental variables in litmus job spec.
+
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+  ---------------------------------------------------------------------------------------------------------------------|
+ | appNamespace      | env    | app-busybox-ns                      | rep-node-affinity-jiva                           | 
+ | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: busybox-liveness-rep-node-affinity     |
+ | appLabel          | env    | app=busybox-sts                     | app=busybox-rep-node-affinity-jiva               | 
+  ----------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/value: app-busybox-ns/value: rep-node-affinity-jiva/g' \
+-e 's/app=busybox-sts/app=busybox-rep-node-affinity-jiva/g' \
+-e 's/liveness: litmus-busybox-liveness/liveness: busybox-liveness-rep-node-affinity/g' busybox_loadgen_replica_node_affinity.yml
+
+cat busybox_loadgen_replica_node_affinity.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' busybox_loadgen_replica_node_affinity.yml
+
+# Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
+bash ../Openshift-EE/utils/litmus_job_runner label='liveness:busybox-liveness-rep-node-affinity' job=busybox_loadgen_replica_node_affinity.yml
+cd ..
+# Get the cluster state Once the litmus jobs completed.
+bash Openshift-EE/utils/dump_cluster_state;
+# Update the e2e event for the job.
+bash Openshift-EE/utils/event_updater jobname:jiva-replica-node-affinity $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id PX1D 4-chaos "Jiva replica node affinity" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# LitmusBook 3 #
+################
+
 run_id="jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-replica-network-delay metadata=${run_id})
 echo $test_name
 
@@ -106,11 +153,11 @@ sed -i -e 's/name=percona/app=busybox-rep-node-affinity-jiva/g' \
 sed -i '/command:/i \
           - name: RUN_ID\
             value: '"$run_id"'\
-' run_rep_network_delay_jiva.yml
+' run_rep_node_affinity_jiva.yml
 
-cat run_rep_network_delay_jiva.yml
+cat run_rep_node_affinity_jiva.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:node-affinity' job=run_rep_network_delay_jiva.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='app:node-affinity' job=run_rep_node_affinity_jiva.yml
 cd ..
 #Get the cluster state Once the litmus jobs completed.
 bash Openshift-EE/utils/dump_cluster_state;
@@ -126,8 +173,59 @@ fi
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase= busybox-deprovision-rep-node-affinity-jiva metadata="")
 echo $test_name
 
+
 ################
-# LitmusBook 3 #
+# LitmusBook 4 #
+################
+
+run_id="deprovision-replica-node-affinity";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+echo $test_name
+
+cd litmus
+# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_deprovision_replica_node_affinity.yml
+
+# Update the environmental variables in litmus job spec.
+
+: << EOF
+  ------------------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                                       |
+  -----------------------------------------------------------------------------------------------------------------------------|
+ | appNamespace      | env    | app-busybox-ns                      | rep-node-affinity-jiva                                   | 
+ | appLabel          | env    | app=busybox-sts                     | app=busybox-rep-node-affinity-jiva                       |
+ | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: busybox-liveness-deprovision-rep-node-affinity |
+ | action            | env    | provision                           | deprovision                                              | 
+  ------------------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/value: app-busybox-ns/value: rep-node-affinity-jiva/g' \
+-e 's/app=busybox-sts/app=busybox-rep-node-affinity-jiva/g' \
+-e 's/value: provision/value: deprovision/g' \
+-e 's/liveness: litmus-busybox-liveness/liveness: busybox-liveness-deprovision-rep-node-affinity/g' busybox_loadgen_deprovision_replica_node_affinity.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' busybox_loadgen_deprovision_replica_node_affinity.yml
+
+cat busybox_loadgen_deprovision_replica_node_affinity.yml
+# Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
+bash ../Openshift-EE/utils/litmus_job_runner label='liveness:busybox-liveness-deprovision-rep-node-affinity' job=busybox_loadgen_deprovision_replica_node_affinity.yml
+cd ..
+# Get the cluster state Once the litmus jobs completed.
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:jiva-replica-node-affinity $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+
+# Update result of the test case in github mayadata-io/e2e-openshift repository.
+if [ "$rc_val" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id PX1D 4-chaos "Jiva replica node affinity" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# LitmusBook 5 #
 ################
 
 cd litmus
