@@ -127,6 +127,16 @@ cd litmus
 
 cp experiments/functional/memcheck/run_litmus_test.yml memcheck_test.yml
 
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+  ---------------------------------------------------------------------------------------------------------------------|
+ | appLabel          | label  | name=prometheus                     | busybox-mem                                      | 
+ | appPVC            | env    | prometheus-claim                    | openebs-busybox                                  | 
+ | Namespace         | env    | app-prometheus                      | mem-check                                        |
+ ----------------------------------------------------------------------------------------------------------------------
+EOF
+
 sed -i -e 's/name=prometheus/app=busybox-mem/g' \
 -e 's/prometheus-claim/openebs-busybox/g' \
 -e 's/value: app-prometheus/value: mem-check/g' memcheck_test.yml
@@ -204,6 +214,20 @@ echo "********Deprovisioning Busybox Application*******"
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-mem-check metadata="")
 echo $test_name
 cd litmus
+
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+  ---------------------------------------------------------------------------------------------------------------------|
+ | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName:busybox-mem-check-deprovision       |
+ | Litmus job label  | label  | app: busybox-litmus                 | app: busybox-deprovision-mem-check               |
+ | appLabel          | env    | app=busybox-sts                     | app=busybox-mem                                  | 
+ | deploy type       | env    | statefulset                         | deployment                                       |
+ | storage clas      | env    | openebs-cstor-sparse                | openebs-cstor-disk                               |
+ | appNamespace      | env    | app-busybox-ns                      | mem-check                                        | 
+ | Action            | env    | value: provision                    | value: deprovision                               |
+  ----------------------------------------------------------------------------------------------------------------------
+EOF
 
 cp apps/busybox/deployers/run_litmus_test.yml deprovision_mem_check.yml
 sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-mem-check-deprovision/g' \
