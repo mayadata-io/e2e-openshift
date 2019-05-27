@@ -22,7 +22,7 @@ echo $present_dir
 bash Openshift-EE/utils/e2e-cr jobname:app-replica-scaleup jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 bash Openshift-EE/utils/e2e-cr jobname:app-replica-scaleup jobphase:Running
 
-echo "*******Deploying Busybox-sts Application****"
+##Deploying Busybox-sts Application
 
 ################
 # LitmusBook 1 #
@@ -61,7 +61,7 @@ python3 Openshift-EE/utils/result/result_update.py $job_id ZD8F 3-functional "Sc
 exit 1;
 fi
 
-echo "*******Deploying loadgen and liveness****"
+##Deploying loadgen and liveness
 
 #################
 # LitmusBook 2 #
@@ -150,13 +150,13 @@ python3 Openshift-EE/utils/result/result_update.py $job_id ZD8F 3-functional "Sc
 exit 1;
 fi
 
-echo "*******************Deprovisioning loadgen and liveness *******************"
+##Deprovisioning loadgen and liveness 
 
 ################
 # LitmusBook 4 #
 ################
 
- run_id="deprovision-app-kill";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+ run_id="deprovision-replica-scaleup";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
 echo $test_name
 
  cd litmus
@@ -201,7 +201,7 @@ exit 1;
 fi
 
 
-echo "********Deprovisioning Busybox Application*******"
+##Deprovisioning Busybox Application
 
 ################
 # LitmusBook 5 #

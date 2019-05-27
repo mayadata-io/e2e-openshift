@@ -68,13 +68,13 @@ python3 Openshift-EE/utils/result/result_update.py $job_id FSJT 3-functional "Ch
 exit 1;
 fi
 
-echo "*******Deploying loadgen and liveness****"
+##Deploying loadgen and liveness
 
 ################
 # LitmusBook 2 #
 ################
 
- run_id="target-affinity";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+ run_id="jiva-target-affinity";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
 echo $test_name
 
  cd litmus
@@ -116,7 +116,7 @@ python3 Openshift-EE/utils/result/result_update.py $job_id FSJT 3-functional "Ch
 exit 1;
 fi
 
-echo "*******Checking Application and Target Pod Affinity **********"
+##Checking Application and Target Pod Affinity 
 
 ################
 # LitmusBook 3 #
@@ -161,13 +161,13 @@ python3 Openshift-EE/utils/result/result_update.py $job_id FSJT 3-functional "Ch
 exit 1;
 fi
 
-echo "*******************Deprovisioning loadgen and liveness *******************"
+##Deprovisioning loadgen and liveness 
 
 ################
 # LitmusBook 4 #
 ################
 
- run_id="deprovision-app-target-affinity";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+ run_id="deprovision-jiva-app-target-affinity";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
 echo $test_name
 
  cd litmus

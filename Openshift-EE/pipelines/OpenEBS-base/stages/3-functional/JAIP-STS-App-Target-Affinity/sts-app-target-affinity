@@ -23,7 +23,7 @@ bash Openshift-EE/utils/e2e-cr jobname:sts-app-target-affinity jobphase:Waiting 
 bash Openshift-EE/utils/e2e-cr jobname:sts-app-target-affinity jobphase:Running
 
 
-echo "*******Deploying Busybox-sts Application****"
+###Deploying Busybox-sts Application
 
 ################
 # LitmusBook 1 #
@@ -70,7 +70,7 @@ python3 Openshift-EE/utils/result/result_update.py $job_id JAIP 3-functional "Ch
 exit 1;
 fi
 
-echo "*******Deploying loadgen and liveness****"
+####Deploying loadgen and liveness
 
 ################
 # LitmusBook 2 #
@@ -119,7 +119,7 @@ exit 1;
 fi
 
 
-echo "*******Checking Application and Target Pod Affinity **********"
+####Checking Application and Target Pod Affinity 
 
 ################
 # LitmusBook 3 #
@@ -166,7 +166,7 @@ python3 Openshift-EE/utils/result/result_update.py $job_id JAIP 3-functional "Ch
 exit 1;
 fi
 
-echo "*******************Deprovisioning loadgen and liveness *******************"
+####Deprovisioning loadgen and liveness 
 
 ################
 # LitmusBook 4 #
@@ -216,7 +216,7 @@ python3 Openshift-EE/utils/result/result_update.py $job_id JAIP 3-functional "In
 exit 1;
 fi
 
-echo "********Deprovisioning Busybox Application*******"
+######Deprovisioning Busybox Application
 
 ################
 # LitmusBook 5 #
