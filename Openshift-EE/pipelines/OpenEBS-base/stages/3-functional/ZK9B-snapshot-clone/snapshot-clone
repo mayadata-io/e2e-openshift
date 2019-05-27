@@ -93,6 +93,16 @@ echo $test_name
 cd litmus
 cp experiments/functional/clone-creation/run_litmus_test.yml run_clone_test.yml
 
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+  ---------------------------------------------------------------------------------------------------------------------|
+ | appPVC            | env    | openebs-busybox                     |  busybox-snapshot                                |
+ | appNamespace      | env    | app-busybox-ns                      |  busybox-snap                                    | 
+ ----------------------------------------------------------------------------------------------------------------------
+EOF
+
+
 sed -i -e 's/value: openebs-busybox/value: busybox-snapshot/g' \
 -e 's/value: app-busybox-ns/value: busybox-snap/g' run_clone_test.yml
 
