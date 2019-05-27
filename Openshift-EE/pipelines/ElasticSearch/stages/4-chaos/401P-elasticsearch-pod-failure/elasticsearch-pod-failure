@@ -23,7 +23,6 @@ echo $present_dir
 
 #Creating e2e custom resource result for the test.
 bash Openshift-EE/utils/pooling jobname:pool-kill     # wait till cstor-pool-kill is completed 
-bash Openshift-EE/utils/e2e-cr jobname:app-pod-failure jobphase:Waiting 
 bash Openshift-EE/utils/e2e-cr jobname:app-pod-failure jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 

@@ -25,9 +25,8 @@ echo $present_dir
 #Creating e2e custom resource result for the test.
 
 bash Openshift-EE/utils/pooling jobname:pool-delete    #wait till completion of cstor-pool-delete
-bash Openshift-EE/utils/e2e-cr jobname:pool-kill jobphase:Waiting 
 bash Openshift-EE/utils/e2e-cr jobname:pool-kill jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
-bash Openshift-EE/utils/e2e-cr jobname:app-pod-failure jobphase:Waiting #don't execute app-pod-failure till this job is completed
+
 
 ################
 # LitmusBook 1 #
