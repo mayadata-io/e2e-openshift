@@ -1,5 +1,78 @@
-#!/bin/bash
 set -x
 
-echo "**target network delay**"
-sleep 2
+pod() {
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/LY12-target-network-delay/target-network-delay node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+}
+
+node() {
+
+source ~/.profile
+#github token to push the test result into github mayadata-io/e2e-openshift repository.
+#This token is set as an env in ~/.profile in the test cluster.
+gittoken=$(echo "$github_token")
+job_id=$(echo $1) #Gitlab job id obtain from the gitlab env ($CI_JOB_ID).
+pipeline_id=$(echo $2) # Gitlab pipeline id obtained from gitlab env ($CI_PIPELINE_ID).
+commit_id=$(echo $3) #Gitlab commit id Obtained fron gilab env ($CI_COMMIT_SHA).
+case_id=LY12 #test case ID.
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+#Creating e2e custom resource result for the test.
+bash Openshift-EE/utils/pooling jobname:app-pod-failure     # wait till cstor-pool-kill is completed 
+bash Openshift-EE/utils/e2e-cr jobname:target-network-delay jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+
+################
+# LitmusBook 1 #
+################
+
+echo "*******Performing network delay on Target**********"
+
+run_id="delay";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-target-network-delay metadata=${run_id})
+echo $test_name
+
+cd litmus
+cp experiments/chaos/openebs_target_network_delay/run_litmus_test.yml run_target_delay_test.yml
+
+ : << EOF
+  ---------------------------------------------------------------------------------------------------------------------    
+ | specAttribute       | kind   |         default value                | test specifc value                           |
+  --------------------------------------------------------------------------------------------------------------------|
+ | appPVC              | env    | percona-mysql-claim                   | openebs-esearch-elasticsearch-logging-0     |
+ | appNamespace        | env    | app-jenkins-ns                        | app-esearch-ns                              |
+ | appLabel            | label  | app=jenkins-app                       | app=elasticsearch                           |
+ | livenessAppLabel    | label  |  ""                                   | liveness=elasticsearch-liveness             |
+ | livenessAppNamespace| env    |  ""                                   | app-esearch-ns                              |
+ | deploy type         | env    |  deployment                           | statefulset                                 |
+  ---------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/value: percona-mysql-claim/value: openebs-esearch-elasticsearch-logging-0/g' \
+-e 's/value: '\''name=percona'\''/value: '\''app=elasticsearch'\''/g' \
+-e '/name: LIVENESS_APP_LABEL/!b;n;c\            \ value: "liveness=elasticsearch-liveness"' \
+-e '/name: LIVENESS_APP_NAMESPACE/!b;n;c\            \ value: "app-esearch-ns"' \
+-e 's/value: app-percona-ns/value: app-esearch-ns/g' run_target_delay_test.yml
+ 
+ sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' run_target_delay_test.yml
+
+echo "Running the litmus test for Busybox Deployment Scaleup.."
+cat run_target_delay_test.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-target-network-delay' job=run_target_delay_test.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:target-network-delay $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id LY12 4-chaos "Induce delay in cstor target pod network and verify if the application is not impacted" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+
