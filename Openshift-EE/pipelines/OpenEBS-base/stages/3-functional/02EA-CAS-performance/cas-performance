@@ -143,7 +143,7 @@ fi
 # LitmusBook 3 #
 ################
 
- run_id="dep-cas-perform";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+ run_id="cas";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
 echo $test_name
 
  cd litmus
@@ -184,7 +184,7 @@ bash Openshift-EE/utils/event_updater jobname:cas-performance $test_name jobid:"
 
  # Update result of the test case in github mayadata-io/e2e-openshift repository.
 if [ "$rc_val" != "0" ]; then
-python3 Openshift-EE/utils/result/result_update.py $job_id 02EA 3-functional "" Fail $pipeline_id "$current_time" $commit_id $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id 02EA 3-functional "Check if the application is successfully deployed using CAS performance tuning parameters" Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 #TODO: Include performance specific functional cases 

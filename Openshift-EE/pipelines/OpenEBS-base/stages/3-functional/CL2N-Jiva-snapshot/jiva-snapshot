@@ -84,7 +84,7 @@ echo $test_name
 
  cd litmus
 # copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
-cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen__jiva_snapshot.yml
+cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_jiva_snapshot.yml
 
  # Update the environmental variables in litmus job spec.
 
@@ -109,7 +109,7 @@ EOF
             value: '"$run_id"'\
 ' busybox_loadgen_jiva_snapshot.yml
  # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
-bash ../Openshift-EE/utils/litmus_job_runner label='liveness:bb-liveness-app-target-affinity' job=busybox_loadgen_jiva_snapshot.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='liveness:bb-liveness-jiva-snapshot' job=busybox_loadgen_jiva_snapshot.yml
 cd ..
 # Get the cluster state Once the litmus jobs completed.
 bash Openshift-EE/utils/dump_cluster_state;
@@ -119,8 +119,6 @@ if [ "$?" != "0" ]; then
 python3 Openshift-EE/utils/result/result_update.py $job_id CL2N 3-functional "Verify if the snapshot can be created for JIVA persistent volume" Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
-
-
 
 ###########Taking snapshot of BusyBox application
 
@@ -138,8 +136,6 @@ fi
  | appNamespace      | env    | app-busybox-ns                      | busybox-jiva-snap                               |
   ---------------------------------------------------------------------------------------------------------------------
 EOF
-
-
 
 run_id="jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=create-snapshot metadata=${run_id})
 echo $test_name
