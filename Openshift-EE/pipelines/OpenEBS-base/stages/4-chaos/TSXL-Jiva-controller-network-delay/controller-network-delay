@@ -71,14 +71,6 @@ python3 Openshift-EE/utils/result/result_update.py $job_id TSXL 4-chaos "Induce 
 exit 1;
 fi
 
-echo "*******Performing network delay on controller**********"
-
-run_id="jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-target-network-delay metadata=${run_id})
-echo $test_name
-
-cd litmus
-cp experiments/chaos/openebs_target_network_delay/run_litmus_test.yml run_controller_delay_test_jiva.yml
-
 ################
 # LitmusBook 2 #
 ################
@@ -129,6 +121,14 @@ fi
 ################
 # LitmusBook 3 #
 ################
+
+echo "*******Performing network delay on controller**********"
+
+run_id="jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-target-network-delay metadata=${run_id})
+echo $test_name
+
+cd litmus
+cp experiments/chaos/openebs_target_network_delay/run_litmus_test.yml run_controller_delay_test_jiva.yml
 
 : << EOF
   --------------------------------------------------------------------------------------------------------------------     

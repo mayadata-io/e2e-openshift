@@ -134,7 +134,6 @@ cd litmus
 # copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
 cp experiments/chaos/replica_node_affinity/run_litmus_test.yml run_rep_node_affinity_jiva.yml
 
-
 # Update the environmental variables in litmus job spec.
 : << EOF
   ---------------------------------------------------------------------------------------------------------------------
@@ -146,7 +145,7 @@ cp experiments/chaos/replica_node_affinity/run_litmus_test.yml run_rep_node_affi
   ----------------------------------------------------------------------------------------------------------------------
 EOF
 
-sed -i -e 's/name=percona/app=busybox-rep-node-affinity-jiva/g' \
+sed -i -e 's/app=pgset/app=busybox-rep-node-affinity-jiva/g' \
 -e 's/value: app-pgres-ns/value: rep-node-affinity-jiva/g' \
 -e 's/value: pgdata-claim/value: openebs-busybox-rep-affinity/g' run_rep_node_affinity_jiva.yml
 
