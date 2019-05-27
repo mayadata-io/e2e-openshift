@@ -30,7 +30,7 @@ bash Openshift-EE/utils/e2e-cr jobname:target-network-delay jobphase:Running ini
 # LitmusBook 1 #
 ################
 
-echo "*******Performing network delay on Target**********"
+####Performing network delay on Target
 
 run_id="delay";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-target-network-delay metadata=${run_id})
 echo $test_name
@@ -43,11 +43,10 @@ cp experiments/chaos/openebs_target_network_delay/run_litmus_test.yml run_target
  | specAttribute       | kind   |         default value                | test specifc value                           |
   --------------------------------------------------------------------------------------------------------------------|
  | appPVC              | env    | percona-mysql-claim                   | openebs-esearch-elasticsearch-logging-0     |
- | appNamespace        | env    | app-jenkins-ns                        | app-esearch-ns                              |
- | appLabel            | label  | app=jenkins-app                       | app=elasticsearch                           |
+ | appLabel            | label  | name=percona                          | app=elasticsearch                           |
  | livenessAppLabel    | label  |  ""                                   | liveness=elasticsearch-liveness             |
  | livenessAppNamespace| env    |  ""                                   | app-esearch-ns                              |
- | deploy type         | env    |  deployment                           | statefulset                                 |
+ | appNamespace        | env    | app-percona-ns                        | app-esearch-ns                              |
   ---------------------------------------------------------------------------------------------------------------------
 EOF
 
@@ -62,7 +61,7 @@ sed -i -e 's/value: percona-mysql-claim/value: openebs-esearch-elasticsearch-log
             value: '"$run_id"'\
 ' run_target_delay_test.yml
 
-echo "Running the litmus test for Busybox Deployment Scaleup.."
+echo "Running the litmus test for target network delay.."
 cat run_target_delay_test.yml
 
 bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-target-network-delay' job=run_target_delay_test.yml
