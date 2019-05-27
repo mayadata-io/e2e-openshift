@@ -1,0 +1,311 @@
+#!/bin/bash
+set -x
+
+pod() {
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/4Q90-Jiva-pods-openebs-namespace/jiva-pods-openebs-ns node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+}
+
+node() {
+job_id=$1 #Gitlab job id Obtained from the gitlab env ($CI_JOB_ID).
+pipeline_id=$2 # Gitlab pipeline id Obtained from gitlab env ($CI_PIPELINE_ID).
+commit_id=$3 #Gitlab commit id Obtained fron gilab env ($CI_COMMIT_SHA).
+case_id=4Q90  #test case ID.
+gitlab_stage=3-functional # Gitlab stage where this test case is running.
+
+source ~/.profile
+#github token to push the test result into github mayadata-io/e2e-openshift repository.
+#This token is set as an env in ~/.profile in the test cluster.
+gitToken=$github_token
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+#Creating e2e custom resource result for the test.
+
+bash Openshift-EE/utils/e2e-cr jobname:jiva-openebs-ns jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:jiva-openebs-ns jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+################
+# LitmusBook 1 #
+################
+
+#### Deploy BusyBox application
+
+#testcase name for the busybox deployer will be appended with busybox-{{ action }}- {{ app-namespace }}.
+#action can be either provision or deprovision.
+#app-namespace is namespace of the application deployment.
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-jiva-openebs metadata="")
+echo $test_name
+
+cd litmus
+# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/deployers/run_litmus_test.yml deploy_busybox_jiva_openebs.yml
+
+# Update the environmental variables in litmus job spec.
+: << EOF
+  --------------------------------------------------------------------------------------------------------------------     
+ | specAttribute     | kind   |         default value               | test specifc value                              |
+  ------------------------------------------------------------------------------------------------------------------- |
+ | Litmus job label  | label  | app: busybox-litmus                 | app: deploy-busybox-jiva-openebs                |
+ | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName: busybox-provision-jiva-openebs    |
+ | appLabel          | env    | app=busybox-sts                     | app=busybox-jiva-openebs                        |
+ | deploy type       | env    | statefulset                         | deployment                                      |
+ | ImagePullPolicy   | value  | Always                              | IfNotPresent                                    |
+ | pvcName           | env    | openebs-busybox                     | busybox-jiva-openebs                            | 
+ | storage clas      | env    | openebs-cstor-sparse                | jiva-openebs-ns                                 |
+ | appNamespace      | env    | app-busybox-ns                      | jiva-openebs                                    |
+  ---------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/app: busybox-litmus/app: deploy-busybox-jiva-openebs/g' \
+-e 's/generateName: litmus-busybox-deploy/generateName: busybox-provision-jiva-openebs/g' \
+-e 's/app=busybox-sts/app=busybox-jiva-openebs/g' \
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
+-e 's/value: openebs-busybox/value: busybox-jiva-openebs/g' \
+-e 's/value: openebs-cstor-sparse/value: jiva-openebs-ns/g' \
+-e 's/value: app-busybox-ns/value: jiva-openebs/g' deploy_busybox_jiva_openebs.yml
+
+cat deploy_busybox_jiva_openebs.yml
+
+# Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
+bash ../Openshift-EE/utils/litmus_job_runner label='app:deploy-busybox-jiva-openebs' job=deploy_busybox_jiva_openebs.yml
+cd ..
+
+# Get the cluster state Once the litmus jobs completed.
+bash Openshift-EE/utils/dump_cluster_state;
+# Update the e2e event for the job.
+bash Openshift-EE/utils/event_updater jobname:jiva-openebs-ns $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+rc_val=$(echo $?)
+# Obtain the status of the test using litmusresult(lr) 
+testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+
+# Update result of the test case in github mayadata-io/e2e-openshift repository.
+if [ "$rc_val" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id $case_id 3-functional "Check if the application is successfully deployed and JIVA Controller, Replica pods are scheduled on OpenEBS namespace" $testResult $pipeline_id "$current_time" $commit_id $gitToken
+exit 1;
+fi
+
+#Runnig BusyBox Liveness LitmusBook
+
+################
+# LitmusBook 2 #
+################
+
+run_id="jiva-openebs";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+echo $test_name
+
+cd litmus
+# copy the content of run_litmus_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/liveness/run_litmus_test.yml busybox_liveness_jiva_openebs.yml
+
+# Update the environmental variables in litmus job spec.
+
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+  ---------------------------------------------------------------------------------------------------------------------|
+ | appNamespace      | env    | app-busybox-ns                      | jiva-openebs                                     | 
+ | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: busybox-liveness-jiva-openebs          |
+ | appLabel          | env    | app=busybox-sts                     | app=busybox-jiva-openebs                         | 
+  ----------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/value: app-busybox-ns/value: jiva-openebs/g' \
+-e 's/app=busybox-sts/app=busybox-jiva-openebs/g' \
+-e 's/liveness: litmus-busybox-liveness/liveness: busybox-liveness-jiva-openebs/g' busybox_liveness_jiva_openebs.yml
+cat busybox_liveness_jiva_openebs.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' busybox_liveness_jiva_openebs.yml
+
+# Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
+bash ../Openshift-EE/utils/litmus_job_runner label='liveness:busybox-liveness-jiva-openebs' job=busybox_liveness_jiva_openebs.yml
+cd ..
+# Get the cluster state Once the litmus jobs completed.
+bash Openshift-EE/utils/dump_cluster_state;
+# Update the e2e event for the job.
+bash Openshift-EE/utils/event_updater jobname:jiva-openebs-ns $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id $case_id 3-functional "Check if the application is successfully deployed and JIVA Controller, Replica pods are scheduled on OpenEBS namespace" $testResult $pipeline_id "$current_time" $commit_id $gitToken
+exit 1;
+fi
+
+# Runnig LitmusBook to check the JIVA controller and replica pods scheduled on OpenEBS namespace.
+
+################
+# LitmusBook 3 #
+################
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata="")
+echo $test_name
+
+cd litmus
+# copy the content of run_litmus_test.yml into a different file to update the test specific parameters.
+cp experiments/functional/jiva-pods-openebs-ns/run_litmus_test.yml busybox_jiva_openebs.yml
+
+# Update the environmental variables in litmus job spec.
+
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+  ---------------------------------------------------------------------------------------------------------------------|
+ | appNamespace      | env    | app-busybox-ns                      | jiva-openebs                                     | 
+  ----------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/value: app-busybox-ns/value: jiva-openebs/g' busybox_jiva_openebs.yml
+cat busybox_jiva_openebs.yml
+
+# Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
+bash ../Openshift-EE/utils/litmus_job_runner label='app:litmus-jiva-openebs-ns' job=busybox_jiva_openebs.yml
+cd ..
+# Get the cluster state Once the litmus jobs completed.
+bash Openshift-EE/utils/dump_cluster_state;
+# Update the e2e event for the job.
+bash Openshift-EE/utils/event_updater jobname:jiva-openebs-ns $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id $case_id 3-functional "Check if the application is successfully deployed and JIVA Controller, Replica pods are scheduled on OpenEBS namespace" $testResult $pipeline_id "$current_time" $commit_id $gitToken
+exit 1;
+fi
+
+# Deprovisioning BusyBox Liveness.
+
+################
+# LitmusBook 2 #
+################
+
+run_id="deprovision-jiva-openebs";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+echo $test_name
+
+cd litmus
+# copy the content of run_litmus_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/liveness/run_litmus_test.yml busybox_liveness_deprovision_jiva_openebs.yml
+
+# Update the environmental variables in litmus job spec.
+
+: << EOF
+  ------------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                                 |
+  ---------------------------------------------------------------------------------------------------------------------  |
+ | appNamespace      | env    | app-busybox-ns                      | jiva-openebs                                       |
+ | action            | env    | provision                           | deprovision                                        | 
+ | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: busybox-liveness-deprovision-jiva-openebs|
+ | appLabel          | env    | app=busybox-sts                     | app=busybox-jiva-openebs                           | 
+  ------------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/value: app-busybox-ns/value: jiva-openebs/g' \
+-e 's/app=busybox-sts/app=busybox-jiva-openebs/g' \
+-e 's/value: provision/value: deprovision/g' \
+-e 's/liveness: litmus-busybox-liveness/liveness: busybox-liveness-deprovision-jiva-openebs/g' busybox_liveness_deprovision_jiva_openebs.yml
+cat busybox_liveness_deprovision_jiva_openebs.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' busybox_liveness_deprovision_jiva_openebs.yml
+
+# Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
+bash ../Openshift-EE/utils/litmus_job_runner label='liveness:busybox-liveness-deprovision-jiva-openebs' job=busybox_liveness_deprovision_jiva_openebs.yml
+cd ..
+# Get the cluster state Once the litmus jobs completed.
+bash Openshift-EE/utils/dump_cluster_state;
+# Update the e2e event for the job.
+bash Openshift-EE/utils/event_updater jobname:jiva-openebs-ns $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id $case_id 3-functional "Check if the application is successfully deployed and JIVA Controller, Replica pods are scheduled on OpenEBS namespace" $testResult $pipeline_id "$current_time" $commit_id $gitToken
+exit 1;
+fi
+
+################
+# LitmusBook 5 #
+################
+
+#### Deprovision BusyBox application
+
+#testcase name for the busybox deployer will be appended with busybox-{{ action }}- {{ app-namespace }}.
+#action can be either provision or deprovision.
+#app-namespace is namespace of the application deployment.
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-jiva-openebs metadata="")
+echo $test_name
+
+cd litmus
+# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/deployers/run_litmus_test.yml deprovision_busybox_jiva_openebs.yml
+
+# Update the environmental variables in litmus job spec.
+
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------------     
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+  -------------------------------------------------------------------------------------------------------------------- |
+ | Litmus job label  | label  | app: busybox-litmus                 | app: deprovision-jiva-openebs                    |
+ | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName: busybox-deprovision-jiva-openebs   |
+ | appLabel          | env    | app=busybox-sts                     | app=busybox-jiva-openebs                         |
+ | deploy type       | env    | statefulset                         | deployment                                       |
+ | action            | env    | provision                           | deprovision                                      |
+ | ImagePullPolicy   | value  | Always                              | IfNotPresent                                     |
+ | pvcName           | env    | openebs-busybox                     | busybox-jiva-openebs                             | 
+ | storage clas      | env    | openebs-cstor-sparse                | cstor-jiva-openebs                               |
+ | appNamespace      | env    | app-busybox-ns                      | jiva-openebs                                     |
+  ----------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/app: busybox-litmus/app: deprovision-busybox-jiva-openebs/g' \
+-e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovision-jiva-openebs/g' \
+-e 's/app=busybox-sts/app=busybox-jiva-openebs/g' \
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/value: provision/value: deprovision/g' \
+-e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
+-e 's/value: openebs-busybox/value: busybox-jiva-openebs/g' \
+-e 's/value: openebs-cstor-sparse/value: jiva-openebs-ns/g' \
+-e 's/value: app-busybox-ns/value: jiva-openebs/g' deprovision_busybox_jiva_openebs.yml
+
+cat deprovision_busybox_jiva_openebs.yml
+
+# Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
+bash ../Openshift-EE/utils/litmus_job_runner label='app:deprovision-busybox-jiva-openebs' job=deprovision_busybox_jiva_openebs.yml
+cd ..
+
+#Get the cluster state Once the litmus jobs completed.
+bash Openshift-EE/utils/dump_cluster_state;
+
+#Update the e2e event for the job
+bash Openshift-EE/utils/event_updater jobname:jiva-openebs-ns $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+rc_val=$(echo $?)
+
+# Obtain the status of the test using litmusresult(lr) 
+testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+
+# Update the result of the test case in github mayadata-io/e2e-openshift repository.
+if [ "$rc_val" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id $case_id 3-functional "Check if the application is successfully deployed and JIVA Controller, Replica pods are scheduled on OpenEBS namespace" $testResult $pipeline_id "$current_time" $commit_id $gitToken
+exit 1;
+fi
+
+# Update the e2e cr once the job is completed
+bash Openshift-EE/utils/e2e-cr jobname:jiva-openebs-ns jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:$testResult
+
+python3 Openshift-EE/utils/result/result_update.py $job_id $case_id 3-functional "Check if the application is successfully deployed and JIVA Controller, Replica pods are scheduled on OpenEBS namespace" $testResult $pipeline_id "$current_time" $commit_id $gitToken
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4
+else
+  pod
+fi

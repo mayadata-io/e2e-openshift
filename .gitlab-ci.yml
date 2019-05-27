@@ -182,6 +182,12 @@ Y4ET-Jiva-snapshot-clone:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/Y4ET-Jiva-snapshot-clone/jiva-snapshot-clone
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/Y4ET-Jiva-snapshot-clone/jiva-snapshot-clone
 
+4Q90-Jiva-pods-openebs-namespace:
+  extends: .func_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/4Q90-Jiva-pods-openebs-namespace/jiva-pods-openebs-ns
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/4Q90-Jiva-pods-openebs-namespace/jiva-pods-openebs-ns
+       
 .chaos_test_template:
   image: openebs/openshift-ci:latest
   stage: CHAOS
