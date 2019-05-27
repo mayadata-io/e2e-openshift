@@ -79,7 +79,7 @@ fi
 # LitmusBook 2 #
 ################
 
- run_id="busybox-snapshot";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+ run_id="bb-snap";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
 echo $test_name
 
  cd litmus
@@ -94,13 +94,13 @@ cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_snapshot.yml
   ---------------------------------------------------------------------------------------------------------------------|
  | appNamespace      | env    | app-busybox-ns                      |  busybox-snap                                    | 
  | appLabel          | env    | app=busybox-sts                     |  app=busybox-snap                                | 
- | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: busybox-liveness-snapshot      | 
+ | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: bb-liveness-snapshot                   | 
   ----------------------------------------------------------------------------------------------------------------------
 EOF
 
  sed -i -e 's/value: app-busybox-ns/value: busybox-snap/g' \
 -e 's/app=busybox-sts/app=busybox-snap/g' \
--e 's/liveness: litmus-busybox-liveness/liveness: busybox-liveness-snapshot/g' busybox_loadgen_snapshot.yml
+-e 's/liveness: litmus-busybox-liveness/liveness: bb-liveness-snapshot/g' busybox_loadgen_snapshot.yml
 
  cat busybox_loadgen_snapshot.yml
 
@@ -110,14 +110,14 @@ EOF
 ' busybox_loadgen_snapshot.yml
 
  # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
-bash ../Openshift-EE/utils/litmus_job_runner label='liveness:busybox-liveness-busybox-snapshot' job=busybox_loadgen_snapshot.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='liveness:bb-liveness-snapshot' job=busybox_loadgen_snapshot.yml
 cd ..
 # Get the cluster state Once the litmus jobs completed.
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:snapshot $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 if [ "$?" != "0" ]; then
-python3 Openshift-EE/utils/result/result_update.py $job_id 9AKX 3-functional "Checking Application and target scheduled on same Node" Fail $pipeline_id "$current_time" $commit_id $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id 9AKX 3-functional "Verify if the snapshot can be created for persistent volume" Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 

@@ -110,13 +110,13 @@ cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_cas_performance.yml
   ---------------------------------------------------------------------------------------------------------------------|
  | appNamespace      | env    | app-busybox-ns                      |  cas-performance                                 | 
  | appLabel          | env    | app=busybox-sts                     |  app=busybox-cas-performance                     | 
- | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: busybox-liveness-cas-performance       | 
+ | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: bb-liveness-cas-perform                | 
   ----------------------------------------------------------------------------------------------------------------------
 EOF
 
  sed -i -e 's/value: app-busybox-ns/value:  cas-performance/g' \
 -e 's/app=busybox-sts/app=busybox-cas-performance/g' \
--e 's/liveness: litmus-busybox-liveness/liveness: busybox-liveness-cas-performance/g' busybox_loadgen_cas_performance.yml
+-e 's/liveness: litmus-busybox-liveness/liveness: bb-liveness-cas-perform/g' busybox_loadgen_cas_performance.yml
 
  cat busybox_loadgen_cas_performance.yml
 
@@ -126,14 +126,14 @@ EOF
 ' busybox_loadgen_cas_performance.yml
 
  # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
-bash ../Openshift-EE/utils/litmus_job_runner label='liveness:busybox-liveness-cas-performance' job=busybox_loadgen_cas_performance.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='liveness:bb-liveness-cas-perform' job=busybox_loadgen_cas_performance.yml
 cd ..
 # Get the cluster state Once the litmus jobs completed.
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:cas-performance $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 if [ "$?" != "0" ]; then
-python3 Openshift-EE/utils/result/result_update.py $job_id 02EA 3-functional "Checking Application and target scheduled on same Node" Fail $pipeline_id "$current_time" $commit_id $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id 02EA 3-functional "Check if the application is successfully deployed using CAS performance tuning parameters" Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 
@@ -143,12 +143,12 @@ fi
 # LitmusBook 3 #
 ################
 
- run_id="deprovision-cas-performance";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+ run_id="dep-cas-perform";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
 echo $test_name
 
  cd litmus
 # copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
-cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_deprovision_cas_performance.yml
+cp apps/busybox/liveness/run_litmus_test.yml bb_loadgen_deprovision_cas_performance.yml
 
  # Update the environmental variables in litmus job spec.
 
@@ -158,23 +158,23 @@ cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_deprovision_cas_per
   ---------------------------------------------------------------------------------------------------------------------|
  | appNamespace      | env    | app-busybox-ns                      | cas-performance                                  | 
  | action            | env    | provision                           | deprovision                                      | 
- | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: busybox-liveness-deprovision-cas-performane|
+ | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: bb-liveness-dep-cas-perform            |
  ----------------------------------------------------------------------------------------------------------------------
 EOF
 
  sed -i -e 's/value: app-busybox-ns/value: cas-performance/g' \
 -e '/svalue: provision/value: deprovision/g' \
--e 's/liveness: litmus-busybox-liveness/liveness: busybox-liveness-deprovision-cas-performance/g' busybox_loadgen_deprovision_cas_performance.yml
+-e 's/liveness: litmus-busybox-liveness/liveness: bb-liveness-dep-cas-perform/g' bb_loadgen_deprovision_cas_performance.yml
 
 
  sed -i '/command:/i \
           - name: RUN_ID\
             value: '"$run_id"'\
-' busybox_loadgen_deprovision_cas_performance.yml
+' bb_loadgen_deprovision_cas_performance.yml
 
- cat busybox_loadgen_deprovision_cas_performance.yml
+ cat bb_loadgen_deprovision_cas_performance.yml
 # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
-bash ../Openshift-EE/utils/litmus_job_runner label='liveness:busybox-liveness-deprovision-cas-performance' job=busybox_loadgen_deprovision_cas_performance.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='liveness:bb-liveness-dep-cas-perform' job=bb_loadgen_deprovision_cas_performance.yml
 cd ..
 # Get the cluster state Once the litmus jobs completed.
 bash Openshift-EE/utils/dump_cluster_state;
@@ -184,7 +184,7 @@ bash Openshift-EE/utils/event_updater jobname:cas-performance $test_name jobid:"
 
  # Update result of the test case in github mayadata-io/e2e-openshift repository.
 if [ "$rc_val" != "0" ]; then
-python3 Openshift-EE/utils/result/result_update.py $job_id 02EA 3-functional "Induce application pod failure and check if it is recovered successfully" Fail $pipeline_id "$current_time" $commit_id $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id 02EA 3-functional "" Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 #TODO: Include performance specific functional cases 

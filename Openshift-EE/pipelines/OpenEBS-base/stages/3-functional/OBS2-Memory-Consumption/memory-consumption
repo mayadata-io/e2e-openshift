@@ -73,7 +73,7 @@ fi
 # LitmusBook 2 #
 ################
 
- run_id="mem-consumption";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+ run_id="mem";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
 echo $test_name
 
  cd litmus
@@ -88,13 +88,13 @@ cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_mem_consumption.yml
   ---------------------------------------------------------------------------------------------------------------------|
  | appNamespace      | env    | app-busybox-ns                      | mem-check                                        | 
  | appLabel          | env    | app=busybox-sts                     | app=busybox-mem                                  | 
- | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: busybox-liveness-memory-consumption    | 
+ | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: bb-liveness-mem-consumption            | 
   ----------------------------------------------------------------------------------------------------------------------
 EOF
 
  sed -i -e 's/value: app-busybox-ns/value: mem-check/g' \
 -e 's/app=busybox-sts/app=busybox-mem/g' \
--e 's/liveness: litmus-busybox-liveness/liveness: busybox-liveness-memory-consumption/g' busybox_loadgen_mem_consumption.yml
+-e 's/liveness: litmus-busybox-liveness/liveness: bb-liveness-mem-consumption/g' busybox_loadgen_mem_consumption.yml
 
  cat busybox_loadgen_mem_consumption.yml
 
@@ -104,14 +104,14 @@ EOF
 ' busybox_loadgen_mem_consumption.yml
 
  # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
-bash ../Openshift-EE/utils/litmus_job_runner label='liveness:busybox-liveness-memory-consumption' job=busybox_loadgen_mem_consumption.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='liveness:bb-liveness-mem-consumption' job=busybox_loadgen_mem_consumption.yml
 cd ..
 # Get the cluster state Once the litmus jobs completed.
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:memory-consumption $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 if [ "$?" != "0" ]; then
-python3 Openshift-EE/utils/result/result_update.py $job_id OBS2 3-functional "Checking Application and target scheduled on same Node" Fail $pipeline_id "$current_time" $commit_id $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id OBS2 3-functional "Check if the memory consumption doesn't cross the desired threshold for known workload" Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 
@@ -160,12 +160,12 @@ fi
 # LitmusBook 4 #
 ################
 
-run_id="deprovision-mem-consumption";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+run_id="dep-mem";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
 echo $test_name
 
  cd litmus
 # copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
-cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_deprovision_mem_consumption.yml
+cp apps/busybox/liveness/run_litmus_test.yml deprovision_loadgen_mem_consumption.yml
 
  # Update the environmental variables in litmus job spec.
 
@@ -175,22 +175,23 @@ cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_deprovision_mem_con
   ---------------------------------------------------------------------------------------------------------------------|
  | appNamespace      | env    | app-busybox-ns                      | mem-check                                        | 
  | action            | env    | provision                           | deprovision                                      | 
- | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: busybox-liveness-deprovision-memory-consumption |
+ | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: liveness-deprovision-mem-consumption |
  ----------------------------------------------------------------------------------------------------------------------
 EOF
 
  sed -i -e 's/value: app-busybox-ns/value: mem-check/g' \
 -e '/svalue: provision/value: deprovision/g' \
--e 's/liveness: litmus-busybox-liveness/liveness: busybox-liveness-deprovision-memory-consumption/g' busybox_loadgen_deprovision_mem_consumption.yml
+-e 's/liveness: litmus-busybox-liveness/liveness: liveness-deprovision-mem-consumption/g'  deprovision_loadgen_mem_consumption.yml
+
 
  sed -i '/command:/i \
           - name: RUN_ID\
             value: '"$run_id"'\
-' busybox_loadgen_deprovision_mem_consumption.yml
+' deprovision_loadgen_mem_consumption.yml
 
- cat busybox_loadgen_deprovision_mem_consumption.yml
+ cat  deprovision_loadgen_mem_consumption.yml
 # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
-bash ../Openshift-EE/utils/litmus_job_runner label='liveness:busybox-liveness-deprovision-memory-consumption' job=busybox_loadgen_deprovision_mem_consumption.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='liveness:liveness-deprovision-mem-consumption' job= deprovision_loadgen_mem_consumption.yml
 cd ..
 # Get the cluster state Once the litmus jobs completed.
 bash Openshift-EE/utils/dump_cluster_state;
@@ -200,7 +201,7 @@ bash Openshift-EE/utils/event_updater jobname:memory-consumption $test_name jobi
 
  # Update result of the test case in github mayadata-io/e2e-openshift repository.
 if [ "$rc_val" != "0" ]; then
-python3 Openshift-EE/utils/result/result_update.py $job_id OBS2 3-functional "Induce application pod failure and check if it is recovered successfully" Fail $pipeline_id "$current_time" $commit_id $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id OBS2 3-functional "Check if the memory consumption doesn't cross the desired threshold for known workload" Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 
