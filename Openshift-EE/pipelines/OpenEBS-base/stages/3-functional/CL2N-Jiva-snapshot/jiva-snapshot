@@ -84,7 +84,7 @@ echo $test_name
 
  cd litmus
 # copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
-cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_app_jiva_snapshot.yml
+cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen__jiva_snapshot.yml
 
  # Update the environmental variables in litmus job spec.
 

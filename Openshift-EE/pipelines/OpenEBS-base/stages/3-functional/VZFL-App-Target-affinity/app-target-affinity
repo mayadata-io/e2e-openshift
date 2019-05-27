@@ -39,12 +39,12 @@ cp apps/busybox/deployers/run_litmus_test.yml deploy_affinity_test.yml
   -------------------------------------------------------------------------------------------------------------------
  | specAttribute     | kind   |         default value               | test specifc value                             |
   -------------------------------------------------------------------------------------------------------------------|
- | appLabel          | env    | app=busybox-sts                     | app=target-affinity                        |
- | pvcName           | env    | openebs-busybox                     | busybox-target-affinity                    | 
- | appNamespace      | env    | app-busybox-ns                      | target-affinity                            | 
+ | appLabel          | env    | app=busybox-sts                     | app=target-affinity                            |
+ | pvcName           | env    | openebs-busybox                     | busybox-target-affinity                        | 
+ | appNamespace      | env    | app-busybox-ns                      | target-affinity                                | 
  | storage clas      | env    | openebs-cstor-sparse                | openebs-cstor-disk                             |
- | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName: busybox-deploy-affinity      |
- | Litmus job label  | label  | app: busybox-litmus                 | app: busybox-target-affinity               |
+ | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName: busybox-deploy-affinity          |
+ | Litmus job label  | label  | app: busybox-litmus                 | app: busybox-target-affinity                   |
   --------------------------------------------------------------------------------------------------------------------
 EOF
 
@@ -132,9 +132,9 @@ cp experiments/functional/app-target-affinity/run_litmus_test.yml run_affinity_t
   ---------------------------------------------------------------------------------------------------------------------
  | specAttribute     | kind   |         default value                     | test specifc value                         |
   ---------------------------------------------------------------------------------------------------------------------|
- | appLabel          | env    | app=busybox-sts                           | app=target-affinity                    | 
- | appNamespace      | env    | app-busybox-ns                            | target-affinity                        | 
- | Litmus Job name   | name   | generateName: litmus-app-target-affinity- | generateName: litmus-target-affinity-  |
+ | appLabel          | env    | app=busybox-sts                           | app=target-affinity                        | 
+ | appNamespace      | env    | app-busybox-ns                            | target-affinity                            | 
+ | Litmus Job name   | name   | generateName: litmus-app-target-affinity- | generateName: litmus-target-affinity-      |
   ---------------------------------------------------------------------------------------------------------------------
 EOF
 
@@ -221,13 +221,13 @@ cp apps/busybox/deployers/run_litmus_test.yml deprovision_affinity.yml
   --------------------------------------------------------------------------------------------------------------------------
  | specAttribute     | kind   |         default value               | test specifc value                                   |
   -------------------------------------------------------------------------------------------------------------------------|
- | appLabel          | env    | app=busybox-sts                     | app=target-affinity                              |
- | pvcName           | env    | openebs-busybox                     | busybox-target-affinity                          | 
- | appNamespace      | env    | app-busybox-ns                      | arget-affinity                                  | 
+ | appLabel          | env    | app=busybox-sts                     | app=target-affinity                                  |
+ | pvcName           | env    | openebs-busybox                     | busybox-target-affinity                              | 
+ | appNamespace      | env    | app-busybox-ns                      | arget-affinity                                       | 
  | storage clas      | env    | openebs-cstor-sparse                | openebs-cstor-disk                                   |
  | Action            | env    | value: provision                    | value: deprovision                                   |
- | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName: busybox-deprovision-target-affinity|
- | Litmus job label  | label  | app: busybox-litmus                 | app: busybox-deprovision-affinity                |
+ | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName: busybox-deprovision-target-affinity    |
+ | Litmus job label  | label  | app: busybox-litmus                 | app: busybox-deprovision-affinity                    |
   -------------------------------------------------------------------------------------------------------------------------
 EOF
 

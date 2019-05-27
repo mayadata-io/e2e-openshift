@@ -207,7 +207,7 @@ bash Openshift-EE/utils/event_updater jobname:sts-app-target-affinity-jiva $test
 
  # Update result of the test case in github mayadata-io/e2e-openshift repository.
 if [ "$rc_val" != "0" ]; then
-python3 Openshift-EE/utils/result/result_update.py $job_id UURF 3-functional "Induce application pod failure and check if it is recovered successfully" Fail $pipeline_id "$current_time" $commit_id $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id UURF 3-functional "Checking Statefulset Application and target scheduled on same Node" Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 
