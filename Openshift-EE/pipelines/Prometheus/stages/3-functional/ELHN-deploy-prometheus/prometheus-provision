@@ -111,7 +111,7 @@ run_test=apps/prometheus/liveness/run_litmus_test.yml
 cat $run_test
 
 # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
-bash ../Openshift-EE/utils/litmus_job_runner label='app:litmus-prometheus-liveness' job=$run_test 
+bash ../Openshift-EE/utils/litmus_job_runner label='liveness:litmus-prometheus-liveness' job=$run_test 
 
 
 # Dumping state of cluster post job run
