@@ -99,7 +99,7 @@ run_id="jiva-openebs";test_name=$(bash Openshift-EE/utils/generate_test_name tes
 echo $test_name
 
 cd litmus
-# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
+# copy the content of run_litmus_test.yml into a different file to update the test specific parameters.
 cp apps/busybox/liveness/run_litmus_test.yml busybox_liveness_jiva_openebs.yml
 
 # Update the environmental variables in litmus job spec.
@@ -186,7 +186,7 @@ run_id="deprovision-jiva-openebs";test_name=$(bash Openshift-EE/utils/generate_t
 echo $test_name
 
 cd litmus
-# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
+# copy the content of run_litmus_test.yml into a different file to update the test specific parameters.
 cp apps/busybox/liveness/run_litmus_test.yml busybox_liveness_deprovision_jiva_openebs.yml
 
 # Update the environmental variables in litmus job spec.
