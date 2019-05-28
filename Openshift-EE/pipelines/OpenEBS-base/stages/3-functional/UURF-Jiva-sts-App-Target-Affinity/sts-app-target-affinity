@@ -98,9 +98,9 @@ sed -i -e 's/value: app-busybox-ns/value:  sts-affinity-jiva/g' \
 sed -i '/command:/i \
           - name: RUN_ID\
             value: '"$run_id"'\
-'  busybox_loadgen_app_target_affinity.yml
+' busybox_loadgen_app_target_affinity.yml
 
-cat  busybox_loadgen_app_target_affinity.yml
+cat busybox_loadgen_app_target_affinity.yml
  # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
 bash ../Openshift-EE/utils/litmus_job_runner label='liveness:busybox-liveness-app-target-affinity' job=busybox_loadgen_app_target_affinity.yml
 cd ..

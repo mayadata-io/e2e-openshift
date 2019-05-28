@@ -195,7 +195,7 @@ cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:memory-consumption $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
- rc_val=$(echo $?)
+rc_val=$(echo $?)
 
  # Update result of the test case in github mayadata-io/e2e-openshift repository.
 if [ "$rc_val" != "0" ]; then

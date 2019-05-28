@@ -99,13 +99,12 @@ sed -i -e 's/value: app-busybox-ns/value: sts-target-affinity/g' \
 -e 's/app=busybox-sts/app=sts-target-affinity/g' \
 -e 's/liveness: litmus-busybox-liveness/liveness: busybox-liveness-target-affinity/g' busybox_loadgen_sts_target_affinity.yml
 
-cat busybox_loadgen_sts_target_affinity.yml
-
 sed -i '/command:/i \
           - name: RUN_ID\
             value: '"$run_id"'\
 ' busybox_loadgen_sts_target_affinity.yml
 
+cat busybox_loadgen_sts_target_affinity.yml
  # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
 bash ../Openshift-EE/utils/litmus_job_runner label='liveness:busybox-liveness-target-affinity' job=busybox_loadgen_sts_target_affinity.yml
 cd ..
@@ -191,16 +190,16 @@ cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_dep_sts_target_affi
  ----------------------------------------------------------------------------------------------------------------------
 EOF
 
- sed -i -e 's/value: app-busybox-ns/value: target-affinity/g' \
+sed -i -e 's/value: app-busybox-ns/value: target-affinity/g' \
 -e '/svalue: provision/value: deprovision/g' \
 -e 's/liveness: litmus-busybox-liveness/liveness: bb-liveness-dep-target-affinity/g' busybox_loadgen_dep_sts_target_affinity.yml
 
- sed -i '/command:/i \
+sed -i '/command:/i \
           - name: RUN_ID\
             value: '"$run_id"'\
 ' busybox_loadgen_dep_sts_target_affinity.yml
 
- cat busybox_loadgen_dep_sts_target_affinity.yml
+cat busybox_loadgen_dep_sts_target_affinity.yml
 # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
 bash ../Openshift-EE/utils/litmus_job_runner label='liveness:bb-liveness-dep-target-affinity' job=busybox_loadgen_dep_sts_target_affinity.yml
 cd ..
@@ -208,7 +207,7 @@ cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:sts-app-target-affinity $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
- rc_val=$(echo $?)
+rc_val=$(echo $?)
 
  # Update result of the test case in github mayadata-io/e2e-openshift repository.
 if [ "$rc_val" != "0" ]; then

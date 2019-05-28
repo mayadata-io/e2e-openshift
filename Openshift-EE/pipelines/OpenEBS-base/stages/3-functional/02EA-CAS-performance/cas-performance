@@ -114,16 +114,16 @@ cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_cas_performance.yml
   ----------------------------------------------------------------------------------------------------------------------
 EOF
 
- sed -i -e 's/value: app-busybox-ns/value:  cas-performance/g' \
+sed -i -e 's/value: app-busybox-ns/value:  cas-performance/g' \
 -e 's/app=busybox-sts/app=busybox-cas-performance/g' \
 -e 's/liveness: litmus-busybox-liveness/liveness: bb-liveness-cas-perform/g' busybox_loadgen_cas_performance.yml
 
- sed -i '/command:/i \
+sed -i '/command:/i \
           - name: RUN_ID\
             value: '"$run_id"'\
 ' busybox_loadgen_cas_performance.yml
 
- cat busybox_loadgen_cas_performance.yml
+cat busybox_loadgen_cas_performance.yml
 
  # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
 bash ../Openshift-EE/utils/litmus_job_runner label='liveness:bb-liveness-cas-perform' job=busybox_loadgen_cas_performance.yml
@@ -152,7 +152,7 @@ cp apps/busybox/liveness/run_litmus_test.yml bb_loadgen_deprovision_cas_performa
 
  # Update the environmental variables in litmus job spec.
 
- : << EOF
+: << EOF
   ---------------------------------------------------------------------------------------------------------------------
  | specAttribute     | kind   |         default value               | test specifc value                               |
   ---------------------------------------------------------------------------------------------------------------------|
@@ -162,7 +162,7 @@ cp apps/busybox/liveness/run_litmus_test.yml bb_loadgen_deprovision_cas_performa
  ----------------------------------------------------------------------------------------------------------------------
 EOF
 
- sed -i -e 's/value: app-busybox-ns/value: cas-performance/g' \
+sed -i -e 's/value: app-busybox-ns/value: cas-performance/g' \
 -e '/svalue: provision/value: deprovision/g' \
 -e 's/liveness: litmus-busybox-liveness/liveness: bb-liveness-dep-cas-perform/g' bb_loadgen_deprovision_cas_performance.yml
 
@@ -172,7 +172,7 @@ sed -i '/command:/i \
             value: '"$run_id"'\
 ' bb_loadgen_deprovision_cas_performance.yml
 
- cat bb_loadgen_deprovision_cas_performance.yml
+cat bb_loadgen_deprovision_cas_performance.yml
 # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
 bash ../Openshift-EE/utils/litmus_job_runner label='liveness:bb-liveness-dep-cas-perform' job=bb_loadgen_deprovision_cas_performance.yml
 cd ..
