@@ -1,5 +1,6 @@
 #!/bin/bash
 set -x
 
-echo "***openebs target failure***"
+echo "**openebs target failure***"
 sleep 2
+

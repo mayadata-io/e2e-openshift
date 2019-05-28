@@ -20,12 +20,13 @@ echo $present_dir
 bash Openshift-EE/utils/pooling jobname:volume-istgt-kill 
 bash Openshift-EE/utils/e2e-cr jobname:pool-network-delay jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
+# Performing network delay in cStor Pool
+
 ################
 # LitmusBook 3 #
 ################
-# Performing network delay in cStor Pool
 
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-cstor-pool-network-delay metadata="")
+run_id="pool-delay";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-cstor-pool-network-delay metadata="")
 echo $test_name
 
 cd litmus
@@ -52,7 +53,7 @@ sed -i -e 's/value: app-percona-ns/value:  app-esearch-ns/g' \
 sed -i '/command:/i \
           - name: RUN_ID\
             value: '"$run_id"'\
-' volume_istgt_kill_test.yml
+' run_pooldelay_test.yml
 
 cat run_pooldelay_test.yml
 
