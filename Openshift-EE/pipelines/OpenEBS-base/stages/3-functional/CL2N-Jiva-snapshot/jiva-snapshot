@@ -102,12 +102,12 @@ sed -i -e 's/value: app-busybox-ns/value:  busybox-jiva-snap/g' \
 -e 's/app=busybox-sts/app=busybox-jiva-snap/g' \
 -e 's/liveness: litmus-busybox-liveness/liveness: bb-liveness-jiva-snapshot/g'  busybox_loadgen_jiva_snapshot.yml
 
-cat  busybox_loadgen_jiva_snapshot.yml
-
 sed -i '/command:/i \
           - name: RUN_ID\
             value: '"$run_id"'\
 ' busybox_loadgen_jiva_snapshot.yml
+
+cat  busybox_loadgen_jiva_snapshot.yml
  # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
 bash ../Openshift-EE/utils/litmus_job_runner label='liveness:bb-liveness-jiva-snapshot' job=busybox_loadgen_jiva_snapshot.yml
 cd ..

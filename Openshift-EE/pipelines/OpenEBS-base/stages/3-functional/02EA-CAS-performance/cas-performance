@@ -166,7 +166,6 @@ sed -i -e 's/value: app-busybox-ns/value: cas-performance/g' \
 -e '/svalue: provision/value: deprovision/g' \
 -e 's/liveness: litmus-busybox-liveness/liveness: bb-liveness-dep-cas-perform/g' bb_loadgen_deprovision_cas_performance.yml
 
-
 sed -i '/command:/i \
           - name: RUN_ID\
             value: '"$run_id"'\
