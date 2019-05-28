@@ -67,10 +67,10 @@ fi
 # LitmusBook 2 #
 ################
 
- run_id="replica-scaleup";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+run_id="replica-scaleup";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
 echo $test_name
 
- cd litmus
+cd litmus
 # copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
 cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_app_replica_scaleup.yml
 
@@ -86,17 +86,16 @@ cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_app_replica_scaleup
   ----------------------------------------------------------------------------------------------------------------------
 EOF
 
- sed -i -e 's/value: app-busybox-ns/value: app-scale-jiva/g' \
+sed -i -e 's/value: app-busybox-ns/value: app-scale-jiva/g' \
 -e 's/app=busybox-sts/app=busybox-scale/g' \
 -e 's/liveness: litmus-busybox-liveness/liveness: busybox-liveness-app-replica-scaleup/g' busybox_loadgen_app_replica_scaleup.yml
 
- cat busybox_loadgen_app_replica_scaleup.yml
-
- sed -i '/command:/i \
+sed -i '/command:/i \
           - name: RUN_ID\
             value: '"$run_id"'\
 ' busybox_loadgen_app_replica_scaleup.yml
 
+cat busybox_loadgen_app_replica_scaleup.yml
  # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
 bash ../Openshift-EE/utils/litmus_job_runner label='liveness:busybox-liveness-app-replica-scaleup' job=busybox_loadgen_app_replica_scaleup.yml
 
@@ -137,7 +136,7 @@ sed -i -e 's/app: cassandra-scaleup-litmus/app: busybox-scaleup-litmus/g' \
 -e 's/value: '\''app=cassandra'\''/value: '\''app=busybox-scale'\''/g' \
 -e 's/value: app-cass-ns/value: app-busybox-ns/g' run_scaleup_test.yml
 
-echo "Running the litmus test for Busybox Deployment Scaleup.."
+###Running the litmus test for Busybox Deployment Scaleup.."
 cat run_scaleup_test.yml
 
 bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-scaleup-litmus' job=run_scaleup_test.yml
@@ -156,10 +155,10 @@ fi
 # LitmusBook 4 #
 ################
 
- run_id="de-scale";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+run_id="de-scale";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
 echo $test_name
 
- cd litmus
+cd litmus
 # copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
 cp apps/busybox/liveness/run_litmus_test.yml deprovision_replica_scaleup.yml
 
@@ -175,16 +174,16 @@ cp apps/busybox/liveness/run_litmus_test.yml deprovision_replica_scaleup.yml
  ----------------------------------------------------------------------------------------------------------------------
 EOF
 
- sed -i -e 's/value: app-busybox-ns/value: app-scale-jiva/g' \
+sed -i -e 's/value: app-busybox-ns/value: app-scale-jiva/g' \
 -e '/svalue: provision/value: deprovision/g' \
 -e 's/liveness: litmus-busybox-liveness/liveness: bb-liveness-deprovision-replica-scaleup/g' deprovision_replica_scaleup.yml
 
- sed -i '/command:/i \
+sed -i '/command:/i \
           - name: RUN_ID\
             value: '"$run_id"'\
 ' deprovision_replica_scaleup.yml
 
- cat deprovision_replica_scaleup.yml
+cat deprovision_replica_scaleup.yml
 # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
 bash ../Openshift-EE/utils/litmus_job_runner label='liveness:bb-liveness-deprovision-replica-scaleup' job=deprovision_replica_scaleup.yml
 cd ..

@@ -79,10 +79,10 @@ fi
 # LitmusBook 2 #
 ################
 
- run_id="jiva-snap";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+run_id="jiva-snap";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
 echo $test_name
 
- cd litmus
+cd litmus
 # copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
 cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_jiva_snapshot.yml
 
@@ -98,13 +98,13 @@ cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_jiva_snapshot.yml
   ----------------------------------------------------------------------------------------------------------------------
 EOF
 
- sed -i -e 's/value: app-busybox-ns/value:  busybox-jiva-snap/g' \
+sed -i -e 's/value: app-busybox-ns/value:  busybox-jiva-snap/g' \
 -e 's/app=busybox-sts/app=busybox-jiva-snap/g' \
 -e 's/liveness: litmus-busybox-liveness/liveness: bb-liveness-jiva-snapshot/g'  busybox_loadgen_jiva_snapshot.yml
 
- cat  busybox_loadgen_jiva_snapshot.yml
+cat  busybox_loadgen_jiva_snapshot.yml
 
- sed -i '/command:/i \
+sed -i '/command:/i \
           - name: RUN_ID\
             value: '"$run_id"'\
 ' busybox_loadgen_jiva_snapshot.yml

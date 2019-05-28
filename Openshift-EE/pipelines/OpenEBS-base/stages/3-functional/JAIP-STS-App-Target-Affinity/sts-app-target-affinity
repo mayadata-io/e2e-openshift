@@ -76,16 +76,16 @@ fi
 # LitmusBook 2 #
 ################
 
- run_id="affinity";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+run_id="affinity";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
 echo $test_name
 
- cd litmus
+cd litmus
 # copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
 cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_sts_target_affinity.yml
 
  # Update the environmental variables in litmus job spec.
 
- : << EOF
+: << EOF
   ---------------------------------------------------------------------------------------------------------------------
  | specAttribute     | kind   |         default value               | test specifc value                               |
   ---------------------------------------------------------------------------------------------------------------------|
@@ -95,13 +95,13 @@ cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_sts_target_affinity
   ----------------------------------------------------------------------------------------------------------------------
 EOF
 
- sed -i -e 's/value: app-busybox-ns/value: sts-target-affinity/g' \
+sed -i -e 's/value: app-busybox-ns/value: sts-target-affinity/g' \
 -e 's/app=busybox-sts/app=sts-target-affinity/g' \
 -e 's/liveness: litmus-busybox-liveness/liveness: busybox-liveness-target-affinity/g' busybox_loadgen_sts_target_affinity.yml
 
- cat busybox_loadgen_sts_target_affinity.yml
+cat busybox_loadgen_sts_target_affinity.yml
 
- sed -i '/command:/i \
+sed -i '/command:/i \
           - name: RUN_ID\
             value: '"$run_id"'\
 ' busybox_loadgen_sts_target_affinity.yml
@@ -172,10 +172,10 @@ fi
 # LitmusBook 4 #
 ################
 
- run_id="dep-affinity";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+run_id="dep-affinity";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
 echo $test_name
 
- cd litmus
+cd litmus
 # copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
 cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_dep_sts_target_affinity.yml
 
