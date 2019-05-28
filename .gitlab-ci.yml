@@ -47,8 +47,8 @@ BDD-jiva:
   image: openebs/openshift-ci:latest
   stage: OPENEBS-SETUP
   script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/jiva/bdd-jiva
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/jiva/bdd-jiva
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/Jiva/bdd-jiva
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/Jiva/bdd-jiva
     
 .func_test_template:
   image: openebs/openshift-ci:latest
