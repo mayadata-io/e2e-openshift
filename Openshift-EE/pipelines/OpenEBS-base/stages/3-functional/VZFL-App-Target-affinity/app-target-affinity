@@ -176,12 +176,14 @@ cp apps/busybox/liveness/run_litmus_test.yml bb_loadgen_deprovision_app_target_a
   ---------------------------------------------------------------------------------------------------------------------|
  | appNamespace      | env    | app-busybox-ns                      | target-affinity                                  | 
  | action            | env    | provision                           | deprovision                                      | 
+ | appLabel          | env    | app=busybox-sts                     | app=target-affinity                              | 
  | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: bb-liveness-deprovision-app-target-affinity |
  ----------------------------------------------------------------------------------------------------------------------
 EOF
 
 sed -i -e 's/value: app-busybox-ns/value: target-affinity/g' \
 -e '/svalue: provision/value: deprovision/g' \
+-e 's/app=busybox-sts/app=target-affinity/g' \
 -e 's/liveness: litmus-busybox-liveness/liveness: bb-liveness-deprovision-app-target-affinity/g' bb_loadgen_deprovision_app_target_affinity.yml
 
 sed -i '/command:/i \
@@ -189,7 +191,7 @@ sed -i '/command:/i \
             value: '"$run_id"'\
 ' bb_loadgen_deprovision_app_target_affinity.yml
 
-cat  bb_loadgen_deprovision_app_target_affinity.yml
+cat bb_loadgen_deprovision_app_target_affinity.yml
 # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
 bash ../Openshift-EE/utils/litmus_job_runner label='liveness:bb-liveness-deprovision-app-target-affinity' job= bb_loadgen_deprovision_app_target_affinity.yml
 cd ..
