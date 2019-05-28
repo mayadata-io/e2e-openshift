@@ -52,7 +52,6 @@ cp apps/busybox/deployers/run_litmus_test.yml deploy_busybox_jiva_openebs.yml
  | Litmus job label  | label  | app: busybox-litmus                 | app: deploy-busybox-jiva-openebs                |
  | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName: busybox-provision-jiva-openebs    |
  | appLabel          | env    | app=busybox-sts                     | app=busybox-jiva-openebs                        |
- | deploy type       | env    | statefulset                         | deployment                                      |
  | ImagePullPolicy   | value  | Always                              | IfNotPresent                                    |
  | pvcName           | env    | openebs-busybox                     | busybox-jiva-openebs                            | 
  | storage clas      | env    | openebs-cstor-sparse                | jiva-openebs-ns                                 |
@@ -63,7 +62,6 @@ EOF
 sed -i -e 's/app: busybox-litmus/app: deploy-busybox-jiva-openebs/g' \
 -e 's/generateName: litmus-busybox-deploy/generateName: busybox-provision-jiva-openebs/g' \
 -e 's/app=busybox-sts/app=busybox-jiva-openebs/g' \
--e 's/value: statefulset/value: deployment/g' \
 -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
 -e 's/value: openebs-busybox/value: busybox-jiva-openebs/g' \
 -e 's/value: openebs-cstor-sparse/value: jiva-openebs-ns/g' \
@@ -252,7 +250,6 @@ cp apps/busybox/deployers/run_litmus_test.yml deprovision_busybox_jiva_openebs.y
  | Litmus job label  | label  | app: busybox-litmus                 | app: deprovision-jiva-openebs                    |
  | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName: busybox-deprovision-jiva-openebs   |
  | appLabel          | env    | app=busybox-sts                     | app=busybox-jiva-openebs                         |
- | deploy type       | env    | statefulset                         | deployment                                       |
  | action            | env    | provision                           | deprovision                                      |
  | ImagePullPolicy   | value  | Always                              | IfNotPresent                                     |
  | pvcName           | env    | openebs-busybox                     | busybox-jiva-openebs                             | 
@@ -264,7 +261,6 @@ EOF
 sed -i -e 's/app: busybox-litmus/app: deprovision-busybox-jiva-openebs/g' \
 -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovision-jiva-openebs/g' \
 -e 's/app=busybox-sts/app=busybox-jiva-openebs/g' \
--e 's/value: statefulset/value: deployment/g' \
 -e 's/value: provision/value: deprovision/g' \
 -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
 -e 's/value: openebs-busybox/value: busybox-jiva-openebs/g' \
