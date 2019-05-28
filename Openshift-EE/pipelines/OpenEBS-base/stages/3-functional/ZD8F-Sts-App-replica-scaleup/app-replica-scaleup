@@ -22,7 +22,11 @@ echo $present_dir
 bash Openshift-EE/utils/e2e-cr jobname:app-replica-scaleup jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 bash Openshift-EE/utils/e2e-cr jobname:app-replica-scaleup jobphase:Running
 
-echo "*******Deploying Busybox-sts Application****"
+##Deploying Busybox-sts Application
+
+################
+# LitmusBook 1 #
+################
 
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-app-busybox-ns metadata="")
 echo $test_name
@@ -30,6 +34,17 @@ echo $test_name
 cd litmus
 echo "Running the litmus test for Busybox Deployment.."
 cp apps/busybox/deployers/run_litmus_test.yml deploy_run_test.yml
+
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+  ---------------------------------------------------------------------------------------------------------------------|
+ | imagePullPolicy   | image  | Always                              | IfNotPresent                                     |
+ | appLabel          | env    | app=busybox-sts                     | app=busybox-scale                                |
+ | storage class     | env    | openebs-cstor-sparse                | openebs-disk-standalone                          |
+   ----------------------------------------------------------------------------------------------------------------------
+EOF
+
 sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
 -e 's/value: '\''app=busybox-sts'\''/value: '\''app=busybox-scale'\''/g' \
 -e 's/value: '\''replicas=2'\''/value: '\''replicas=1'\''/g' \
@@ -46,7 +61,60 @@ python3 Openshift-EE/utils/result/result_update.py $job_id ZD8F 3-functional "Sc
 exit 1;
 fi
 
+##Deploying loadgen and liveness
+
+#################
+# LitmusBook 2 #
+################
+
+run_id="replica-scaleup";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+echo $test_name
+
+cd litmus
+# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_app_replica_scaleup.yml
+
+ # Update the environmental variables in litmus job spec.
+
+ : << EOF
+  ---------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+  ---------------------------------------------------------------------------------------------------------------------|
+ | appNamespace      | env    | app-busybox-ns                      | app-scale-jiva                                   | 
+ | appLabel          | env    | app=busybox-sts                     | app=busybox-scale                                | 
+ | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: busybox-liveness-app-replica-scaleup   | 
+  ----------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/value: app-busybox-ns/value: app-scale-jiva/g' \
+-e 's/app=busybox-sts/app=busybox-scale/g' \
+-e 's/liveness: litmus-busybox-liveness/liveness: busybox-liveness-app-replica-scaleup/g' busybox_loadgen_app_replica_scaleup.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' busybox_loadgen_app_replica_scaleup.yml
+
+cat busybox_loadgen_app_replica_scaleup.yml
+ # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
+bash ../Openshift-EE/utils/litmus_job_runner label='liveness:busybox-liveness-app-replica-scaleup' job=busybox_loadgen_app_replica_scaleup.yml
+
+cd ..
+# Get the cluster state Once the litmus jobs completed.
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:app-replica-scaleup $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id ZD8F 3-functional "Checking Application and target scheduled on same Node" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+
 echo "*******Scaling Application replicas**********"
+
+#################
+# LitmusBook 3 #
+################
 
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=scale-app-replicas metadata="")
 echo $test_name
@@ -54,11 +122,21 @@ echo $test_name
 cd litmus
 cp experiments/functional/scale_app_replica/run_litmus_test.yml run_scaleup_test.yml
 
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+  ---------------------------------------------------------------------------------------------------------------------|
+ | litmus job label  | label  | app: cassandra-scaleup-litmus       | app: busybox-scaleup-litmus                      |
+ | appLabel          | env    | app=cassandra                       | app=busybox-scale                                | 
+ | appNamespace      | env    | app-cass-ns                         | app-scale-jiva                                   | 
+  ----------------------------------------------------------------------------------------------------------------------
+EOF
+
 sed -i -e 's/app: cassandra-scaleup-litmus/app: busybox-scaleup-litmus/g' \
 -e 's/value: '\''app=cassandra'\''/value: '\''app=busybox-scale'\''/g' \
 -e 's/value: app-cass-ns/value: app-busybox-ns/g' run_scaleup_test.yml
 
-echo "Running the litmus test for Busybox Deployment Scaleup.."
+###Running the litmus test for Busybox Deployment Scaleup.."
 cat run_scaleup_test.yml
 
 bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-scaleup-litmus' job=run_scaleup_test.yml
@@ -71,13 +149,80 @@ python3 Openshift-EE/utils/result/result_update.py $job_id ZD8F 3-functional "Sc
 exit 1;
 fi
 
-echo "********Deprovisioning Busybox Application*******"
+##Deprovisioning loadgen and liveness 
+
+################
+# LitmusBook 4 #
+################
+
+run_id="de-scale";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+echo $test_name
+
+cd litmus
+# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/liveness/run_litmus_test.yml deprovision_replica_scaleup.yml
+
+ # Update the environmental variables in litmus job spec.
+
+ : << EOF
+  ---------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+  ---------------------------------------------------------------------------------------------------------------------|
+ | appNamespace      | env    | app-busybox-ns                      | app-scale-jiva                                   | 
+ | action            | env    | provision                           | deprovision                                      | 
+ | appLabel          | env    | app=busybox-sts                     | app=busybox-scale                                | 
+ | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: bb-liveness-deprovision-replica-scaleup|
+ ----------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/value: app-busybox-ns/value: app-scale-jiva/g' \
+-e '/svalue: provision/value: deprovision/g' \
+-e 's/app=busybox-sts/app=busybox-scale/g' \
+-e 's/liveness: litmus-busybox-liveness/liveness: bb-liveness-deprovision-replica-scaleup/g' deprovision_replica_scaleup.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' deprovision_replica_scaleup.yml
+
+cat deprovision_replica_scaleup.yml
+# Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
+bash ../Openshift-EE/utils/litmus_job_runner label='liveness:bb-liveness-deprovision-replica-scaleup' job=deprovision_replica_scaleup.yml
+cd ..
+# Get the cluster state Once the litmus jobs completed.
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:app-replica-scaleup $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+ rc_val=$(echo $?)
+
+ # Update result of the test case in github mayadata-io/e2e-openshift repository.
+if [ "$rc_val" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id ZD8F 3-functional "Induce application pod failure and check if it is recovered successfully" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+
+##Deprovisioning Busybox Application
+
+################
+# LitmusBook 5 #
+################
 
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-app-busybox-ns metadata="")
 echo $test_name
 
 cd litmus
 cp apps/busybox/deployers/run_litmus_test.yml deprovision_scaleup.yml
+
+ : << EOF
+  ---------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+  ---------------------------------------------------------------------------------------------------------------------|
+ | appNamespace      | env    | app-busybox-ns                      | app-scale-jiva                                   | 
+ | action            | env    | provision                           | deprovision                                      | 
+ | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: busybox-liveness-deprovision-replica-scaleup |
+ ----------------------------------------------------------------------------------------------------------------------
+EOF
 
 sed -i -e 's/generateName: litmus-busybox-deploy/generateName: litmus-busybox-deprovision/g' \
 -e 's/app: busybox-litmus/app: busybox-deprovision-litmus/g' \

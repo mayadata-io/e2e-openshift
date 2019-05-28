@@ -26,6 +26,16 @@ test_name=$(bash Openshift-EE/utils/generate_test_name testcase=fio-data-integri
 echo $test_name
 cd litmus
 cp experiments/functional/fio/data-integrity/run_litmus_test.yml data_integrity_cstor.yml
+
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+  ---------------------------------------------------------------------------------------------------------------------|
+ | imagePullPolicy   | image  | Always                              | IfNotPresent                                     | 
+ | storgae class     | env    | openebs-standard                    | openebs-cstor-disk                               |
+ ----------------------------------------------------------------------------------------------------------------------
+EOF
+
 sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
 -e 's/value: openebs-standard/value: openebs-cstor-disk/g' data_integrity_cstor.yml
 

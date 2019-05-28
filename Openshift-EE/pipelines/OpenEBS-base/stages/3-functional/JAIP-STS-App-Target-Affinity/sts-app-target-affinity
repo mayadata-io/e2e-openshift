@@ -22,11 +22,12 @@ echo $present_dir
 bash Openshift-EE/utils/e2e-cr jobname:sts-app-target-affinity jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 bash Openshift-EE/utils/e2e-cr jobname:sts-app-target-affinity jobphase:Running
 
+
+###Deploying Busybox-sts Application
+
 ################
 # LitmusBook 1 #
 ################
-
-echo "*******Deploying Busybox-sts Application****"
 
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-sts-target-affinity metadata="")
 echo $test_name
@@ -69,11 +70,59 @@ python3 Openshift-EE/utils/result/result_update.py $job_id JAIP 3-functional "Ch
 exit 1;
 fi
 
+####Deploying loadgen and liveness
+
 ################
 # LitmusBook 2 #
 ################
 
-echo "*******Checking Application and Target Pod Affinity **********"
+run_id="affinity";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+echo $test_name
+
+cd litmus
+# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_sts_target_affinity.yml
+
+ # Update the environmental variables in litmus job spec.
+
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+  ---------------------------------------------------------------------------------------------------------------------|
+ | appNamespace      | env    | app-busybox-ns                      | sts-target-affinity                              | 
+ | appLabel          | env    | app=busybox-sts                     | app=sts-target-affinity                          | 
+ | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: busybox-liveness-target-affinity       | 
+  ----------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/value: app-busybox-ns/value: sts-target-affinity/g' \
+-e 's/app=busybox-sts/app=sts-target-affinity/g' \
+-e 's/liveness: litmus-busybox-liveness/liveness: busybox-liveness-target-affinity/g' busybox_loadgen_sts_target_affinity.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' busybox_loadgen_sts_target_affinity.yml
+
+cat busybox_loadgen_sts_target_affinity.yml
+ # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
+bash ../Openshift-EE/utils/litmus_job_runner label='liveness:busybox-liveness-target-affinity' job=busybox_loadgen_sts_target_affinity.yml
+cd ..
+# Get the cluster state Once the litmus jobs completed.
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:sts-app-target-affinity $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id JAIP 3-functional "Checking Application and target scheduled on same Node" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+
+####Checking Application and Target Pod Affinity 
+
+################
+# LitmusBook 3 #
+################
 
 run_id="statefulset";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=app-target-affinity metadata="")
 echo $test_name
@@ -116,10 +165,62 @@ python3 Openshift-EE/utils/result/result_update.py $job_id JAIP 3-functional "Ch
 exit 1;
 fi
 
-echo "********Deprovisioning Busybox Application*******"
+####Deprovisioning loadgen and liveness 
 
 ################
-# LitmusBook 3 #
+# LitmusBook 4 #
+################
+
+run_id="dep-affinity";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+echo $test_name
+
+cd litmus
+# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_dep_sts_target_affinity.yml
+
+ # Update the environmental variables in litmus job spec.
+
+ : << EOF
+  ---------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+  ---------------------------------------------------------------------------------------------------------------------|
+ | appNamespace      | env    | app-busybox-ns                      | sts-target-affinity                              | 
+ | action            | env    | provision                           | deprovision                                      | 
+ | appLabel          | env    | app=busybox-sts                     | app=sts-target-affinity                          | 
+ | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: bb-liveness-dep-target-affinity        |
+ ----------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/value: app-busybox-ns/value: target-affinity/g' \
+-e '/svalue: provision/value: deprovision/g' \
+-e 's/app=busybox-sts/app=sts-target-affinity/g' \
+-e 's/liveness: litmus-busybox-liveness/liveness: bb-liveness-dep-target-affinity/g' busybox_loadgen_dep_sts_target_affinity.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' busybox_loadgen_dep_sts_target_affinity.yml
+
+cat busybox_loadgen_dep_sts_target_affinity.yml
+# Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
+bash ../Openshift-EE/utils/litmus_job_runner label='liveness:bb-liveness-dep-target-affinity' job=busybox_loadgen_dep_sts_target_affinity.yml
+cd ..
+# Get the cluster state Once the litmus jobs completed.
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:sts-app-target-affinity $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+
+ # Update result of the test case in github mayadata-io/e2e-openshift repository.
+if [ "$rc_val" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id JAIP 3-functional "Checking Statefulset Application and target scheduled on same Node" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+######Deprovisioning Busybox Application
+
+################
+# LitmusBook 5 #
 ################
 
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-sts-target-affinity metadata="")

@@ -30,7 +30,7 @@ bash Openshift-EE/utils/e2e-cr jobname:snapshot-clone jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:clone-different-capacity jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:clone-parent-volume-delete jobphase:Waiting
 
-echo "*******Deploying Busybox Application****"
+##Deploying Busybox Application
 
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-busybox-snap metadata="")
 echo $test_name
@@ -38,6 +38,20 @@ echo $test_name
 cd litmus
 echo "Running the litmus test for Busybox Deployment.."
 cp apps/busybox/deployers/run_litmus_test.yml deploy_snapshot_test.yml
+
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+ --------------------------------------------------------------------------------------------------------------------- |
+ | Litmus job label  | label  | app: busybox-litmus                 | app: deploy-busybox-snapshot                     |
+ | appLabel          | env    | app=busybox-sts                     | app=busybox-snap                                 |
+ | deploy type       | env    | statefulset                         | deployment                                       |
+ | imagePullPolicy   | image  | Always                              | IfNotPresent                                     |
+ | appPVC            | env    | openebs-busybox                     | busybox-snapshot                                 |
+ | storage class     | env    | openebs-cstor-sparse                | openebs-cstor-disk                               |
+ | appNamespace      | env    | app-busybox-ns                      | busybox-snap                                     | 
+  ----------------------------------------------------------------------------------------------------------------------
+EOF
 
 sed -i -e 's/app: busybox-litmus/app: deploy-busybox-snapshot/g' \
 -e 's/app=busybox-sts/app=busybox-snap/g' \
@@ -59,7 +73,59 @@ python3 Openshift-EE/utils/result/result_update.py $job_id 9AKX 3-functional "Ve
 exit 1;
 fi
 
+##Deploying loadgen and liveness
+
+################
+# LitmusBook 2 #
+################
+
+run_id="bb-snap";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+echo $test_name
+
+cd litmus
+# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_snapshot.yml
+
+ # Update the environmental variables in litmus job spec.
+
+ : << EOF
+  ---------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+  ---------------------------------------------------------------------------------------------------------------------|
+ | appNamespace      | env    | app-busybox-ns                      |  busybox-snap                                    | 
+ | appLabel          | env    | app=busybox-sts                     |  app=busybox-snap                                | 
+ | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: bb-liveness-snapshot                   | 
+  ----------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/value: app-busybox-ns/value: busybox-snap/g' \
+-e 's/app=busybox-sts/app=busybox-snap/g' \
+-e 's/liveness: litmus-busybox-liveness/liveness: bb-liveness-snapshot/g' busybox_loadgen_snapshot.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' busybox_loadgen_snapshot.yml
+
+cat busybox_loadgen_snapshot.yml
+
+ # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
+bash ../Openshift-EE/utils/litmus_job_runner label='liveness:bb-liveness-snapshot' job=busybox_loadgen_snapshot.yml
+cd ..
+# Get the cluster state Once the litmus jobs completed.
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:snapshot $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id 9AKX 3-functional "Verify if the snapshot can be created for persistent volume" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
 echo "*******Taking snapshot of BusyBox application**********"
+
+################
+# LitmusBook 3 #
+################
 
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=create-snapshot metadata="")
 echo $test_name
