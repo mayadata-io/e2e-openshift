@@ -1,7 +1,0 @@
-#!/bin/bash
-set -x
-
-echo "**cstor volume management kill***"
-sleep 2
-
-

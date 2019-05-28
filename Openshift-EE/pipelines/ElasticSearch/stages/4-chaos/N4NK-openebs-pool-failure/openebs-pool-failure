@@ -1,5 +1,0 @@
-#!/bin/bash
-set -x
-
-echo "**openebs pool failure**"
-sleep 2

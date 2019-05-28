@@ -1,0 +1,75 @@
+#!/bin/bash
+set -x
+
+pod() {
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/N4NK-cstor-volume-mgmt-kill/cstor-volume-mgmt-kill node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+}
+
+node() {
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+source ~/.profile
+gittoken=$(echo "$github_token")
+case_id=2HXA
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+bash Openshift-EE/utils/pooling jobname:app-kill
+bash Openshift-EE/utils/e2e-cr jobname:volume-mgmt-kill jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+################
+# LitmusBook 3 #
+################
+
+# Performing Cstor pool Management kill
+
+run_id="mgmt-kill";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-target-failure metadata=${run_id})
+echo $test_name
+
+cd litmus
+cp experiments/chaos/openebs_target_failure/run_litmus_test.yml run_targetmgmt_kill_test.yml
+
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------------    
+ | specAttribute       | kind   |         default value                 | test specifc value                          |
+  --------------------------------------------------------------------------------------------------------------------|
+ | appPVC              | env    | percona-mysql-claim                   | openebs-esearch-elasticsearch-logging-0     |
+ | litmus job label    | label  | openebs-target-failure                | openebs-target-mgmt-failure                 |
+ | appLabel            | label  | name=percona                          | app=elasticsearch                           |
+ | livenessAppLabel    | label  |  ""                                   | liveness=elasticsearch-liveness             |
+ | livenessAppNamespace| env    |  ""                                   | app-esearch-ns                              |
+ | appNamespace        | env    | app-percona-ns                        | app-esearch-ns                              |
+  ---------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e  's/value: percona-mysql-claim/value: openebs-esearch-elasticsearch-logging-0/g' \
+-e 's/name: openebs-target-failure/name: openebs-target-mgmt-failure/g' \
+-e 's/value: '\''name=percona'\''/value: '\''app=target-mgmt-kill'\''/g' \
+-e '/name: LIVENESS_APP_LABEL/!b;n;c\            \ value: "liveness=elasticsearch-liveness"' \
+-e '/name: LIVENESS_APP_NAMESPACE/!b;n;c\            \ value: "app-esearch-ns"' \
+-e 's/value: app-percona-ns/value: app-esearch-ns/g' run_targetmgmt_kill_test.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' run_targetmgmt_kill_test.yml
+
+# Running the litmus test for Busybox Deployment Scaleup
+cat run_targetmgmt_kill_test.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-target-mgmt-failure' job=run_targetmgmt_kill_test.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:volume-mgmt-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id N4NK 4-chaos "Induce failure on cstor-pool-mgmt container in cstor-pool pod and check if it doesn't affect the application availability" Fail $pipeline_id "$current_time" $commit_id $gittoken
+
+exit 1;
+fi
+

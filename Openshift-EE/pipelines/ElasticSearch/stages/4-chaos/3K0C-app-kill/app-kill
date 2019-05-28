@@ -1,0 +1,75 @@
+#!/bin/bash
+set -x
+
+pod() {
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/3K0C-app-kill/app-kill node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+}
+
+node() {
+source ~/.profile
+gittoken=$(echo "$github_token")
+
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+case_id=3K0C
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+bash Openshift-EE/utils/pooling jobname:pool-network-delay
+bash Openshift-EE/utils/e2e-cr jobname:app-kill jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+
+# Performing Application Pod Chaos
+
+################
+# LitmusBook 1 #
+################
+
+run_id="appkill";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=application-pod-failure metadata="")
+echo $test_name
+
+cd litmus
+# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
+cp experiments/chaos/app_pod_failure/run_litmus_test.yml appkill.yml
+
+ : << EOF
+  ---------------------------------------------------------------------------------------------------------------------    
+ | specAttribute       | kind   |         default value                 | test specifc value                          |
+  --------------------------------------------------------------------------------------------------------------------|
+ | appLabel            | label  | app=jenkins-app                       | app=elasticsearch                           |
+ | appNamespace        | env    | app-jenkins-ns                        | app-esearch-ns                              |
+ | livenessAppLabel    | label  |  ""                                   | liveness=elasticsearch-liveness             |
+ | livenessAppNamespace| env    |  ""                                   | app-esearch-ns                              |
+ | deploy type         | env    |  deployment                           | statefulset                                 |
+  ---------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/app=jenkins-app/app=elasticsearch/g' \
+-e 's/value: app-jenkins-ns/value: app-esearch-ns/g'
+-e '/name: LIVENESS_APP_LABEL/!b;n;c\            \ value: "liveness=elasticsearch-liveness"' \
+-e '/name: LIVENESS_APP_NAMESPACE/!b;n;c\            \ value: "app-esearch-ns"' \
+-e 's/value: deployment/name: statefulset/g' appkill.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' appkil.yml
+
+cat appkill.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='name:application-pod-failure' job=appkill.yml
+cd ..
+# Get the cluster state Once the litmus jobs completed.
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:app-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+# Update result of the test case in github mayadata-io/e2e-openshift repository.
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id 3K0C 4-chaos "Induce application pod failure and check if it is recovered successfully" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi

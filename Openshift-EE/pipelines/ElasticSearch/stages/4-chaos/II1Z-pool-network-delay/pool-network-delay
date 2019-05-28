@@ -2,7 +2,7 @@
 set -x
 
 pod() {
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/II1Z-pool-network-delay/pool-network-delay node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/II1Z-pool-network-delay/pool-network-delay node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
 }
 
 node() {
@@ -40,7 +40,7 @@ cp experiments/chaos/openebs_pool_network/run_litmus_test.yml run_pooldelay_test
  | appLabel            | label  | name=percona                          | app=elasticsearch                           |
  | livenessAppLabel    | label  |  ""                                   | liveness=elasticsearch-liveness             |
  | livenessAppNamespace| env    |  ""                                   | app-esearch-ns                              |
- | appPVC              | env    | percona-mysql-claim                   |  openebs-elasticsearch-logging-0            |
+ | appPVC              | env    | percona-mysql-claim                   | openebs-esearch-elasticsearch-logging-0     |
    ---------------------------------------------------------------------------------------------------------------------
 EOF
 
