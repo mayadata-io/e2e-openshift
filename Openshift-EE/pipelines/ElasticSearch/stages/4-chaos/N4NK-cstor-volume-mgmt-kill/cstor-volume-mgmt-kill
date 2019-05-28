@@ -23,7 +23,7 @@ bash Openshift-EE/utils/pooling jobname:app-kill
 bash Openshift-EE/utils/e2e-cr jobname:volume-mgmt-kill jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 ################
-# LitmusBook 3 #
+# LitmusBook 1 #
 ################
 
 # Performing Cstor pool Management kill
@@ -49,7 +49,7 @@ EOF
 
 sed -i -e  's/value: percona-mysql-claim/value: openebs-esearch-elasticsearch-logging-0/g' \
 -e 's/name: openebs-target-failure/name: openebs-target-mgmt-failure/g' \
--e 's/value: '\''name=percona'\''/value: '\''app=target-mgmt-kill'\''/g' \
+-e 's/value: '\''name=percona'\''/value: '\''app=elasticsearch\''/g' \
 -e '/name: LIVENESS_APP_LABEL/!b;n;c\            \ value: "liveness=elasticsearch-liveness"' \
 -e '/name: LIVENESS_APP_NAMESPACE/!b;n;c\            \ value: "app-esearch-ns"' \
 -e 's/value: app-percona-ns/value: app-esearch-ns/g' run_targetmgmt_kill_test.yml

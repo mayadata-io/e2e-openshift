@@ -23,7 +23,7 @@ bash Openshift-EE/utils/e2e-cr jobname:pool-network-delay jobphase:Running init_
 # Performing network delay in cStor Pool
 
 ################
-# LitmusBook 3 #
+# LitmusBook 1 #
 ################
 
 run_id="pool-delay";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-cstor-pool-network-delay metadata="")

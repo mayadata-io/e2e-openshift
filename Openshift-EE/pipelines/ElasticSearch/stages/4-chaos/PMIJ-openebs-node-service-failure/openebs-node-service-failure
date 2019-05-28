@@ -1,5 +1,0 @@
-#!/bin/bash
-set -x
-
-echo "**openebs node service failure***"
-sleep 2
