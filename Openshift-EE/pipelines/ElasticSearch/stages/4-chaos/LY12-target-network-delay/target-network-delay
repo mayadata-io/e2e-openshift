@@ -61,7 +61,6 @@ sed -i -e 's/value: percona-mysql-claim/value: openebs-esearch-elasticsearch-log
             value: '"$run_id"'\
 ' run_target_delay_test.yml
 
-echo "Running the litmus test for target network delay.."
 cat run_target_delay_test.yml
 
 bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-target-network-delay' job=run_target_delay_test.yml

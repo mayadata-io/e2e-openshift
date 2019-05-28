@@ -11,7 +11,7 @@ pipeline_id=$(echo $2)
 commit_id=$(echo $3)
 source ~/.profile
 gittoken=$(echo "$github_token")
-case_id=PG1D
+case_id=2YLI
 
 time="date"
 current_time=$(eval $time)
@@ -23,10 +23,10 @@ bash Openshift-EE/utils/pooling jobname:target-network-delay        #wait till t
 bash Openshift-EE/utils/e2e-cr jobname:volume-istgt-kill jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 ################
-# LitmusBook 3 #
+# LitmusBook 1 #
 ################
 
-#####Performing Cstor pool Management kill
+#####Performing Cstor volume istgt kill
 
 run_id="istgt";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-target-failure metadata=${run_id})
 echo $test_name
@@ -57,7 +57,6 @@ sed -i '/command:/i \
             value: '"$run_id"'\
 ' volume_istgt_kill_test.yml
 
-echo "Running the litmus test for cstor volume istgt kill.."
 cat volume_istgt_kill_test.yml
 
 bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-target-istgt-failure' job=volume_istgt_kill_test.yml

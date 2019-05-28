@@ -47,7 +47,7 @@ cp experiments/chaos/app_pod_failure/run_litmus_test.yml elasticsearch_pod_failu
  | Litmus Job name     | name   | generateName: application-pod-failure-| generatName: elasticsearch-app-pod-failure- |
  | Litmus job label    | label  | name: application-pod-failure         | name: elasticsearch-application-pod-failure |
  | appNamespace        | env    | app-jenkins-ns                        | app-esearch-ns                              |
- | appLabel            | label  | app=jenkins-app                       | name=elasticsearch                          |
+ | appLabel            | label  | app=jenkins-app                       | app=elasticsearch                           |
  | livenessAppLabel    | label  |  ""                                   | liveness=elasticsearch-liveness             |
  | livenessAppNamespace| env    |  ""                                   | app-esearch-ns                              |
  | deploy type         | env    |  deployment                           | statefulset                                 |
@@ -57,18 +57,16 @@ EOF
 sed -i -e 's/generateName: application-pod-failure-/generateName: elasticsearch-app-pod-failure-/g' \  
 -e 's/name: application-pod-failure/name:elasticsearch-application-pod-failure/g' \ 
 -e 's/value: app-percona-ns/value: app-esearch-ns/g' \
--e 's/value: '\''app=jenkins-app  '\''/value: '\''name=elasticsearch'\''/g' \
+-e 's/value: '\''app=jenkins-app  '\''/value: '\''app=elasticsearch'\''/g' \
 -e '/name: LIVENESS_APP_LABEL/!b;n;c\            \ value: "liveness=elasticsearch-liveness"' \
 -e '/name: LIVENESS_APP_NAMESPACE/!b;n;c\            \ value: "app-esearch-ns"' \
 -e 's/value: deployment/name: statefulset/g' elasticsearch_pod_failure.yml
-
 
 sed -i '/command:/i \
           - name: RUN_ID\
             value: '"$run_id"'\
 ' elasticsearch_pod_failure.yml
 
-# Running the litmus test for Busybox Deployment application pod kill. 
 cat elasticsearch_pod_failure.yml
 
 bash ../Openshift-EE/utils/litmus_job_runner label='name:elasticsearch-application-pod-failure' job=elasticsearch_pod_failure.yml
@@ -79,7 +77,7 @@ bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:app-pod-failure $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 if [ "$?" != "0" ]; then
-#python3 Openshift-EE/utils/result/result_update.py $job_id 401P 4-chaos "Delete cStor Pool" Fail $pipeline_id "$current_time" $commit_id $gittoken
+#python3 Openshift-EE/utils/result/result_update.py $job_id 401P 4-chaos "Check for elasticsearch pod failure" Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 

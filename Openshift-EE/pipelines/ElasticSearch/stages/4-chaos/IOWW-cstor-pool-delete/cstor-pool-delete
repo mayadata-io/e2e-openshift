@@ -70,7 +70,6 @@ sed -i '/command:/i \
             value: '"$run_id"'\
 ' pooldelete.yml
 
-
 cat pooldelete.yml
 
 bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-pool-delete' job=pooldelete.yml
