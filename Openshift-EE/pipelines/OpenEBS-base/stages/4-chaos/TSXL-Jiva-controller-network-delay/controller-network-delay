@@ -168,14 +168,6 @@ python3 Openshift-EE/utils/result/result_update.py $job_id TSXL 4-chaos "Induce 
 exit 1;
 fi
 
-echo "********Deprovisioning Busybox Application*******"
-
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-controller-delay-jiva metadata="")
-echo $test_name
-
-cd litmus
-cp apps/busybox/deployers/run_litmus_test.yml deprovision_controller_delay_jiva.yml
-
 ################
 # LitmusBook 4 #
 ################
@@ -230,6 +222,13 @@ fi
 ################
 # LitmusBook 5 #
 ################
+
+echo "********Deprovisioning Busybox Application*******"
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-controller-delay-jiva metadata="")
+echo $test_name
+cd litmus
+cp apps/busybox/deployers/run_litmus_test.yml deprovision_controller_delay_jiva.yml
 
 : << EOF
   --------------------------------------------------------------------------------------------------------------------     

@@ -146,8 +146,8 @@ cp experiments/chaos/replica_node_affinity/run_litmus_test.yml run_rep_node_affi
 EOF
 
 sed -i -e 's/app=pgset/app=busybox-rep-node-affinity-jiva/g' \
--e 's/value: app-pgres-ns/value: rep-node-affinity-jiva/g' \
--e 's/value: pgdata-claim/value: openebs-busybox-rep-affinity/g' run_rep_node_affinity_jiva.yml
+-e 's/value: '\''app-pgres-ns'\''/value: '\''rep-node-affinity-jiva'\''/g' \
+-e 's/value: '\''pgdata-claim'\''/value: '\''openebs-busybox-rep-affinity'\''/g' run_rep_node_affinity_jiva.yml
 
 sed -i '/command:/i \
           - name: RUN_ID\
@@ -168,10 +168,6 @@ if [ "$?" != "0" ]; then
 python3 Openshift-EE/utils/result/result_update.py $job_id PX1D 4-chaos "Jiva replica node affinity" Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
-
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase= busybox-deprovision-rep-node-affinity-jiva metadata="")
-echo $test_name
-
 
 ################
 # LitmusBook 4 #
@@ -226,6 +222,9 @@ fi
 ################
 # LitmusBook 5 #
 ################
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase= busybox-deprovision-rep-node-affinity-jiva metadata="")
+echo $test_name
 
 cd litmus
 # copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
