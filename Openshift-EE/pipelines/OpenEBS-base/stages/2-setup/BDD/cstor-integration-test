@@ -26,7 +26,7 @@ git clone https://github.com/openebs/maya.git
 
 cd maya/tests/cstor-pool/
 
-ginkgo -v
+ginkgo -v -- -kubeconfig=~/.kube/config
 
 if [ "$?" != "0" ];then
   echo "test-failed"

@@ -42,6 +42,13 @@ BDD:
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/cstor-integration-test
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/cstor-integration-test
+
+BDD-jiva:
+  image: openebs/openshift-ci:latest
+  stage: OPENEBS-SETUP
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/jiva/bdd-jiva
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/jiva/bdd-jiva
     
 .func_test_template:
   image: openebs/openshift-ci:latest
