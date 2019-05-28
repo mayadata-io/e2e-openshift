@@ -126,7 +126,7 @@ fi
 # LitmusBook 3 #
 ################
 
-run_id="jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-replica-network-delay metadata=${run_id})
+run_id="jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=replica-pod-stickiness metadata=${run_id})
 echo $test_name
 
 # copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
