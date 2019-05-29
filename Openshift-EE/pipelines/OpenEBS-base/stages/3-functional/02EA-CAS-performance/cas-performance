@@ -114,7 +114,7 @@ cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_cas_performance.yml
   ----------------------------------------------------------------------------------------------------------------------
 EOF
 
-sed -i -e 's/value: app-busybox-ns/value:  cas-performance/g' \
+sed -i -e 's/value: app-busybox-ns/value: cas-performance/g' \
 -e 's/app=busybox-sts/app=busybox-cas-performance/g' \
 -e 's/liveness: litmus-busybox-liveness/liveness: bb-liveness-cas-perform/g' busybox_loadgen_cas_performance.yml
 
@@ -158,13 +158,13 @@ cp apps/busybox/liveness/run_litmus_test.yml bb_loadgen_deprovision_cas_performa
   ---------------------------------------------------------------------------------------------------------------------|
  | appNamespace      | env    | app-busybox-ns                      | cas-performance                                  | 
  | action            | env    | provision                           | deprovision                                      | 
- | appLabel          | env    | app=busybox-sts                     | app=busybox-cas-performance                     |
+ | appLabel          | env    | app=busybox-sts                     | app=busybox-cas-performance                      |
  | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: bb-liveness-dep-cas-perform            |
  ----------------------------------------------------------------------------------------------------------------------
 EOF
 
 sed -i -e 's/value: app-busybox-ns/value: cas-performance/g' \
--e '/svalue: provision/value: deprovision/g' \
+-e 's/value: provision/value: deprovision/g' \
 -e 's/app=busybox-sts/app=busybox-cas-performance/g' \
 -e 's/liveness: litmus-busybox-liveness/liveness: bb-liveness-dep-cas-perform/g' bb_loadgen_deprovision_cas_performance.yml
 

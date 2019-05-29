@@ -246,7 +246,7 @@ cp apps/busybox/deployers/run_litmus_test.yml deprovision_rep_node_affinity.yml
   -----------------------------------------------------------------------------------------------------------------------------
 EOF
 
-sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovision-rep-node-affinity-jiva /g' \
+sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovision-rep-node-affinity-jiva/g' \
 -e 's/value: app-busybox-ns/value: rep-node-affinity-jiva/g' \
 -e 's/value: openebs-busybox/value: openebs-busybox-rep-affinity/g' \
 -e 's/app: busybox-litmus/app:  busybox-deprovision-rep-node-affinity/g' \

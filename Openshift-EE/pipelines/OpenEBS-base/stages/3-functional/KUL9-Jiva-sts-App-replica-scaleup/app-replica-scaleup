@@ -187,7 +187,7 @@ cp apps/busybox/liveness/run_litmus_test.yml bb_loadgen_dep_app_scaleup_jiva.yml
 EOF
 
 sed -i -e 's/value: app-busybox-ns/value: target-affinity/g' \
--e '/svalue: provision/value: deprovision/g' \
+-e 's/value: provision/value: deprovision/g' \
 -e 's/app=busybox-sts/app=busybox-scale-jiva/g' \
 -e 's/liveness: litmus-busybox-liveness/liveness: bb-liveness-dep-replica/g' bb_loadgen_dep_app_scaleup_jiva.yml
 
