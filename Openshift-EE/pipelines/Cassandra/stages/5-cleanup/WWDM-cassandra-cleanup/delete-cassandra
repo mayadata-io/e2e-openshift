@@ -91,7 +91,7 @@ fi
 
 
 # Update the e2e cr once the job is completed
-bash Openshift-EE/utils/e2e-cr jobname:deploy-cassandra jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:$testResult
+bash Openshift-EE/utils/e2e-cr jobname:delete-cassandra jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:$testResult
 
 python3 Openshift-EE/utils/result/result_update.py $job_id $case_id 5-cleanup "Check if the cassandra ring is deleted successfully" $testResult $pipeline_id "$current_time" $commit_id $gitToken
 
