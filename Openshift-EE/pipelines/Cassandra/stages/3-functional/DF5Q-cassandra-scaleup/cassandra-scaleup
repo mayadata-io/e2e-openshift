@@ -31,7 +31,7 @@ present_dir=$(pwd)
 echo $present_dir
 
 #pooling over previous job to complete
-bash Openshift-EE/utils/pooling jobname:deploy-loadgen
+bash Openshift-EE/utils/pooling jobname:cassandra-loadgen
 
 #Creating e2e custom resource result for the test.
 bash Openshift-EE/utils/e2e-cr jobname:cassandra-scaleup jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
@@ -70,7 +70,7 @@ cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 
 # Update the e2e event for the job.
-bash Openshift-EE/utils/event_updater jobname:cassandra-loadgen $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/event_updater jobname:cassandra-scaleup $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 rc_val=$(echo $?)
 
@@ -78,7 +78,7 @@ rc_val=$(echo $?)
 testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
 
 # Update the e2e cr once the job is completed
-bash Openshift-EE/utils/e2e-cr jobname:cassandra-loadgen jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:$testResult
+bash Openshift-EE/utils/e2e-cr jobname:cassandra-scaleup jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:$testResult
 
 python3 Openshift-EE/utils/result/result_update.py $job_id $case_id 3-functional "Scaling up Cassandra application replicas" $testResult $pipeline_id "$current_time" $commit_id $gitToken
 

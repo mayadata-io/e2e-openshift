@@ -34,7 +34,7 @@ echo $present_dir
 #Creating e2e custom resource result for the test.
 bash Openshift-EE/utils/e2e-cr jobname:deploy-cassandra jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:deploy-cassandra jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
-bash Openshift-EE/utils/e2e-cr jobname:deploy-loadgen jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:cassandra-loadgen jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:cassandra-scaleup jobphase:Waiting
 
 ################

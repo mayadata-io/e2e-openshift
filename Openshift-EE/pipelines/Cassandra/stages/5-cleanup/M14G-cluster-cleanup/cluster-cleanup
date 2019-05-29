@@ -6,7 +6,7 @@ echo $CI_JOB_ID
 ###clone e2e-openshift-repo
 echo "cloning e2e-openshift repo*************"
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone https://github.com/openebs/e2e-openshift.git'
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && git checkout cassandra && bash Openshift-EE/pipelines/OpenEBS-base/stages/5-cleanup/M14G-cluster-cleanup/cluster-cleanup node '"'$CI_JOB_ID'"''
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && git checkout cassandra && bash Openshift-EE/pipelines/cassandra/stages/5-cleanup/M14G-cluster-cleanup/cluster-cleanup node '"'$CI_JOB_ID'"''
 }
 
 time="date"
