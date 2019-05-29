@@ -34,8 +34,8 @@ echo "Number of nodes in ready state is $ready_nodes"
 echo "******Cluster is in Healthy state****"
 
 echo "*************Dumping cluster state********"
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 kubectl get nodes
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 kubectl get pod --all-namespaces
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port kubectl get nodes
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port kubectl get pod --all-namespaces
 
 echo "cloning e2e-openshift repo*************"
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b cassandra https://github.com/mayadata-io/e2e-openshift.git'

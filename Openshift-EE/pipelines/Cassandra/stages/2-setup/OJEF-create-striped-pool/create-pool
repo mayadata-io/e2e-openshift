@@ -25,7 +25,7 @@ gittoken=$(echo "$github_token")
 time="date"
 current_time=$(eval $time)
 
-#pooling over previous job to complete
+#Waiting for the previous job in the stage to complete
 echo "*******Creating cstor-pool**************"
 bash Openshift-EE/utils/pooling jobname:openebs-deploy
 bash Openshift-EE/utils/e2e-cr jobname:cstor-pool jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
@@ -44,7 +44,7 @@ cat $run_test
 
 bash ../Openshift-EE/utils/litmus_job_runner label='app:cstor-disk-pool-provision' job=$run_test
 
-echo "Dumping state of cluster post job run"; echo ""
+echo "Dumping cluster resources after job execution"; echo ""
 bash ../Openshift-EE/utils/dump_cluster_state;
 
 cd ..

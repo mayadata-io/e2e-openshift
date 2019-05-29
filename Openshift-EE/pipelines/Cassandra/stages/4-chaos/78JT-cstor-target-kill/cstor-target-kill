@@ -66,7 +66,7 @@ sed -i -e 's/value: app-percona-ns/value: app-cass-ns/g'\
 cat target_kill.yml
 
 # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
-bash ../Openshift-EE/utils/litmus_job_runner label='name: openebs-target-failure' job=target_kill.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-target-failure' job=target_kill.yml
 cd ..
 
 # Get the cluster state Once the litmus jobs completed.

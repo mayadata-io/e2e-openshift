@@ -27,8 +27,8 @@ gittoken=$(echo "$github_token")
 present_dir=$(pwd)
 echo $present_dir
 
-#pooling over previous job to complete
-echo "***********Applying openebs-storage-clas********"
+#Waiting for the previous job to complete
+echo "***********Creating OpenEBS storage classes********"
 bash Openshift-EE/utils/pooling jobname:cstor-pool
 bash Openshift-EE/utils/e2e-cr jobname:policies jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
