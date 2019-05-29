@@ -47,7 +47,7 @@ cp apps/busybox/deployers/run_litmus_test.yml deploy_run_test.yml
 EOF
 
 sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
--e 's/value: app-busybox-ns/value: app-scale-jiva/g' \
+-e 's/value: app-busybox-ns/value: app-scale/g' \
 -e 's/value: '\''app=busybox-sts'\''/value: '\''app=busybox-scale'\''/g' \
 -e 's/value: '\''replicas=2'\''/value: '\''replicas=1'\''/g' \
 -e 's/value: openebs-cstor-sparse/value: cstor-disk-standalone/g' deploy_run_test.yml
@@ -88,7 +88,7 @@ cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_app_replica_scaleup
   ----------------------------------------------------------------------------------------------------------------------
 EOF
 
-sed -i -e 's/value: app-busybox-ns/value: app-scale-jiva/g' \
+sed -i -e 's/value: app-busybox-ns/value: app-scale/g' \
 -e 's/app=busybox-sts/app=busybox-scale/g' \
 -e 's/liveness: litmus-busybox-liveness/liveness: busybox-liveness-app-replica-scaleup/g' busybox_loadgen_app_replica_scaleup.yml
 
@@ -136,7 +136,7 @@ EOF
 
 sed -i -e 's/app: cassandra-scaleup-litmus/app: busybox-scaleup-litmus/g' \
 -e 's/value: '\''app=cassandra'\''/value: '\''app=busybox-scale'\''/g' \
--e 's/value: app-cass-ns/value: app-busybox-ns/g' run_scaleup_test.yml
+-e 's/value: app-cass-ns/value: app-scale/g' run_scaleup_test.yml
 
 ###Running the litmus test for Busybox Deployment Scaleup.."
 cat run_scaleup_test.yml
@@ -177,7 +177,7 @@ cp apps/busybox/liveness/run_litmus_test.yml deprovision_replica_scaleup.yml
  ----------------------------------------------------------------------------------------------------------------------
 EOF
 
-sed -i -e 's/value: app-busybox-ns/value: app-scale-jiva/g' \
+sed -i -e 's/value: app-busybox-ns/value: app-scale/g' \
 -e 's/value: provision/value: deprovision/g' \
 -e 's/app=busybox-sts/app=busybox-scale/g' \
 -e 's/liveness: litmus-busybox-liveness/liveness: bb-liveness-deprovision-replica-scaleup/g' deprovision_replica_scaleup.yml
@@ -229,6 +229,7 @@ EOF
 sed -i -e 's/generateName: litmus-busybox-deploy/generateName: litmus-busybox-deprovision/g' \
 -e 's/app: busybox-litmus/app: busybox-deprovision-litmus/g' \
 -e 's/value: '\''app=busybox-sts'\''/value: '\''app=busybox-scale'\''/g' \
+-e 's/value: app-busybox-ns/value: app-scale/g' \
 -e 's/value: '\''replicas=2'\''/value: '\''replicas=1'\''/g' \
 -e 's/value: openebs-cstor-sparse/value: cstor-disk-standalone/g' \
 -e 's/value: provision/value: deprovision/g' deprovision_scaleup.yml
