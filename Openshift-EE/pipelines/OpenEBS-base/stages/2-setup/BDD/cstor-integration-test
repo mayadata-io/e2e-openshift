@@ -26,16 +26,18 @@ git clone https://github.com/openebs/maya.git
 
 cd maya/tests/cstor-pool/
 
-ginkgo -v -- -kubeconfig=$HOME/.kube/config
+ginkgo -v -- -kubeconfig=$HOME/.kube/config > log.txt
 
 if [ "$?" != "0" ];then
   echo "test-failed"
+  cat log.txt
   current_time=$(eval $time)
   cd /home/devuser/e2e-openshift
   bash Openshift-EE/utils/e2e-cr jobname:cstor-integration-test jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Fail
   exit 1;
 else
   echo "test-passed"
+  cat log.txt
   current_time=$(eval $time)
   cd /home/devuser/e2e-openshift
   bash Openshift-EE/utils/e2e-cr jobname:cstor-integration-test jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
