@@ -42,10 +42,10 @@ if [ "$?" != "0" ];then
   echo "jiva-clone-test-failed"
   current_time=$(eval $time)
   cd /home/devuser/e2e-openshift
-  bash Openshift-EE/utils/e2e-cr jobnamebdd-jiva jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Fail
+  bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Fail
   exit 1;
 else
-  echo "jivs-clone-test-passed"
+  echo "jiva-clone-test-passed"
   current_time=$(eval $time)
   cd /home/devuser/e2e-openshift
   bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
@@ -64,7 +64,7 @@ if [ "$?" != "0" ];then
   bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Fail
   exit 1;
 else
-  echo "jivs-node-stickiness-test-passed"
+  echo "jiva-node-stickiness-test-passed"
   current_time=$(eval $time)
   cd /home/devuser/e2e-openshift
   bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
