@@ -74,7 +74,7 @@ cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_snap_1rep.yml
  | specAttribute     | kind   |         default value               | test specifc value                               |
   ---------------------------------------------------------------------------------------------------------------------|
  | appNamespace      | env    | app-busybox-ns                      | snap-1rep                                        | 
- | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: busybox-liveness-snap-1rep              |
+ | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: busybox-liveness-snap-1rep             |
  | appLabel          | env    | app=busybox-sts                     | app=snap-1rep                                    | 
   ----------------------------------------------------------------------------------------------------------------------
 EOF
@@ -149,7 +149,7 @@ cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_deprovision_snap_1r
   ---------------------------------------------------------------------------------------------------------------------|
  | appNamespace      | env    | app-busybox-ns                      | snap-1rep                                        | 
  | appLabel          | env    | app=busybox-sts                     | app=snap-1rep                                    |
- | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: busybox-liveness-deprovision-snap-1rep  |
+ | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: busybox-liveness-deprovision-snap-1rep |
  | action            | env    | provision                           | deprovision                                      | 
   ----------------------------------------------------------------------------------------------------------------------
 EOF

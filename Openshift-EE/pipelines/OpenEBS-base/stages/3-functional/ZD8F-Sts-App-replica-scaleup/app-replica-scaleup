@@ -40,12 +40,14 @@ cp apps/busybox/deployers/run_litmus_test.yml deploy_run_test.yml
  | specAttribute     | kind   |         default value               | test specifc value                               |
   ---------------------------------------------------------------------------------------------------------------------|
  | imagePullPolicy   | image  | Always                              | IfNotPresent                                     |
+ | appNamespace      | env    | app-busybox-ns                      | app-scale-jiva                                   | 
  | appLabel          | env    | app=busybox-sts                     | app=busybox-scale                                |
- | storage class     | env    | openebs-cstor-sparse                | openebs-disk-standalone                          |
+ | storage class     | env    | openebs-cstor-sparse                | cstor-disk-standalone                            |
    ----------------------------------------------------------------------------------------------------------------------
 EOF
 
 sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
+-e 's/value: app-busybox-ns/value: app-scale-jiva/g' \
 -e 's/value: '\''app=busybox-sts'\''/value: '\''app=busybox-scale'\''/g' \
 -e 's/value: '\''replicas=2'\''/value: '\''replicas=1'\''/g' \
 -e 's/value: openebs-cstor-sparse/value: cstor-disk-standalone/g' deploy_run_test.yml
@@ -176,7 +178,7 @@ cp apps/busybox/liveness/run_litmus_test.yml deprovision_replica_scaleup.yml
 EOF
 
 sed -i -e 's/value: app-busybox-ns/value: app-scale-jiva/g' \
--e '/svalue: provision/value: deprovision/g' \
+-e 's/value: provision/value: deprovision/g' \
 -e 's/app=busybox-sts/app=busybox-scale/g' \
 -e 's/liveness: litmus-busybox-liveness/liveness: bb-liveness-deprovision-replica-scaleup/g' deprovision_replica_scaleup.yml
 
@@ -193,7 +195,7 @@ cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:app-replica-scaleup $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
- rc_val=$(echo $?)
+rc_val=$(echo $?)
 
  # Update result of the test case in github mayadata-io/e2e-openshift repository.
 if [ "$rc_val" != "0" ]; then
