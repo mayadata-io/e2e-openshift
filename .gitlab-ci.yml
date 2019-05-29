@@ -14,7 +14,7 @@ C538-OpenShift-3.10:
     - chmod 755 ./Openshift-EE/pipelines/Cassandra/stages/1-cluster-setup/C538-cluster-state/cluster-state
     - ./Openshift-EE/pipelines/Cassandra/stages/1-cluster-setup/C538-cluster-state/cluster-state
 
-SKLV-OpenEBS-v0.8.1:
+SKLV-OpenEBS:
   image: openebs/openshift-ci:latest
   stage: OPENEBS-SETUP
   script:
@@ -40,7 +40,7 @@ OJEF-CSTOR-POOL:
   stage: FUNCTIONAL
   when: always
   dependencies:
-    - SKLV-OpenEBS-v0.8.1
+    - SKLV-OpenEBS
      
 FRYG-Cassandra-Provision:
   extends: .func_test_template
@@ -48,24 +48,30 @@ FRYG-Cassandra-Provision:
     - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/3-functional/FRYG-deploy-cassandra/cassandra-deploy
     - ./Openshift-EE/pipelines/Cassandra/stages/3-functional/FRYG-deploy-cassandra/cassandra-deploy
 
+XONK-Cassandra-stress:
+  extends: .func_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/3-functional/XONK-cassandra-loadgen/cassandra-loadgen
+    - ./Openshift-EE/pipelines/Cassandra/stages/3-functional/XONK-cassandra-loadgen/cassandra-loadgen
+
+DF5Q-cassandra-scaleup:
+  extends: .func_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/3-functional/DF5Q-cassandra-scaleup/cassandra-scaleup
+    - ./Openshift-EE/pipelines/Cassandra/stages/3-functional/DF5Q-cassandra-scaleup/cassandra-scaleup
+
 .chaos_test_template:
   image: openebs/openshift-ci:latest
   stage: CHAOS
   when: always
   dependencies:
-    - SKLV-OpenEBS-v0.8.1
+    - SKLV-OpenEBS
 
 RJKZ-App-pod-kill:
   extends: .chaos_test_template
   script: 
     - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/RJKZ-cassandra-pod-failure/app-pod-kill
     - ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/RJKZ-cassandra-pod-failure/app-pod-kill
-
-Z0KY-cassandra-app-scaleup:
-  extends: .chaos_test_template
-  script: 
-    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/Z0KY-cassandra-app-scaleup/cassandra-app-scaleup
-    - ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/Z0KY-cassandra-app-scaleup/cassandra-app-scaleup
 
 78JT-cstor-target-kill:
   extends: .chaos_test_template
@@ -91,15 +97,13 @@ Q3ZJ-cstor-pool-delete:
     - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/Q3ZJ-cstor-pool-delete/cstor-pool-delete
     - ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/Q3ZJ-cstor-pool-delete/cstor-pool-delete
 
-WWDM-openebs-Uninstall:
+WWDM-deprovision-cassandra:
   image: openebs/openshift-ci:latest
   stage: CLEANUP
   when: always
-  dependencies:
-    - SKLV-OpenEBS-v0.8.1
   script:
-    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/5-cleanup/WWDM-openebs-cleanup/openebs-cleanup
-    - ./Openshift-EE/pipelines/Cassandra/stages/5-cleanup/WWDM-openebs-cleanup/openebs-cleanup
+    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/5-cleanup/WWDM-cassandra-cleanup/delete-cassandra
+    - ./Openshift-EE/pipelines/Cassandra/stages/5-cleanup/WWDM-cassandra-cleanup/delete-cassandra
   
 M14G-cluster-Delete:
   image: openebs/openshift-ci:latest
