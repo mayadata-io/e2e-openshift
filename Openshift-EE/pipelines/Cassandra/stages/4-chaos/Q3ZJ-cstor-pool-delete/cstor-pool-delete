@@ -39,7 +39,7 @@ bash Openshift-EE/utils/e2e-cr jobname:cstor-pool-delete jobphase:Running init_t
 
 #### Generating test name using test case name
 
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-pool-failure metadata="delete")
+run_id="delete";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-pool-failure metadata="${run_id}")
 echo $test_name
 
 cd litmus
@@ -63,6 +63,11 @@ sed -i -e 's/value: app-percona-ns/value: app-cass-ns/g'\
        -e 's/name: openebs-pool-failure/name: openebs-pool-delete/g'\
        -e 's/value: \"pool-kill\"/value: \"pool-delete"/g'\
        -e 's/value: percona-mysql-claim/openebs-cassandra-0/g' pool_delete.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' pool_delete.yml
 
 cat pool_delete.yml
 

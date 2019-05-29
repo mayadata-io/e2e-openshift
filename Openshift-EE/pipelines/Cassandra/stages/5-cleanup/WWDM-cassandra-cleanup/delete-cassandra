@@ -39,7 +39,7 @@ bash Openshift-EE/utils/e2e-cr jobname:delete-cluster jobphase:Waiting
 
 #### Deleting Cassandra application
 
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase=cassandra-deployment metadata="delete")
+run_id="delete"; test_name=$(bash Openshift-EE/utils/generate_test_name testcase=cassandra-deployment metadata=${run_id})
 echo $test_name
 
 cd litmus
@@ -63,6 +63,11 @@ EOF
 sed -i -e 's/value: openebs-standalone/value: openebs-cstor-sparse/g'\
        -e 's/value: provision/value: deprovision/g'
        -e 's/app: cassandra-deployment-litmus/app: cassandra-delete-litmus/g' delete_cassandra.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' delete_cassandra.yml
 
 cat delete_cassandra.yml
 
@@ -88,7 +93,7 @@ fi
 # Update the e2e cr once the job is completed
 bash Openshift-EE/utils/e2e-cr jobname:deploy-cassandra jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:$testResult
 
-python3 Openshift-EE/utils/result/result_update.py $job_id $case_id 3-functional "Check if the cassandra ring is created successfully" $testResult $pipeline_id "$current_time" $commit_id $gitToken
+python3 Openshift-EE/utils/result/result_update.py $job_id $case_id 5-cleanup "Check if the cassandra ring is deleted successfully" $testResult $pipeline_id "$current_time" $commit_id $gitToken
 
 if [ "$rc_val" != "0" ]; then
 exit 1;
