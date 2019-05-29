@@ -44,7 +44,7 @@ echo $test_name
 
 cd litmus
 # copy the content of chaos `run_litmus_test.yml` litmusbook into a different file to update the test specific parameters.
-cp experiments/chaos/app_pod_failure/run_litmus_test.yml target_kill.yml
+cp experiments/chaos/openebs_target_failure/run_litmus_test.yml target_kill.yml
 
 # Update the environmental variables in litmus job spec.
 : << EOF
