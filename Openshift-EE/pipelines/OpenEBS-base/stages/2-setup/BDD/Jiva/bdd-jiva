@@ -34,7 +34,7 @@ cd /home/devuser/go/src/github.com/openebs
 git clone https://github.com/openebs/maya.git
 
 # Running BDD test for jiva-clone
-cd maya/tests/jiva/clone && ginkgo -v -- -kubeconfig=~/.kube/config
+cd maya/tests/jiva/clone && ginkgo -v -- -kubeconfig=$HOME/.kube/config --replicas=3
 
 #Evaluating result based on the return count
 
@@ -53,7 +53,7 @@ fi
 
 # Running BDD test for jiva-node-stickiness
 cd /home/devuser/go/src/github.com/openebs/maya/tests/jiva/node-stickiness
-ginkgo -v -- -kubeconfig=~/.kube/config
+ginkgo -v -- -kubeconfig=$HOME/.kube/config
 
 #Evaluating result based on the return count
 
@@ -72,7 +72,7 @@ fi
 
 # Running BDD test for jiva-snapshot
 cd /home/devuser/go/src/github.com/openebs/maya/tests/jiva/snapshot
-ginkgo -v -- -kubeconfig=~/.kube/config
+ginkgo -v -- -kubeconfig=$HOME/.kube/config --replicas=3
 
 #Evaluating result based on the return count
 
@@ -91,7 +91,7 @@ fi
 
 # Running BDD test for jiva-volume
 cd /home/devuser/go/src/github.com/openebs/maya/tests/jiva/volume
-ginkgo -v -- -kubeconfig=~/.kube/config
+ginkgo -v -- -kubeconfig=$HOME/.kube/config --replicas=3 
 
 #Evaluating result based on the return count
 
