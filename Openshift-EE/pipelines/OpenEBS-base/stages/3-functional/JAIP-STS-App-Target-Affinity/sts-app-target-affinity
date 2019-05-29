@@ -97,7 +97,7 @@ EOF
 
 sed -i -e 's/value: app-busybox-ns/value: sts-target-affinity/g' \
 -e 's/app=busybox-sts/app=sts-target-affinity/g' \
--e 's/liveness: litmus-busybox-liveness/liveness: busybox-liveness-target-affinity/g' busybox_loadgen_sts_target_affinity.yml
+-e 's/liveness: litmus-busybox-liveness/liveness: busybox-liveness-sts-target-affinity/g' busybox_loadgen_sts_target_affinity.yml
 
 sed -i '/command:/i \
           - name: RUN_ID\
@@ -106,7 +106,7 @@ sed -i '/command:/i \
 
 cat busybox_loadgen_sts_target_affinity.yml
  # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
-bash ../Openshift-EE/utils/litmus_job_runner label='liveness:busybox-liveness-target-affinity' job=busybox_loadgen_sts_target_affinity.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='liveness:busybox-liveness-sts-target-affinity' job=busybox_loadgen_sts_target_affinity.yml
 cd ..
 # Get the cluster state Once the litmus jobs completed.
 bash Openshift-EE/utils/dump_cluster_state;
@@ -194,7 +194,7 @@ EOF
 sed -i -e 's/value: app-busybox-ns/value: target-affinity/g' \
 -e 's/value: provision/value: deprovision/g' \
 -e 's/app=busybox-sts/app=sts-target-affinity/g' \
--e 's/liveness: litmus-busybox-liveness/liveness: bb-liveness-dep-target-affinity/g' busybox_loadgen_dep_sts_target_affinity.yml
+-e 's/liveness: litmus-busybox-liveness/liveness: liveness-dep-sts-target-affinity/g' busybox_loadgen_dep_sts_target_affinity.yml
 
 sed -i '/command:/i \
           - name: RUN_ID\
@@ -203,7 +203,7 @@ sed -i '/command:/i \
 
 cat busybox_loadgen_dep_sts_target_affinity.yml
 # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
-bash ../Openshift-EE/utils/litmus_job_runner label='liveness:bb-liveness-dep-target-affinity' job=busybox_loadgen_dep_sts_target_affinity.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='liveness:liveness-dep-sts-target-affinity' job=busybox_loadgen_dep_sts_target_affinity.yml
 cd ..
 # Get the cluster state Once the litmus jobs completed.
 bash Openshift-EE/utils/dump_cluster_state;
