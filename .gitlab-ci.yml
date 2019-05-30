@@ -70,8 +70,8 @@ DF5Q-cassandra-scaleup:
 RJKZ-App-pod-kill:
   extends: .chaos_test_template
   script: 
-    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/RJKZ-cassandra-pod-failure/app-pod-kill
-    - ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/RJKZ-cassandra-pod-failure/app-pod-kill
+    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/RJKZ-cassandra-pod-failure/app-pod-failure
+    - ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/RJKZ-cassandra-pod-failure/app-pod-failure
 
 78JT-cstor-target-kill:
   extends: .chaos_test_template

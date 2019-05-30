@@ -61,7 +61,7 @@ EOF
 # Replacing the required parameters in the litmus experiment.
 
 sed -i -e 's/value: openebs-standalone/value: openebs-cstor-sparse/g'\
-       -e 's/value: provision/value: deprovision/g'
+       -e 's/value: provision/value: deprovision/g'\
        -e 's/app: cassandra-deployment-litmus/app: cassandra-delete-litmus/g' delete_cassandra.yml
 
 sed -i '/command:/i \
