@@ -2,7 +2,7 @@
 set -x
 
 pod() {
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/Cassandra/stages/4-chaos/O14T-cstor-target-network-delay/cstor-target-network-delay node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/Cassandra/stages/4-chaos/OI4T-cstor-target-network-delay/cstor-target-network-delay node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
 }
 
 node() {
@@ -17,7 +17,7 @@ pipeline_id=$2
 commit_id=$3 
 
 #test case ID.
-case_id=O14T
+case_id=OI4T
 
 #github token to push the test result into github mayadata-io/e2e-openshift repository.
 #This token is set as an env in ~/.profile file in the test cluster.
