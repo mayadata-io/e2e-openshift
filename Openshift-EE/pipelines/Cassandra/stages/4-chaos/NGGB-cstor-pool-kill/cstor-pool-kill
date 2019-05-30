@@ -59,9 +59,9 @@ EOF
 # Replacing the namespace, label and mode of deployment in the litmus book
 
 sed -i -e 's/value: app-percona-ns/value: app-cass-ns/g'\
-	-i -e 's/value: name=percona/value: app=cassandra/g'\
-	-i -e 's/value: percona-mysql-claim/openebs-cassandra-0/g'\
-        -i -e 's/value: \"enable\"/value: \"disable\"/g'  pool_kill.yml
+       -e 's/value: name=percona/value: app=cassandra/g'\
+       -e 's/value: percona-mysql-claim/openebs-cassandra-0/g'\
+       -e 's/value: \"enable\"/value: \"disable\"/g'  pool_kill.yml
 
 cat pool_kill.yml
 
