@@ -1,7 +1,7 @@
 #!/bin/bash
 set -x
 pod() {
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'GOPATH="/home/devuser/go"; PATH=$PATH:"/usr/local/go/bin:$GOPATH/bin"; /bin/bash /home/devuser/e2e-openshift/Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/Jiva/bdd-jiva node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && GOPATH="/home/devuser/go"; PATH=$PATH:"/usr/local/go/bin:$GOPATH/bin"; /bin/bash /home/devuser/e2e-openshift/Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/Jiva/bdd-jiva node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
 }
 
 node() {
@@ -23,10 +23,14 @@ current_time=$(eval $time)
 
 #pooling over previous job to complete
 bash Openshift-EE/utils/pooling jobname:cstor-integration-test
-bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-clone jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-node-stickiness jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-snapshot jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-volume jobphase:Waiting
+
 
 # Update the e2e event for the job.
-bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-clone jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 #cloneing openebs/maya repo
 cd /home/devuser/go/src/github.com/openebs
@@ -42,16 +46,17 @@ if [ "$?" != "0" ];then
   echo "jiva-clone-test-failed"
   current_time=$(eval $time)
   cd /home/devuser/e2e-openshift
-  bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Fail
+  bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-clone jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Fail
   exit 1;
 else
   echo "jiva-clone-test-passed"
   current_time=$(eval $time)
   cd /home/devuser/e2e-openshift
-  bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
+  bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-clone jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
 fi
 
 # Running BDD test for jiva-node-stickiness
+bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-node-stickiness jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" 
 cd /home/devuser/go/src/github.com/openebs/maya/tests/jiva/node-stickiness
 ginkgo -v -- -kubeconfig=$HOME/.kube/config
 
@@ -61,16 +66,17 @@ if [ "$?" != "0" ];then
   echo "jiva-node-stickiness-test-failed"
   current_time=$(eval $time)
   cd /home/devuser/e2e-openshift
-  bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Fail
+  bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-node-stickiness jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Fail
   exit 1;
 else
   echo "jiva-node-stickiness-test-passed"
   current_time=$(eval $time)
   cd /home/devuser/e2e-openshift
-  bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
+  bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-node-stickiness jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
 fi
 
 # Running BDD test for jiva-snapshot
+bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-snapshot jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 cd /home/devuser/go/src/github.com/openebs/maya/tests/jiva/snapshot
 ginkgo -v -- -kubeconfig=$HOME/.kube/config --replicas=3
 
@@ -80,16 +86,17 @@ if [ "$?" != "0" ];then
   echo "jiva-snapshot-test-failed"
   current_time=$(eval $time)
   cd /home/devuser/e2e-openshift
-  bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Fail
+  bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-snapshot jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Fail
   exit 1;
 else
   echo "jiva-snapshot-test-passed"
   current_time=$(eval $time)
   cd /home/devuser/e2e-openshift
-  bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
+  bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-snapshot jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
 fi
 
 # Running BDD test for jiva-volume
+bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-volume jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 cd /home/devuser/go/src/github.com/openebs/maya/tests/jiva/volume
 ginkgo -v -- -kubeconfig=$HOME/.kube/config --replicas=3 
 
@@ -99,13 +106,13 @@ if [ "$?" != "0" ];then
   echo "jiva-volume-test-failed"
   current_time=$(eval $time)
   cd /home/devuser/e2e-openshift
-  bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Fail
+  bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-volume jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Fail
   exit 1;
 else
   echo "jiva-volume-test-passed"
   current_time=$(eval $time)
   cd /home/devuser/e2e-openshift
-  bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
+  bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-volume jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
 fi
 
 }
