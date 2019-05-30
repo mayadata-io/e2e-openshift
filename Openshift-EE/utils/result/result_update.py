@@ -28,7 +28,7 @@ git_auth = github.Github(token)
 username = "openebs"
 repos = "e2e-openshift"
 repo = git_auth.get_repo("{owner}/{repo_name}".format(owner=username, repo_name=repos))
-path = 'Openshift-EE/pipelines/Cassandra/stages/{}'.format(stage)
+path = 'Openshift-EE/pipelines/cassandra/stages/{}'.format(stage)
 job_folder = "" 
 dir = repo.get_dir_contents(path)
 for i in dir:
@@ -38,7 +38,7 @@ for i in dir:
         
 
 
-updated_path = "Openshift-EE/pipelines/Cassandra/stages/{}/{}/README.md".format(stage,job_folder)
+updated_path = "Openshift-EE/pipelines/cassandra/stages/{}/{}/README.md".format(stage,job_folder)
 print("https://github.com/"+username+'/'+repos+'/'+"tree/master/"+updated_path)
 file = repo.get_file_contents(updated_path)
 file_content=str(file.decoded_content)
