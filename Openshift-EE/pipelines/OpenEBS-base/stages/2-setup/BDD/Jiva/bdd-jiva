@@ -57,8 +57,8 @@ fi
 
 # Running BDD test for jiva-node-stickiness
 bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-node-stickiness jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" 
-cd /home/devuser/go/src/github.com/openebs/maya/tests/jiva/node-stickiness
-ginkgo -v -- -kubeconfig=$HOME/.kube/config
+cd /home/devuser/go/src/github.com/openebs/maya/tests/jiva/node-stickiness/replicadeletion
+ginkgo -v -- -kubeConfigPath=$HOME/.kube/config
 
 #Evaluating result based on the return count
 
