@@ -64,8 +64,8 @@ EOF
 # Replacing the namespace, label and mode of deployment in the litmus book
 
 sed -i -e 's/value: app-jenkins-ns/value: app-cass-ns/g'\
-	-i -e 's/value: app=jenkins-app/value: app=cassandra/g'\
-	-i -e 's/value: deployment/value: statefulset/g' cassandra_failure.yml
+       -e 's/value: app=jenkins-app/value: app=cassandra/g'\
+       -e 's/value: deployment/value: statefulset/g' cassandra_failure.yml
 
 cat cassandra_failure.yml
 
