@@ -22,11 +22,11 @@ echo $present_dir
 bash Openshift-EE/utils/pooling jobname:app-kill
 bash Openshift-EE/utils/e2e-cr jobname:volume-mgmt-kill jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
+# Performing Cstor pool Management kill
+
 ################
 # LitmusBook 1 #
 ################
-
-# Performing Cstor pool Management kill
 
 run_id="mgmt-kill";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-target-failure metadata=${run_id})
 echo $test_name
@@ -59,7 +59,6 @@ sed -i '/command:/i \
             value: '"$run_id"'\
 ' run_targetmgmt_kill_test.yml
 
-# Running the litmus test for Busybox Deployment Scaleup
 cat run_targetmgmt_kill_test.yml
 
 bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-target-mgmt-failure' job=run_targetmgmt_kill_test.yml

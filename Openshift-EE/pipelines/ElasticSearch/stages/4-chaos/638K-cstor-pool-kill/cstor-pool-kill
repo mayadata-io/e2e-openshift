@@ -72,6 +72,8 @@ sed -i '/command:/i \
             value: '"$run_id"'\
 ' cstor_pool_kill.yml
 
+cat cstor_pool_kill.yml
+
 bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-pool-failure' job=cstor_pool_kill.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;

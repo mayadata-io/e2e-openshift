@@ -23,7 +23,6 @@ echo $present_dir
 bash Openshift-EE/utils/e2e-cr jobname:volume-mgmt-kill
 bash Openshift-EE/utils/e2e-cr jobname:target-loss jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
-
 #####Performing Network loss on target
 
 ################
