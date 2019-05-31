@@ -57,7 +57,6 @@ cp experiments/chaos/app_pod_failure/run_litmus_test.yml cassandra_failure.yml
   ------------------------------------------------------------------------------------------------------------------- |
  | appLabel          | env    | app=cassandra                       | app=cassandra                                   |
  | pvcName           | env    | openebs-cassandra                   | openebs-cassandra                               | 
- | storage clas      | env    | openebs-standalone                  | openebs-cstor-sparse                            |
  | appNamespace      | env    | app-cass-ns                         | app-cass-ns                                     |
   ---------------------------------------------------------------------------------------------------------------------
 EOF

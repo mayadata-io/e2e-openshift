@@ -58,11 +58,11 @@ cp experiments/chaos/openebs_pool_failure/run_litmus_test.yml pool_delete.yml
 EOF
 # Replacing the namespace, label and mode of deployment in the litmus book
 
-sed -i -e 's/value: app-percona-ns/value: app-cass-ns/g'\
-       -e 's/value: name=percona/value: app=cassandra/g'\
-       -e 's/name: openebs-pool-failure/name: openebs-pool-delete/g'\
-       -e 's/value: \"pool-kill\"/value: \"pool-delete"/g'\
-       -e 's/value: percona-mysql-claim/openebs-cassandra-0/g' pool_delete.yml
+sed -i -e 's/app-percona-ns/app-cass-ns/g' \
+       -e 's/'name=percona'/'app=cassandra'/g' \
+       -e 's/openebs-pool-failure/openebs-pool-delete/g' \
+       -e 's/"pool-kill"/"pool-delete"/g' \
+       -e 's/percona-mysql-claim/openebs-cassandra-0/g' pool_delete.yml
 
 sed -i '/command:/i \
           - name: RUN_ID\
