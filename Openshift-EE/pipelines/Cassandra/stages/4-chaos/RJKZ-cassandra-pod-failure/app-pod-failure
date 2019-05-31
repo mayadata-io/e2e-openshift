@@ -63,8 +63,8 @@ cp experiments/chaos/app_pod_failure/run_litmus_test.yml cassandra_failure.yml
 EOF
 # Replacing the namespace, label and mode of deployment in the litmus book
 
-sed -i -e 's/value: app-jenkins-ns/value: app-cass-ns/g'\
-       -e 's/value: app=jenkins-app/value: app=cassandra/g'\
+sed -i -e 's/value: app-jenkins-ns/value: app-cass-ns/g' \
+       -e 's/'app=jenkins-app'/'app=cassandra'/g' \
        -e 's/value: deployment/value: statefulset/g' cassandra_failure.yml
 
 cat cassandra_failure.yml
@@ -87,7 +87,7 @@ testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-column
 # Update the e2e cr once the job is completed
 bash Openshift-EE/utils/e2e-cr jobname:cassandra-pod-failure jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:$testResult
 
-python3 Openshift-EE/utils/result/result_update.py $job_id $case_id 3-functional "Induce Cassandra pod failure and check if it can be recovered successfully." $testResult $pipeline_id "$current_time" $commit_id $gitToken
+python3 Openshift-EE/utils/result/result_update.py $job_id $case_id 4-chaos "Induce Cassandra pod failure and check if it can be recovered successfully." $testResult $pipeline_id "$current_time" $commit_id $gitToken
 
 if [ "$rc_val" != "0" ]; then
 exit 1;

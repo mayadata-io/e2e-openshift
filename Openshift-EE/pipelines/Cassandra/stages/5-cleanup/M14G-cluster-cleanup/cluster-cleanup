@@ -18,7 +18,7 @@ echo $present_dir
 #Waiting for the previous job to complete.
 
 bash Openshift-EE/utils/pooling jobname:delete-cassandra
-bash Openshift-EE/utils/e2e-cr jobname:delete-delete jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:delete-cluster jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 node() {
 job_id=$(echo $1)
