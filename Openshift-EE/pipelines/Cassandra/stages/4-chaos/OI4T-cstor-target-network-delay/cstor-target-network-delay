@@ -58,8 +58,8 @@ cp experiments/chaos/openebs_target_network_delay/run_litmus_test.yml target_del
 EOF
 # Replacing the namespace, label and mode of deployment in the litmus book
 
-sed -i -e 's/value: app-percona-ns/value: app-cass-ns/g'\
-       -e 's/name=percona/app=cassandra/g'\
+sed -i -e 's/app-percona-ns/app-cass-ns/g' \
+       -e 's/'name=percona'/'app=cassandra'/g' \
        -e 's/percona-mysql-claim/openebs-cassandra-0/g' target_delay.yml
 
 cat target_delay.yml
