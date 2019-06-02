@@ -58,16 +58,18 @@ cp experiments/chaos/openebs_pool_failure/run_litmus_test.yml poolkill.yml
   -----------------------------------------------------------------------------------------------------------------------
 EOF
 
-sed -i -e 's/generateName: openebs-pool-failure-/generateName: openebs-pool-kill-/g' \  
--e 's/name: openebs-pool-failure/name: openebs-pool-kill/g' \ 
+sed -i -e 's/generateName: openebs-pool-failure-/generateName: openebs-pool-kill-/g' \
+-e 's/name: openebs-pool-failure/name: openebs-pool-kill/g' \
 -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
 -e 's/value: app-percona-ns/value: app-prometheus/g' \
 -e 's/value: '\''name=percona'\''/value: '\''name=prometheus'\''/g' \
 -e 's/value: percona-mysql-claim/value: prometheus-claim/g' \
--e '/name: LIVENESS_APP_LABEL/!b;n;c\            \ value: "liveness=prometheus-liveness"' \
--e '/name: LIVENESS_APP_NAMESPACE/!b;n;c\            \ value: "app-prometheus"' \
 -e 's/enable//g' poolkill.yml
 
+sed -i -e '/name: LIVENESS_APP_LABEL/!b;n;c\           \ value: "liveness=prometheus-liveness"' poolkill.yml
+
+sed -i -e '/name: LIVENESS_APP_NAMESPACE/!b;n;c\            \ value: "app-prometheus"' poolkill.yml
+      
 sed -i '/command:/i \
           - name: RUN_ID\
             value: '"$run_id"'\
