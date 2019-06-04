@@ -2,7 +2,7 @@
 
 #### Description
 
-The goal of this test is to deploy busybox application using JIVA storage engine and schedule the controller and replicas in operator namespace.
+The goal of this test is to deploy busybox application using JIVA storage engine and schedule the controller and replica pods in openebs namespace.
 
 #### Prerequisites
 
@@ -19,11 +19,11 @@ The goal of this test is to deploy busybox application using JIVA storage engine
 - This job triggers the litmus experiments which deploys Application using JIVA storage engine.
 - The litmus experiment receives the necessary parameters in form of pod environmental variables and updates the manifest files accordingly.
 - The job Pumps data traffic and check application liveness.
-- The next litmus experiment checks the controller and replica pods scheduled on operator namespace.
+- The next litmus experiment checks the controller and replica pods scheduled on openebs namespace.
 
 #### Expected result
 
-- Application should be running successfully and the jiva controller and replica pods schedule on openebs namespace.
+- Application should be running successfully and the jiva controller and replica pods should be schedule on openebs namespace.
 
 #### Test result
 

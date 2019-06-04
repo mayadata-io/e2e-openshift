@@ -1,14 +1,26 @@
-### 02EA- Deploy Application in a storage class with specific CAS parameters.
+### 02EA- Deploy Application using storage class with specific CAS parameters.
 
 #### Description
 
-The goal of this test is to deploy busybox application in a storage class created with specific CAS parameters.
+The goal of this test is to deploy busybox application using storage class created with specific CAS parameters.
 
 #### Prerequisites
 
 - OpenShift Cluster should be created and have the dependencies installed.
 - cStor based storage pool should have been created.
 - OpenEBS storage class should be created with the desired storage pool claim and a specific CAS parameters.
+
+```
+    cas.openebs.io/config: |
+      - name: StoragePoolClaim
+        value: < pool_name >
+      - name: QueueDepth
+        value: < 20 >
+      - name: Luworkers
+        value: < 10 >
+      - name: ZvolWorkers
+        value: < 4 >
+```        
 
 #### Procedure
 
@@ -19,7 +31,7 @@ The goal of this test is to deploy busybox application in a storage class create
 
 #### Expected result
 
-- Application should be runnig with the storage class created.
+- Application should be running using the storage class created.
 
 #### Test result
 
