@@ -7,7 +7,12 @@ The goal of this test is to deploy busybox application using JIVA storage engine
 #### Prerequisites
 
 - OpenShift Cluster should be created and have the dependencies installed.
-- OpenEBS storage class should be created with the desired parametes.
+- OpenEBS storage class should be created with the desired parameters.
+ ```
+     cas.openebs.io/config: |
+      - name: DeployInOpenEBSNamespace
+        enabled: "true"
+  ```
 
 #### Procedure
 
