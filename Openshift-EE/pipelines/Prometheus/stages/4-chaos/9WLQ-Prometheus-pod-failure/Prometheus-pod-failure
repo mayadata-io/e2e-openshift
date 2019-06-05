@@ -22,10 +22,8 @@ current_time=$(eval $time)
 present_dir=$(pwd)
 echo $present_dir
 #Creating e2e custom resource result for the test.
-bash Openshift-EE/utils/e2e-cr jobname:pod-failure jobphase:Waiting 
+bash Openshift-EE/utils/pooling jobname:pool-kill 
 bash Openshift-EE/utils/e2e-cr jobname:pod-failure jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
-##Creating e2e custom resource result for the next job pool-kill
-bash Openshift-EE/utils/e2e-cr jobname: jobphase:Waiting
 
 ################
 # LitmusBook 1 #
@@ -33,12 +31,12 @@ bash Openshift-EE/utils/e2e-cr jobname: jobphase:Waiting
 
 # Performing app pod failure
 # testcase for Prometheus pod faulure is derived from litmus job test_vars.yml
-run_id="pod-failure";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-pool-failure metadata=${run_id})
+run_id="pod-failure";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=application-pod-failure metadata=${run_id})
 echo $test_name
 
 cd litmus
 # copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
-cp experiments/chaos/app_pod_failure/run_litmus_test.yml pooldelete.yml
+cp experiments/chaos/app_pod_failure/run_litmus_test.yml podfailure.yml
 
 # Update the environmental variables in litmus job spec.
 : << EOF
