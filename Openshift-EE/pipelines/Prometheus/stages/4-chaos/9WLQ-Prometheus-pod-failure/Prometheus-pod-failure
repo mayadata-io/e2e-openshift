@@ -1,5 +1,101 @@
 #!/bin/bash
 set -x
 
-echo "***Performing pod failure***"
-sleep 2
+pod() {
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/Prometheus/stages/4-chaos/9WLQ-Prometheus-pod-failure/Prometheus-pod-failure node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+}
+
+node() {
+
+source ~/.profile
+#github token to push the test result into github mayadata-io/e2e-openshift repository.
+#This token is set as an env in ~/.profile in the test cluster.
+gittoken=$(echo "$github_token")
+job_id=$(echo $1) #Gitlab job id obtain from the gitlab env ($CI_JOB_ID).
+pipeline_id=$(echo $2) # Gitlab pipeline id obtained from gitlab env ($CI_PIPELINE_ID).
+commit_id=$(echo $3) #Gitlab commit id Obtained fron gilab env ($CI_COMMIT_SHA).
+case_id=9WLQ #test case ID.
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+#Creating e2e custom resource result for the test.
+bash Openshift-EE/utils/e2e-cr jobname:pod-failure jobphase:Waiting 
+bash Openshift-EE/utils/e2e-cr jobname:pod-failure jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+##Creating e2e custom resource result for the next job pool-kill
+bash Openshift-EE/utils/e2e-cr jobname: jobphase:Waiting
+
+################
+# LitmusBook 1 #
+################
+
+# Performing app pod failure
+# testcase for Prometheus pod faulure is derived from litmus job test_vars.yml
+run_id="pod-failure";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-pool-failure metadata=${run_id})
+echo $test_name
+
+cd litmus
+# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
+cp experiments/chaos/app_pod_failure/run_litmus_test.yml pooldelete.yml
+
+# Update the environmental variables in litmus job spec.
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------------    
+ | specAttribute       | kind   |         default value                  | test specifc value                         |
+  --------------------------------------------------------------------------------------------------------------------|
+ | Litmus Job name     | name   | generateName: application-pod-failure- | generateName: prometheus-pod-failure-      |
+ | Litmus job label    | label  | name: application-pod-failure          | name: prometheus-pod-failure               |
+ | ImagePullPolicy     | value  | Always                                 | IfNotPresent                               |
+ | appNamespace        | env    | app-jenkins-ns                         | app-prometheus                             |
+ | appLabel            | label  | app=jenkins-app                        | name=prometheus                            |
+ | livenessAppLabel    | label  |  ""                                    | liveness=prometheus-liveness               |
+ | livenessAppNamespace| env    |  ""                                    | app-prometheus                             |
+  ---------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/generateName: application-pod-failure-/generateName: prometheus-pod-failure-/g' \
+-e 's/name: application-pod-failure/name: prometheus-pod-failure/g' \
+-e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
+-e 's/value: app-jenkins-ns/value: app-prometheus/g' \
+-e 's/value: '\''app=jenkins-app'\''/value: '\''name=prometheus'\''/g' podfailure.yml
+
+sed -i -e '/name: LIVENESS_APP_LABEL/!b;n;c\           \ value: "liveness=prometheus-liveness"' podfailure.yml
+
+sed -i -e '/name: LIVENESS_APP_NAMESPACE/!b;n;c\            \ value: "app-prometheus"' podfailure.yml
+
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' podfailure.yml
+
+# Running the litmus test for app pod failure. 
+cat podfailure.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='name:prometheus-pod-failure' job=podfailure.yml
+cd ..
+# Get the cluster state Once the litmus jobs completed.
+bash Openshift-EE/utils/dump_cluster_state;
+# Update the e2e event for the job.
+bash Openshift-EE/utils/event_updater jobname:pod-failure $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+#python3 Openshift-EE/utils/result/result_update.py $job_id 9WLQ 4-chaos "App pod failure" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+current_time=$(eval $time)
+# Update the e2e cr once the job is completed
+testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+bash Openshift-EE/utils/e2e-cr jobname:pod-failure jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:"$testResult"
+#python3 Openshift-EE/utils/result/result_update.py $job_id  4-chaos "App pod failure" Pass $pipeline_id "$current_time" $commit_id $gittoken
+
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4
+else
+  pod
+fi
