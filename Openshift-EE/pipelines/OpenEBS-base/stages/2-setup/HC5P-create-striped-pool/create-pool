@@ -22,20 +22,19 @@ echo "*******Creating cstor-pool**************"
 bash Openshift-EE/utils/pooling jobname:cstor-integration-test
 bash Openshift-EE/utils/e2e-cr jobname:s2-j2-cstor-pool jobphase:Running init_time:"$current_time"
 
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase=cstor-disk-pool-provision metadata="")
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=cstor-block-device-pool-provision metadata="")
 echo $test_name
 cd litmus
 #################
 ## RUNNER MAIN ##
 #################
 echo "Running the litmus test.."
-sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' providers/cstor/cstor-disk-pool/run_litmus_test.yml
-sed -i -e 's/value: ci/value: ci/g' providers/cstor/cstor-disk-pool/run_litmus_test.yml
-run_test=providers/cstor/cstor-disk-pool/run_litmus_test.yml
+sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' providers/cstor/cstor-block-device-pool/run_litmus_test.yml
+run_test=providers/cstor/cstor-block-device-pool/run_litmus_test.yml
 
 cat $run_test
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:cstor-disk-pool-provision' job=$run_test
+bash ../Openshift-EE/utils/litmus_job_runner label='app:cstor-block-device-pool-provision' job=$run_test
 
 echo "Dumping state of cluster post job run"; echo ""
 bash ../Openshift-EE/utils/dump_cluster_state;
