@@ -30,7 +30,6 @@ cd litmus
 #################
 echo "Running the litmus test.."
 sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' providers/cstor/cstor-block-device-pool/run_litmus_test.yml
-sed -i -e 's/value: ci/value: ci/g' providers/cstor/cstor-block-device-pool/run_litmus_test.yml
 run_test=providers/cstor/cstor-block-device-pool/run_litmus_test.yml
 
 cat $run_test
