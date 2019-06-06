@@ -28,6 +28,7 @@ echo $present_dir
 
 bash Openshift-EE/utils/e2e-cr jobname:taint-node jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:drain-node jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:fill-node-capacity jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:taint-node jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 ################

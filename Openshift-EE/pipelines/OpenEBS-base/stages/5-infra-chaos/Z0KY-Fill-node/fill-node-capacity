@@ -1,0 +1,72 @@
+#!/bin/bash
+set -x
+
+pod() {
+
+echo "******* Obtaining the node where litmus pod can be scheduled ********"
+# The below node has been tainted in the first chaos test in this stage. The litmus pod has to match the toleration.
+
+node_name=$(sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port kubectl get nodes | grep compute | awk 'FNR==1 {print $1}')
+
+echo $node_name
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/5-infra-chaos/Z0KY-Fill-node/fill-node-capacity node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$node_name'"'
+}
+
+node() {
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+source ~/.profile
+gittoken=$(echo "$github_token")
+case_id=Z0KY
+observer_node=$4
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+bash Openshift-EE/utils/pooling jobname:drain-node
+bash Openshift-EE/utils/e2e-cr jobname:fill-node-capacity jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+################
+# LitmusBook 1 #
+################
+
+echo "******FILL NODE CAPACITY THROUGH ROGUE POD**********"
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=node-storage-filler metadata="")
+echo $test_name
+
+cd litmus
+cp experiments/chaos/node_storage_fill/run_litmus_test.yml fill_capacity.yml
+
+sed -i -e 's/app-busybox-ns/fill-node-capacity/g' \
+-e 's/openebs-cstor-sparse/openebs-cstor-disk/g' \
+-e 's/cstor-sparse-pool/cstor-disk-pool/g' fill_capacity.yml
+
+sed -i -e "s|#nodeSelector|nodeSelector|g" \
+-e "s|#  kubernetes.io/hostname:|  kubernetes.io/hostname: ${observer_node}|g" fill_capacity.yml
+
+cat fill_capacity.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='name:node-storage-fill' fill_capacity.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:fill-node-capacity $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id Z0KY 5-infra-chaos "Fill the node capacity and check the openebs pool pod behavior" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+current_time=$(eval $time)
+bash Openshift-EE/utils/e2e-cr jobname:fill-node-capacity jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
+python3 Openshift-EE/utils/result/result_update.py $job_id Z0KY 5-infra-chaos "Fill the node capacity and check the openebs pool pod behavior" Pass $pipeline_id "$current_time" $commit_id $gittoken
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4 $5
+else
+  pod
+fi
