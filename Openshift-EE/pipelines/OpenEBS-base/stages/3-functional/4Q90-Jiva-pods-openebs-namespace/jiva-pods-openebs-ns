@@ -34,7 +34,7 @@ bash Openshift-EE/utils/e2e-cr jobname:jiva-openebs-ns jobphase:Running init_tim
 # LitmusBook 1 #
 ################
 
-run_id="bb-jiva-pro";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=jiva-pods-openebs-ns metadata=${run_id})
+run_id="provision";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=jiva-pods-openebs-ns metadata=${run_id})
 echo $test_name
 
 cd litmus
@@ -67,7 +67,7 @@ fi
 # LitmusBook 2 #
 ################
 
-run_id="bb-jiva-depro";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=jiva-pods-openebs-ns metadata=${run_id})
+run_id="deprovision";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=jiva-pods-openebs-ns metadata=${run_id})
 echo $test_name
 
 cd litmus
