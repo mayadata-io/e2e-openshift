@@ -34,12 +34,17 @@ bash Openshift-EE/utils/e2e-cr jobname:jiva-openebs-ns jobphase:Running init_tim
 # LitmusBook 1 #
 ################
 
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-openebs-jiva metadata="")
+run_id="bb-jiva-pro";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=jiva-pods-openebs-ns metadata="")
 echo $test_name
 
 cd litmus
 # copy the content of run_litmus_test.yml into a different file to update the test specific parameters.
 cp experiments/functional/jiva-pods-openebs-ns/run_litmus_test.yml busybox_jiva_openebs.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' busybox_jiva_openebs.yml
 
 cat busybox_jiva_openebs.yml
 
@@ -62,7 +67,7 @@ fi
 # LitmusBook 2 #
 ################
 
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-jiva-openebs metadata="")
+run_id="bb-jiva-depro";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=jiva-pods-openebs-ns metadata="")
 echo $test_name
 
 cd litmus
@@ -82,6 +87,11 @@ EOF
 
 sed -i -e 's/value: provision/value: deprovision/g'
 -e 's/app:litmus-jiva-openebs-ns/app: deprovision-busybox-jiva-openebs/g' \ deprovision_busybox_jiva_openebs.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' deprovision_busybox_jiva_openebs.yml
 
 cat deprovision_busybox_jiva_openebs.yml
 
