@@ -28,7 +28,8 @@ echo $test_name
 
 cd litmus
 echo "Running the litmus test.."
-sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' providers/cstor-storage-policies/run_litmus_test.yml
+sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
+-e 's/cstor-sparse-pool/cstor-block-disk-pool/g' providers/cstor-storage-policies/run_litmus_test.yml
 run_test=providers/cstor-storage-policies/run_litmus_test.yml
 
 cat $run_test
