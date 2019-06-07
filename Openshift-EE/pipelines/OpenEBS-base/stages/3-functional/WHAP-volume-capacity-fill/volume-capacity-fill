@@ -41,7 +41,7 @@ cp apps/percona/deployers/run_litmus_test.yml deploy_run_test_percona.yml
  | storage class     | env    | openebs-cstor-sparse                | openebs-jiva-standalone                          |
   ----------------------------------------------------------------------------------------------------------------------
 EOF
-sed -i -e 's/value: openebs-standard/value: openebs-cstor-sparse/g' deploy_run_test_percona.yml
+sed -i -e 's/value: openebs-standard/value: openebs-cstor-disk/g' deploy_run_test_percona.yml
 
 cat deploy_run_test_percona.yml
 
@@ -110,7 +110,7 @@ cp apps/percona/deployers/run_litmus_test.yml deprovision_run_test_percona.yml
  | storage class     | env    | openebs-cstor-sparse                | openebs-jiva-standalone                          |
   ----------------------------------------------------------------------------------------------------------------------
 EOF
-sed -i -e 's/value: openebs-standard/value: openebs-cstor-sparse/g' \
+sed -i -e 's/value: openebs-standard/value: openebs-cstor-disk/g' \
 -e 's/app: percona-deployment/app: percona-deployment-deprovision/g' \ 
 -e 's/value: provision/value: deprovision/g' deprovision_run_test_percona.yml
 
