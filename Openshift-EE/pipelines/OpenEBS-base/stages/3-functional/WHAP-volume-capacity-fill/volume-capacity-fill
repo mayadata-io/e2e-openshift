@@ -1,0 +1,143 @@
+#!/bin/bash
+set -x
+
+pod() {
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/WHAP-volume-capacity-fill/volume-capacity-fill node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+}
+
+node() {
+source ~/.profile
+gittoken=$(echo "$github_token")
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+case_id=WHAP
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+bash Openshift-EE/utils/e2e-cr jobname:volume-capacity-fill jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:volume-capacity-fill jobphase:Running
+
+##Deploying Percona Application
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=percona-deployment metadata="") 
+echo $test_name
+
+################
+# LitmusBook 1 #
+################
+
+cd litmus
+cp apps/percona/deployers/run_litmus_test.yml deploy_run_test_percona.yml
+
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+  ---------------------------------------------------------------------------------------------------------------------|
+ | storage class     | env    | openebs-cstor-sparse                | openebs-jiva-standalone                          |
+  ----------------------------------------------------------------------------------------------------------------------
+EOF
+sed -i -e 's/value: openebs-standard/value: openebs-cstor-sparse/g' deploy_run_test_percona.yml
+
+cat deploy_run_test_percona.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:percona-deployment' job=deploy_run_test_percona.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:volume-capacity-fill  $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id WHAP 3-functional "Fill cstor volume completely and check if its size can be scaled seamlessly" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+####Fill cstor volume capacity
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=volume-capacity metadata="")
+echo $test_name
+
+################
+# LitmusBook 2 #
+################
+
+cd litmus
+cp experiments/functional/volume-capacity/run_litmus_test.yml volume_capacity_fill.yaml
+
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+  ---------------------------------------------------------------------------------------------------------------------|
+ | appLabel          | env    | app=busybbox                        | name=percona                                     | 
+ | appNamespace      | env    | app-busybox-ns                      | app-percona-ns                                   | 
+  ----------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/app-busybox-ns/app-percona-ns/g' \
+-e 's/app=busybox/name=percona/g' volume_capacity_fill.yaml
+
+cat volume_capacity_fill.yaml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:volume-capacity' job=volume_capacity_fill.yaml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:volume-capacity-fill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id WHAP 3-functional "Fill cstor volume completely and check if its size can be scaled seamlessly" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+####Deprovisioning percona Application
+
+run_id="deprovision";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=percona-deployment metadata={run_id}) 
+echo $test_name
+
+################
+# LitmusBook 3 #
+################
+
+cd litmus
+cp apps/percona/deployers/run_litmus_test.yml deprovision_run_test_percona.yml
+
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+  ---------------------------------------------------------------------------------------------------------------------|
+ | storage class     | env    | openebs-cstor-sparse                | openebs-jiva-standalone                          |
+  ----------------------------------------------------------------------------------------------------------------------
+EOF
+sed -i -e 's/value: openebs-standard/value: openebs-cstor-sparse/g' \
+-e 's/app: percona-deployment/app: percona-deployment-deprovision/g' \ 
+-e 's/value: provision/value: deprovision/g' deprovision_run_test_percona.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' deprovision_run_test_percona.yml
+
+cat deprovision_run_test_percona.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:percona-deployment-deprovision' job=deprovision_run_test_percona.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:volume-capacity-fill  $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id WHAP 3-functional "Fill cstor volume completely and check if its size can be scaled seamlessly" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+current_time=$(eval $time)
+bash Openshift-EE/utils/e2e-cr jobname:volume-capacity-fill jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
+python3 Openshift-EE/utils/result/result_update.py $job_id WHAP 3-functional "Fill cstor volume completely and check if its size can be scaled seamlessly" Pass $pipeline_id "$current_time" $commit_id $gittoken
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4
+else
+  pod
+fi
