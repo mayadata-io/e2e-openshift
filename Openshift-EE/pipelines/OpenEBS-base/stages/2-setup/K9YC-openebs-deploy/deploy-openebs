@@ -32,7 +32,10 @@ echo "*****Deploying openebs*******"
 bash Openshift-EE/utils/e2e-cr jobname:s2-j1-openebs-deploy jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:s2-j1-openebs-deploy jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 bash Openshift-EE/utils/e2e-cr jobname:cstor-integration-test jobphase:Waiting
-bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-volume jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-node-stickiness jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-snapshot jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-clone jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:s2-j3-policies jobphase:Waiting 
 bash Openshift-EE/utils/e2e-cr jobname:s2-j2-cstor-pool jobphase:Waiting 
 
