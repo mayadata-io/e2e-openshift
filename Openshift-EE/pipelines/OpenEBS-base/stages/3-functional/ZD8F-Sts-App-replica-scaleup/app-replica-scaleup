@@ -28,7 +28,7 @@ bash Openshift-EE/utils/e2e-cr jobname:app-replica-scaleup jobphase:Running
 # LitmusBook 1 #
 ################
 
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-app-busybox-ns metadata="")
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-app-scale metadata="")
 echo $test_name
 
 cd litmus
@@ -40,7 +40,7 @@ cp apps/busybox/deployers/run_litmus_test.yml deploy_run_test.yml
  | specAttribute     | kind   |         default value               | test specifc value                               |
   ---------------------------------------------------------------------------------------------------------------------|
  | imagePullPolicy   | image  | Always                              | IfNotPresent                                     |
- | appNamespace      | env    | app-busybox-ns                      | app-scale-jiva                                   | 
+ | appNamespace      | env    | app-busybox-ns                      | app-scale                                        | 
  | appLabel          | env    | app=busybox-sts                     | app=busybox-scale                                |
  | storage class     | env    | openebs-cstor-sparse                | cstor-disk-standalone                            |
    ----------------------------------------------------------------------------------------------------------------------
@@ -130,7 +130,7 @@ cp experiments/functional/scale_app_replica/run_litmus_test.yml run_scaleup_test
   ---------------------------------------------------------------------------------------------------------------------|
  | litmus job label  | label  | app: cassandra-scaleup-litmus       | app: busybox-scaleup-litmus                      |
  | appLabel          | env    | app=cassandra                       | app=busybox-scale                                | 
- | appNamespace      | env    | app-cass-ns                         | app-scale-jiva                                   | 
+ | appNamespace      | env    | app-cass-ns                         | app-scale                                        | 
   ----------------------------------------------------------------------------------------------------------------------
 EOF
 
@@ -170,7 +170,7 @@ cp apps/busybox/liveness/run_litmus_test.yml deprovision_replica_scaleup.yml
   ---------------------------------------------------------------------------------------------------------------------
  | specAttribute     | kind   |         default value               | test specifc value                               |
   ---------------------------------------------------------------------------------------------------------------------|
- | appNamespace      | env    | app-busybox-ns                      | app-scale-jiva                                   | 
+ | appNamespace      | env    | app-busybox-ns                      | app-scale                                        | 
  | action            | env    | provision                           | deprovision                                      | 
  | appLabel          | env    | app=busybox-sts                     | app=busybox-scale                                | 
  | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: bb-liveness-deprovision-replica-scaleup|
@@ -210,7 +210,7 @@ fi
 # LitmusBook 5 #
 ################
 
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-app-busybox-ns metadata="")
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-app-scale metadata="")
 echo $test_name
 
 cd litmus
@@ -220,10 +220,13 @@ cp apps/busybox/deployers/run_litmus_test.yml deprovision_scaleup.yml
   ---------------------------------------------------------------------------------------------------------------------
  | specAttribute     | kind   |         default value               | test specifc value                               |
   ---------------------------------------------------------------------------------------------------------------------|
- | appNamespace      | env    | app-busybox-ns                      | app-scale-jiva                                   | 
- | action            | env    | provision                           | deprovision                                      | 
- | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: busybox-liveness-deprovision-replica-scaleup |
- ----------------------------------------------------------------------------------------------------------------------
+ | appLabel          | env    | app=busybox-sts                     | app=busybox-scale                                |
+ | appNamespace      | env    | app-busybox-ns                      | app-scale                                        | 
+ | storage clas      | env    | openebs-cstor-sparse                | cstor-disk-standalone                            |
+ | Action            | env    | value: provision                    | value: deprovision                               |
+ | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName: litmus-busybox-deprovision         |
+ | Litmus job label  | label  | app: busybox-litmus                 | app: busybox-deprovision-litmus                  |
+  ----------------------------------------------------------------------------------------------------------------------
 EOF
 
 sed -i -e 's/generateName: litmus-busybox-deploy/generateName: litmus-busybox-deprovision/g' \

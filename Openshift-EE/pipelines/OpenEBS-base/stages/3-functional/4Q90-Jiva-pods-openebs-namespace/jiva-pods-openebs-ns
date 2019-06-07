@@ -85,8 +85,8 @@ cp experiments/functional/jiva-pods-openebs-ns/run_litmus_test.yml deprovision_b
  ----------------------------------------------------------------------------------------------------------------------
 EOF
 
-sed -i -e 's/value: provision/value: deprovision/g'
--e 's/app:litmus-jiva-openebs-ns/app: deprovision-busybox-jiva-openebs/g' \ deprovision_busybox_jiva_openebs.yml
+sed -i -e 's/value: provision/value: deprovision/g' \
+-e 's/app:litmus-jiva-openebs-ns/app: deprovision-busybox-jiva-openebs/g' deprovision_busybox_jiva_openebs.yml
 
 sed -i '/command:/i \
           - name: RUN_ID\
