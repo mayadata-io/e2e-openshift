@@ -82,7 +82,7 @@ cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_app_replica_scaleup
   ---------------------------------------------------------------------------------------------------------------------
  | specAttribute     | kind   |         default value               | test specifc value                               |
   ---------------------------------------------------------------------------------------------------------------------|
- | appNamespace      | env    | app-busybox-ns                      | app-scale-jiva                                   | 
+ | appNamespace      | env    | app-busybox-ns                      | app-scale                                        | 
  | appLabel          | env    | app=busybox-sts                     | app=busybox-scale                                | 
  | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: busybox-liveness-app-replica-scaleup   | 
   ----------------------------------------------------------------------------------------------------------------------
@@ -220,12 +220,12 @@ cp apps/busybox/deployers/run_litmus_test.yml deprovision_scaleup.yml
   ---------------------------------------------------------------------------------------------------------------------
  | specAttribute     | kind   |         default value               | test specifc value                               |
   ---------------------------------------------------------------------------------------------------------------------|
+ | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName: litmus-busybox-deprovision         |
+ | Litmus job label  | label  | app: busybox-litmus                 | app: busybox-deprovision-litmus                  |
  | appLabel          | env    | app=busybox-sts                     | app=busybox-scale                                |
  | appNamespace      | env    | app-busybox-ns                      | app-scale                                        | 
  | storage clas      | env    | openebs-cstor-sparse                | cstor-disk-standalone                            |
  | Action            | env    | value: provision                    | value: deprovision                               |
- | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName: litmus-busybox-deprovision         |
- | Litmus job label  | label  | app: busybox-litmus                 | app: busybox-deprovision-litmus                  |
   ----------------------------------------------------------------------------------------------------------------------
 EOF
 
