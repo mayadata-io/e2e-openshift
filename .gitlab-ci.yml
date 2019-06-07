@@ -36,20 +36,41 @@ HC5P-CSTOR-POOL:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/HC5P-create-striped-pool/create-pool
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/HC5P-create-striped-pool/create-pool
 
-BDD:
+BDD-STRIPED-SPARSE-SPC:
   image: openebs/openshift-ci:latest
   stage: OPENEBS-SETUP
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/cstor-integration-test
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/cstor-integration-test
 
-BDD-jiva:
+BDD-JIVA-NODE-STICKINESS:
   image: openebs/openshift-ci:latest
   stage: OPENEBS-SETUP
   script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/Jiva/bdd-jiva
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/Jiva/bdd-jiva
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/Jiva/node-stickiness
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/Jiva/node-stickiness
+
+BDD-JIVA-CLONE:
+  image: openebs/openshift-ci:latest
+  stage: OPENEBS-SETUP
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/Jiva/jiva-clone
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/Jiva/jiva-clone
+
+BDD-JIVA-SNAPSHOT:
+  image: openebs/openshift-ci:latest
+  stage: OPENEBS-SETUP
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/Jiva/jiva-snapshot
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/Jiva/jiva-snapshot
     
+BDD-JIVA-VOLUME:
+  image: openebs/openshift-ci:latest
+  stage: OPENEBS-SETUP
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/Jiva/jiva-volume
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/Jiva/jiva-volume
+
 .func_test_template:
   image: openebs/openshift-ci:latest
   stage: FUNCTIONAL

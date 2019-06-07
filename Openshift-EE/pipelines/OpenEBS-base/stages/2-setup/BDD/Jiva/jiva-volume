@@ -1,0 +1,58 @@
+#!/bin/bash
+set -x
+pod() {
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && GOPATH="/home/devuser/go"; PATH=$PATH:"/usr/local/go/bin:$GOPATH/bin"; /bin/bash /home/devuser/e2e-openshift/Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/Jiva/jiva-volume node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+}
+
+node() {
+
+job_id=$(echo $1) #Gitlab job id obtain from the gitlab env ($CI_JOB_ID).
+pipeline_id=$(echo $2)  # Gitlab pipeline id obtained from gitlab env ($CI_PIPELINE_ID).
+case_id=HC5P          # This need to be changed
+commit_id=$(echo $3) #Gitlab commit id Obtained fron gilab env ($CI_COMMIT_SHA).
+
+source ~/.profile
+
+#github token to push the test result into github mayadata-io/e2e-openshift repository.
+#This token is set as an env in ~/.profile in the test cluster.
+
+gittoken=$(echo "$github_token")
+
+time="date"
+current_time=$(eval $time)
+
+#pooling over previous job to complete
+bash Openshift-EE/utils/pooling jobname:bdd-jiva-snapshot
+
+bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-volume jobphase:Waiting
+
+# Update the e2e event for the job.
+bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-volume jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+# Running BDD test for jiva-volume
+cd /home/devuser/go/src/github.com/openebs/maya/tests/jiva/volume
+ginkgo -v -- -kubeconfig=$HOME/.kube/config --replicas=3 
+
+#Evaluating result based on the return count
+
+if [ "$?" != "0" ];then
+  echo "jiva-volume-test-failed"
+  current_time=$(eval $time)
+  cd /home/devuser/e2e-openshift
+  bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-volume jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Fail
+  exit 1;
+else
+  echo "jiva-volume-test-passed"
+  current_time=$(eval $time)
+  cd /home/devuser/e2e-openshift
+  bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-volume jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
+fi
+
+}
+
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4
+else
+  pod
+fi
