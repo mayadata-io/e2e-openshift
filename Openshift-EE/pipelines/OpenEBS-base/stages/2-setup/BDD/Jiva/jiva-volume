@@ -23,11 +23,7 @@ current_time=$(eval $time)
 
 #pooling over previous job to complete
 bash Openshift-EE/utils/pooling jobname:bdd-jiva-snapshot
-
-bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-volume jobphase:Waiting
-
-# Update the e2e event for the job.
-bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-volume jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-volume jobphase:Running init_time:"$current_time" init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 # Running BDD test for jiva-volume
 cd /home/devuser/go/src/github.com/openebs/maya/tests/jiva/volume

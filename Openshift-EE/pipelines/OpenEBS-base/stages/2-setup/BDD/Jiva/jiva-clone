@@ -6,9 +6,6 @@ sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-open
 
 node() {
 
-#pooling over previous job to complete
-bash Openshift-EE/utils/pooling jobname:cstor-integration-test
-
 job_id=$(echo $1) #Gitlab job id obtain from the gitlab env ($CI_JOB_ID).
 pipeline_id=$(echo $2)  # Gitlab pipeline id obtained from gitlab env ($CI_PIPELINE_ID).
 case_id=HC5P          # This need to be changed
@@ -26,8 +23,9 @@ current_time=$(eval $time)
 
 #pooling over previous job to complete
 bash Openshift-EE/utils/pooling jobname:cstor-integration-test
+bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-clone jobphase:Running init_time:"$current_time" init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
-bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-clone jobphase:Waiting
+cd /home/devuser/go/src/github.com/openebs
 
 # Running BDD test for jiva-clone
 cd maya/tests/jiva/clone && ginkgo -v -- -kubeconfig=$HOME/.kube/config --replicas=3
