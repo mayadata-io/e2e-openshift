@@ -30,7 +30,7 @@ bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-node-stickiness jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-node-stickiness jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 # Running BDD test for jiva-node-stickiness
-cd /home/devuser/go/src/github.com/openebs/maya/tests/jiva/node-stickiness/replicadeletion
+cd /home/devuser/go/src/github.com/openebs/maya/tests/jiva/node-stickiness
 ginkgo -v -- -kubeConfigPath=$HOME/.kube/config
 
 if [ "$?" != "0" ];then
