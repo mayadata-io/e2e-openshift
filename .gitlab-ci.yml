@@ -123,6 +123,12 @@ ZD8F-App-Scaleup:
       #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/GV2D-Storage-volume-upgrade/storage-volume-upgrade
       #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/GV2D-Storage-volume-upgrade/storage-volume-upgrade
 
+WHAP-Volume-Capacity-Fill:
+  extends: .func_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/WHAP-Volume-Capacity-Fill/volume-capacity-fill
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/WHAP-Volume-Capacity-Fill/volume-capacity-fill
+      
 4ZWU-STS-Volume-Distribute:
   extends: .func_test_template
   script: 
