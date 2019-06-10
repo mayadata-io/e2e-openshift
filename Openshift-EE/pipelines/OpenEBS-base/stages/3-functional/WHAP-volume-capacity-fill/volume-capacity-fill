@@ -112,7 +112,7 @@ cp apps/percona/deployers/run_litmus_test.yml deprovision_run_test_percona.yml
   ----------------------------------------------------------------------------------------------------------------------
 EOF
 sed -i -e 's/value: openebs-standard/value: openebs-cstor-disk/g' \
--e 's/app: percona-deployment/app: percona-deployment-deprovision/g' \ 
+-e 's/app: percona-deployment/app: percona-deployment-deprovision/g' \
 -e 's/value: provision/value: deprovision/g' deprovision_run_test_percona.yml
 
 sed -i '/command:/i \
@@ -125,7 +125,7 @@ cat deprovision_run_test_percona.yml
 bash ../Openshift-EE/utils/litmus_job_runner label='app:percona-deployment-deprovision' job=deprovision_run_test_percona.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
-bash Openshift-EE/utils/event_updater jobname:volume-capacity-fill  $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/event_updater jobname:volume-capacity-fill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 if [ "$?" != "0" ]; then
 python3 Openshift-EE/utils/result/result_update.py $job_id WHAP 3-functional "Fill cstor volume completely and check if its size can be scaled seamlessly" Fail $pipeline_id "$current_time" $commit_id $gittoken
