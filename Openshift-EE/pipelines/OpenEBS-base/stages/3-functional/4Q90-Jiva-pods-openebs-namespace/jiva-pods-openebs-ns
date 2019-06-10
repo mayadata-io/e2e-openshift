@@ -104,6 +104,7 @@ bash Openshift-EE/utils/dump_cluster_state;
 
 #Update the e2e event for the job
 bash Openshift-EE/utils/event_updater jobname:jiva-openebs-ns $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
 rc_val=$(echo $?)
 
 # Obtain the status of the test using litmusresult(lr) 
