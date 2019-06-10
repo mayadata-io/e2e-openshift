@@ -125,9 +125,10 @@ bash ../Openshift-EE/utils/litmus_job_runner label='app:percona-deployment-depro
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:volume-capacity-fill  $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
 rc_val=$(echo $?)
 
-if [ "rc_val" != "0" ]; then
+if [ "$rc_val" != "0" ]; then
 python3 Openshift-EE/utils/result/result_update.py $job_id WHAP 3-functional "Fill cstor volume completely and check if its size can be scaled seamlessly" Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
@@ -139,7 +140,6 @@ python3 Openshift-EE/utils/result/result_update.py $job_id WHAP 3-functional "Fi
 if [ "$rc_val" != "0" ]; then
 exit 1;
 fi
-
 }
 
 if [ "$1" == "node" ];then
