@@ -116,6 +116,7 @@ python3 Openshift-EE/utils/result/result_update.py $job_id $case_id 3-functional
 exit 1;
 fi
 
+current_time=$(eval $time)
 # Update the e2e cr once the job is completed
 bash Openshift-EE/utils/e2e-cr jobname:jiva-openebs-ns jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:$testResult
 

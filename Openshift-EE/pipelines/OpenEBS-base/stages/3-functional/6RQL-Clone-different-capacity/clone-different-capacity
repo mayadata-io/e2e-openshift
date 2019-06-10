@@ -74,6 +74,7 @@ python3 Openshift-EE/utils/result/result_update.py $job_id 6RQL 3-functional "Ch
 exit 1;
 fi
 
+current_time=$(eval $time)
 bash Openshift-EE/utils/e2e-cr jobname:clone-different-capacity jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
 
 python3 Openshift-EE/utils/result/result_update.py $job_id 6RQL 3-functional "Check if the clone can't be created with different volume capacity" Pass $pipeline_id "$current_time" $commit_id $gittoken
