@@ -43,7 +43,7 @@ cp experiments/chaos/node_storage_fill/run_litmus_test.yml fill_capacity.yml
 
 sed -i -e 's/app-busybox-ns/fill-node-capacity/g' \
 -e 's/openebs-cstor-sparse/openebs-cstor-disk/g' \
--e 's/cstor-sparse-pool/cstor-disk-pool/g' fill_capacity.yml
+-e 's/cstor-sparse-pool/cstor-block-disk-pool/g' fill_capacity.yml
 
 sed -i -e "s|#nodeSelector|nodeSelector|g" \
 -e "s|#  kubernetes.io/hostname:|  kubernetes.io/hostname: ${observer_node}|g" fill_capacity.yml

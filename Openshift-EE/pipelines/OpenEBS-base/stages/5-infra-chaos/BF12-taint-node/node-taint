@@ -44,9 +44,22 @@ cd litmus
 echo "Running the litmus test for Busybox Deployment.."
 cp apps/busybox/deployers/run_litmus_test.yml deploy_evict_test.yml
 
+: << EOF
+  -------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                             |
+  -------------------------------------------------------------------------------------------------------------------|
+ | appNamespace      | env    | app-busybox-ns                      | taint-node                                     |
+ | Litmus job label  | label  | app: busybox-litmus                 | app: busybox-evict                             |
+ | appLabel          | env    | app=busybox-sts                     | app=taint-node                                 | 
+ | storage class     | env    | openebs-cstor-sparse                | openebs-cstor-disk                             |
+ | deploy type       | env    | statefulset                         | deployment                                     |
+  --------------------------------------------------------------------------------------------------------------------
+EOF
+
 sed -i -e 's/app-busybox-ns/taint-node/g' \
 -e 's/busybox-litmus/busybox-evict/g' \
 -e 's/app=busybox-sts/app=taint-node/g' \
+-e 's/openebs-cstor-sparse/openebs-cstor-disk/g' \
 -e 's/statefulset/deployment/g' deploy_evict_test.yml
 
 cat deploy_evict_test.yml
@@ -202,11 +215,26 @@ echo $test_name
 cd litmus
 cp apps/busybox/deployers/run_litmus_test.yml deprovision_evict_node.yml
 
+: << EOF
+  -------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                             |
+  -------------------------------------------------------------------------------------------------------------------|
+ | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName:litmus-busybox-deprovision        |
+ | appNamespace      | env    | app-busybox-ns                      | taint-node                                     |
+ | appLabel          | env    | app=busybox-sts                     | app=taint-node                                 |
+ | deploy type       | env    | statefulset                         | deployment                                     |
+ | Litmus job label  | label  | app: busybox-litmus                 | app: busybox-deprovision-evict                 | 
+ | storage class     | env    | openebs-cstor-sparse                | openebs-cstor-disk                             |
+ | Action            | env    | provision                           | deprovision                                    |
+  --------------------------------------------------------------------------------------------------------------------
+EOF
+
 sed -i -e 's/generateName: litmus-busybox-deploy/generateName: litmus-busybox-deprovision/g' \
 -e 's/app-busybox-ns/taint-node/g' \
 -e 's/app=busybox-sts/app=taint-node/g' \
 -e 's/value: statefulset/value: deployment/g' \
 -e 's/busybox-litmus/busybox-deprovision-evict/g' \
+-e 's/openebs-cstor-sparse/openebs-cstor-disk/g' \
 -e 's/value: provision/value: deprovision/g' deprovision_evict_node.yml
 
 cat deprovision_evict_node.yml
