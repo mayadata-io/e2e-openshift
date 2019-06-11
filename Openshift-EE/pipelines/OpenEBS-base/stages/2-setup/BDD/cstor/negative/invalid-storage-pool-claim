@@ -39,7 +39,7 @@ if [ "$?" != "0" ];then
   bash Openshift-EE/utils/e2e-cr jobname:bdd-cstor-negative-invalid-storage-pool-claim jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Fail
   exit 1;
 else
-  echo "invalid-storage-pool-claim-test-failed"
+  echo "invalid-storage-pool-claim-test-Passed"
   current_time=$(eval $time)
   cd /home/devuser/e2e-openshift
   bash Openshift-EE/utils/e2e-cr jobname:bdd-cstor-negative-invalid-storage-pool-claim jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass

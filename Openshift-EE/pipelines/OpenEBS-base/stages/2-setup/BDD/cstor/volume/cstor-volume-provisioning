@@ -22,7 +22,7 @@ time="date"
 current_time=$(eval $time)
 
 #pooling over previous job to complete
-bash Openshift-EE/utils/pooling jobname:cstor-integration-test
+bash Openshift-EE/utils/pooling jobname:bdd-cstor-snapshot-provisioning
 bash Openshift-EE/utils/e2e-cr jobname:bdd-cstor-volume-provisioning jobphase:Running init_time:"$current_time" init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 cd /home/devuser/go/src/github.com/openebs
@@ -39,7 +39,7 @@ if [ "$?" != "0" ];then
   bash Openshift-EE/utils/e2e-cr jobname:bdd-cstor-volume-provisioning jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Fail
   exit 1;
 else
-  echo "cstor-volume-provisioning-test-failed"
+  echo "cstor-volume-provisioning-test-Passed"
   current_time=$(eval $time)
   cd /home/devuser/e2e-openshift
   bash Openshift-EE/utils/e2e-cr jobname:bdd-cstor-volume-provisioning jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
