@@ -29,7 +29,7 @@ bash Openshift-EE/utils/e2e-cr jobname:target-loss jobphase:Running init_time:"$
 # LitmusBook 1 #
 ################
 
-run_id="target-loss";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-target-network-loss metadata="")
+run_id="target-loss";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-target-network-loss metadata=${run_id})
 echo $test_name
 
 cd litmus
@@ -53,7 +53,7 @@ sed -i -e 's/value: percona-mysql-claim/value: openebs-esearch-elasticsearch-log
 -e 's/value: '\''enable'\''/value: '\'""\''/g' \
 -e '/name: LIVENESS_APP_LABEL/!b;n;c\            \ value: "liveness=elasticsearch-liveness"' \
 -e '/name: LIVENESS_APP_NAMESPACE/!b;n;c\            \ value: "app-esearch-ns"' \
--e 's/value: app-percona-ns/value: target-loss/g' run_targetloss_test.yml
+-e 's/value: app-percona-ns/value: app-esearch-ns/g' run_targetloss_test.yml
 
 sed -i '/command:/i \
           - name: RUN_ID\
@@ -67,8 +67,32 @@ cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:target-loss $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
-if [ "$?" != "0" ]; then
-python3 Openshift-EE/utils/result/result_update.py $job_id E16S 4-chaos "Induce cstor target network loss and check if it gets recovered successfully" Fail $pipeline_id "$current_time" $commit_id $gittoken
+rc_val=$(echo $?)
+
+# Obtain the status of the test using litmusresult(lr) 
+testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+
+# Update the result of the test case in github mayadata-io/e2e-openshift repository.
+if [ "$rc_val" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id E16S 4-chaos "Induce cstor target network loss and check if it gets recovered successfully" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
+fi
+
+current_time=$(eval $time)
+# Update the e2e cr once the job is completed
+bash Openshift-EE/utils/e2e-cr jobname:target-loss jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:$testResult
+
+python3 Openshift-EE/utils/result/result_update.py $job_id E16S 4-chaos "Induce cstor target network loss and check if it gets recovered successfully" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4
+else
+  pod
 fi
 

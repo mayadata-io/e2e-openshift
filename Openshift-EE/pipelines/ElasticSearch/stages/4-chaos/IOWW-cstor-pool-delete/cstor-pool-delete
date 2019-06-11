@@ -43,11 +43,11 @@ cp experiments/chaos/openebs_pool_failure/run_litmus_test.yml pooldelete.yml
   ---------------------------------------------------------------------------------------------------------------------    
  | specAttribute       | kind   |         default value             | test specifc value                              |
   --------------------------------------------------------------------------------------------------------------------|
- | Litmus Job name     | name   | generateName: openebs-pool-failure| generateName: openebs-pool-delete               |
- | Litmus job label    | label  | name: openebs-pool-failure        | name: openebs-pool-delete                       |
+ | Litmus Job name     | name   | generateName: openebs-pool-failure| generateName: openebs-pool-delete-              |
+ | Litmus job label    | label  | name: openebs-pool-failure        | name: litmus-openebs-pool-delete                |
  | ImagePullPolicy     | value  | Always                            | IfNotPresent                                    |
  | appNamespace        | env    | app-percona-ns                    | app-esearch-ns                                  |
- | appLabel            | label  | name=percona                      | name=elasticsearch                              |
+ | appLabel            | label  | name=percona                      | app=elasticsearch                               |
  | pvcName             | name   | percona-mysql-claim               | openebs-esearch-elasticsearch-logging-0         |                            | 
  | livenessAppLabel    | label  |  ""                               | liveness=elasticsearch-liveness                 |
  | livenessAppNamespace| env    |  ""                               | app-esearch-ns                                  |
@@ -55,10 +55,10 @@ cp experiments/chaos/openebs_pool_failure/run_litmus_test.yml pooldelete.yml
 EOF
 
 sed -i -e 's/generateName: openebs-pool-failure-/generateName: openebs-pool-delete-/g' \  
--e 's/name: openebs-pool-failure/name: openebs-pool-delete/g' \ 
+-e 's/name: openebs-pool-failure/name: litmus-openebs-pool-delete/g' \ 
 -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
 -e 's/value: app-percona-ns/value: app-esearch-ns/g' \
--e 's/value: '\''name=percona'\''/value: '\''name=elasticsearch'\''/g' \
+-e 's/value: '\''name=percona'\''/value: '\''app=elasticsearch'\''/g' \
 -e 's/value: percona-mysql-claim/value: openebs-esearch-elasticsearch-logging-0/g' \
 -e '/name: LIVENESS_APP_LABEL/!b;n;c\            \ value: "liveness=elasticsearch-liveness"' \
 -e '/name: LIVENESS_APP_NAMESPACE/!b;n;c\            \ value: "app-esearch-ns"' \
@@ -72,23 +72,28 @@ sed -i '/command:/i \
 
 cat pooldelete.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-pool-delete' job=pooldelete.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='name:litmus-openebs-pool-delete' job=pooldelete.yml
 cd ..
 # Get the cluster state Once the litmus jobs completed.
 bash Openshift-EE/utils/dump_cluster_state;
 # Update the e2e event for the job.
 bash Openshift-EE/utils/event_updater jobname:pool-delete $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
-if [ "$?" != "0" ]; then
-python3 Openshift-EE/utils/result/result_update.py $job_id IOWW 4-chaos "Delete cStor Pool" Fail $pipeline_id "$current_time" $commit_id $gittoken
+rc_val=$(echo $?)
+
+if [ "$rc_val" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id IOWW 4-chaos "Delete cStor Pool" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 
 current_time=$(eval $time)
 # Update the e2e cr once the job is completed
-testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
 bash Openshift-EE/utils/e2e-cr jobname:pool-delete jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:"$testResult"
-#python3 Openshift-EE/utils/result/result_update.py $job_id  4-chaos "Delete cStor Pool" Pass $pipeline_id "$current_time" $commit_id $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id IOWW 4-chaos "Delete cStor Pool" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
 
 }
 

@@ -69,18 +69,18 @@ CRGI-OpenEBS:
     - CRGI-OpenEBS
 
   
-N4NK-Openebs-Pool-Failure:
+N4NK-Cstor-Volume-Mgmt-Kill:
   extends: .chaos_test_template
   script: 
-    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/N4NK-openebs-pool-failure/openebs-pool-failure
-    - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/N4NK-openebs-pool-failure/openebs-pool-failure
+    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/N4NK-cstor-volume-mgmt-kill/cstor-volume-mgmt-kill
+    - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/N4NK-cstor-volume-mgmt-kill/cstor-volume-mgmt-kill
 
 
-3K0C-Openebs-Target-Network-Delay:
+3K0C-App-kill:
   extends: .chaos_test_template
   script: 
-    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/3K0C-openebs-target-network-delay/openebs-target-network-delay
-    - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/3K0C-openebs-target-network-delay/openebs-target-network-delay
+    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/3K0C-app-kill/app-kill
+    - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/3K0C-app-kill/app-kill
 
 
 2YLI-Cstor-Volume-Istgt-Kill:
@@ -111,11 +111,11 @@ N4NK-Openebs-Pool-Failure:
     - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/638K-cstor-pool-kill/cstor-pool-kill
 
 
-E16S-Cstor-Volume-Mgmt-Kill:
+E16S-Target-Network-Loss:
    extends: .chaos_test_template
    script:
-    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/E16S-cstor-volume-mgmt-kill/cstor-volume-mgmt-kill
-    - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/E16S-cstor-volume-mgmt-kill/cstor-volume-mgmt-kill
+    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/E16S-target-network-loss/target-network-loss
+    - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/E16S-target-network-loss/target-network-loss
 
     
 II1Z-Pool-Network-Delay:
@@ -139,11 +139,11 @@ LY12-Target-Network-Delay:
     - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/LY12-target-network-delay/target-network-delay
 
 
-PMIJ-Openebs-Node-Service-Failure:
+PMIJ-Target-Kill:
    extends: .chaos_test_template
    script: 
-    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/PMIJ-openebs-node-service-failure/openebs-node-service-failure
-    - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/PMIJ-openebs-node-service-failure/openebs-node-service-failure
+    - chmod 775 ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/PMIJ-target-kill/target-kill
+    - ./Openshift-EE/pipelines/ElasticSearch/stages/4-chaos/PMIJ-target-kill/target-kill
 
 
 QQ9F-Pool-Network-Loss:

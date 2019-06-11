@@ -23,14 +23,13 @@ echo $present_dir
 bash Openshift-EE/utils/pooling jobname:pool-network-delay
 bash Openshift-EE/utils/e2e-cr jobname:app-kill jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
-
 # Performing Application Pod Chaos
 
 ################
 # LitmusBook 1 #
 ################
 
-run_id="appkill";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=application-pod-failure metadata="")
+run_id="appkill";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=application-pod-failure metadata=${run_id})
 echo $test_name
 
 cd litmus
@@ -45,6 +44,7 @@ cp experiments/chaos/app_pod_failure/run_litmus_test.yml appkill.yml
  | appNamespace        | env    | app-jenkins-ns                        | app-esearch-ns                              |
  | livenessAppLabel    | label  |  ""                                   | liveness=elasticsearch-liveness             |
  | livenessAppNamespace| env    |  ""                                   | app-esearch-ns                              |
+ | Litmus job label    | label  | name: application-pod-failure         | name: litmus-application-pod-kill           |
  | deploy type         | env    |  deployment                           | statefulset                                 |
   ---------------------------------------------------------------------------------------------------------------------
 EOF
@@ -53,6 +53,7 @@ sed -i -e 's/app=jenkins-app/app=elasticsearch/g' \
 -e 's/value: app-jenkins-ns/value: app-esearch-ns/g'
 -e '/name: LIVENESS_APP_LABEL/!b;n;c\            \ value: "liveness=elasticsearch-liveness"' \
 -e '/name: LIVENESS_APP_NAMESPACE/!b;n;c\            \ value: "app-esearch-ns"' \
+-e 's/name: application-pod-failure/name: litmus-application-pod-kill/g' \
 -e 's/value: deployment/name: statefulset/g' appkill.yml
 
 sed -i '/command:/i \
@@ -62,14 +63,36 @@ sed -i '/command:/i \
 
 cat appkill.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='name:application-pod-failure' job=appkill.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='name:litmus-application-pod-kill' job=appkill.yml
 cd ..
 # Get the cluster state Once the litmus jobs completed.
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:app-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
+rc_val=$(echo $?)
+
+# Obtain the status of the test using litmusresult(lr) 
+testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+
 # Update result of the test case in github mayadata-io/e2e-openshift repository.
-if [ "$?" != "0" ]; then
-python3 Openshift-EE/utils/result/result_update.py $job_id 3K0C 4-chaos "Induce application pod failure and check if it is recovered successfully" Fail $pipeline_id "$current_time" $commit_id $gittoken
+if [ "$rc_val" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id 3K0C 4-chaos "Induce application pod failure and check if it is recovered successfully" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
+fi
+
+current_time=$(eval $time)
+# Update the e2e cr once the job is completed
+bash Openshift-EE/utils/e2e-cr jobname:app-kill jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:$testResult
+python3 Openshift-EE/utils/result/result_update.py $job_id 3K0C 4-chaos "Induce application pod failure and check if it is recovered successfully" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4
+else
+  pod
 fi
