@@ -37,7 +37,7 @@ while true; do
         exit 1;
       fi
     else
-      echo $litmus_pod  #if pod is found, print the litmus pod and exit from while loop 
+      echo "Litmus pod is $litmus_pod"  #if pod is found, print the litmus pod and exit from while loop 
       break;
     fi
   fi
