@@ -3,7 +3,7 @@ set -x
 
 pod() {
 # sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/openebs/e2e-openshift.git'
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/4E0O-Jiva-Volume-scaleup node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/4E0O-Jiva-Volume-scaleup/jiva-volume-scaleup node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
 }
 
 node() {
@@ -42,7 +42,7 @@ bash Openshift-EE/utils/e2e-cr jobname:jiva-replica-scaleup jobphase:Running ini
  | pvcName           | env    | openebs-busybox                     | busybox-jiva-replica-scaleup                          | 
  | storage clas      | env    | openebs-cstor-sparse                | openebs-jiva-standalone                               |
  | appNamespace      | env    | app-busybox-ns                      | jiva-replica-scaleup                                  |
-  ---------------------------------------------------------------------------------------------------------------------
+  ---------------------------------------------------------------------------------------------------------------------------
 EOF
 
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-jiva-replica-scaleup metadata="")
