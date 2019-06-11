@@ -37,6 +37,9 @@ bash Openshift-EE/utils/e2e-cr jobname:bdd-cstor-negative-invalid-storage-pool-c
 bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-node-stickiness jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-snapshot jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-clone jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:bdd-cstor-volume-clone-provisioning jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:bdd-cstor-snapshot-provisioning jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:bdd-cstor-volume-provisioning jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:s2-j3-policies jobphase:Waiting 
 bash Openshift-EE/utils/e2e-cr jobname:s2-j2-cstor-pool jobphase:Waiting 
 
