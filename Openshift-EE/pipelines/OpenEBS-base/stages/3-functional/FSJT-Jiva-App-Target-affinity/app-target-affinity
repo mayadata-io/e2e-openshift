@@ -270,6 +270,11 @@ fi
 current_time=$(eval $time)
 bash Openshift-EE/utils/e2e-cr jobname:app-target-affinity-jiva  jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
 python3 Openshift-EE/utils/result/result_update.py $job_id FSJT 3-functional "Checking Application and target scheduled on same Node" Pass $pipeline_id "$current_time" $commit_id $gittoken
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+
 }
 
 if [ "$1" == "node" ];then
