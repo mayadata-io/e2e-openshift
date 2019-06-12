@@ -64,7 +64,7 @@ BDD-CSTOR-SNAPSHOT-PROVISIONING:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/cstor/snapshot/cstor-snapshot-provisioning
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/cstor/snapshot/cstor-snapshot-provisioning
 
-BDD-CSTOR-SNAPSHOT-PROVISIONING:
+BDD-CSTOR-VOLUME-PROVISIONING:
   image: openebs/openshift-ci:latest
   stage: OPENEBS-SETUP
   script:
@@ -160,11 +160,11 @@ ZD8F-App-Scaleup:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/ZD8F-Sts-App-replica-scaleup/app-replica-scaleup
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/ZD8F-Sts-App-replica-scaleup/app-replica-scaleup
 
-      #4E0O-Storage-Scaleup:
-      #  extends: .func_test_template
-      #  script: 
-      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/4E0O-Storage-Volume-scaleup/storage-volume-scaleup
-      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/4E0O-Storage-Volume-scaleup/storage-volume-scaleup
+4E0O-Storage-Scaleup:
+  extends: .func_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/4E0O-Jiva-Volume-scaleup/jiva-volume-scaleup
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/4E0O-Jiva-Volume-scaleup/jiva-volume-scaleup
 
       #GV2D-Storage-Upgrade:
       #  extends: .func_test_template
