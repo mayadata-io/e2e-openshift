@@ -223,6 +223,9 @@ bash Openshift-EE/utils/e2e-cr jobname:snap-rebuild-single-rep jobphase:Complete
 
 python3 Openshift-EE/utils/result/result_update.py $job_id 340W 4-chaos "Check if the snapshot can be rebuilt after loss and recovery of single replica" Pass $pipeline_id "$current_time" $commit_id $gittoken
 
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
 }
 
 if [ "$1" == "node" ];then

@@ -2,7 +2,7 @@
 set -x
 pod() {
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/mayadata-io/e2e-openshift.git'
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/K9YC-openebs-deploy/deploy-openebs node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/K9YC-openebs-deploy/deploy-openebs node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$NDM_TAG'"' '"'$RELEASE_BRANCH'"'
 }
 
 node() {
@@ -10,6 +10,8 @@ job_id=$(echo $1)
 pipeline_id=$(echo $2)
 commit_id=$(echo $3)
 case_id=K9YC
+releaseBranch=$(echo $5)
+ndmTag=$(echo $4)
 
 time="date"
 current_time=$(eval $time)
@@ -33,9 +35,13 @@ bash Openshift-EE/utils/e2e-cr jobname:s2-j1-openebs-deploy jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:s2-j1-openebs-deploy jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 bash Openshift-EE/utils/e2e-cr jobname:cstor-integration-test jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-volume jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:bdd-cstor-negative-invalid-storage-pool-claim jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-node-stickiness jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-snapshot jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-clone jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:bdd-cstor-volume-clone-provisioning jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:bdd-cstor-snapshot-provisioning jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:bdd-cstor-volume-provisioning jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:s2-j3-policies jobphase:Waiting 
 bash Openshift-EE/utils/e2e-cr jobname:s2-j2-cstor-pool jobphase:Waiting 
 
@@ -64,7 +70,7 @@ export OPENEBS_IO_CSTOR_TARGET_IMAGE=$(eval python env_exporter.py -o target -fp
 
 export OPENEBS_IO_CSTOR_POOL_EXPORTER_IMAGE=$(eval python env_exporter.py -o iovolume -fp ../baseline/baseline)
 
-export NODE_DISK_MANAGER_IMAGE=v0.3.5
+export NODE_DISK_MANAGER_IMAGE=$ndmTag
 
 cd ../..
 
@@ -82,7 +88,7 @@ python3 env.py -f providers/openebs/installers/operator/master/litmusbook/openeb
 
 echo "updated yaml"
 sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
--e 's/value: master/value: v1.0.x/g' providers/openebs/installers/operator/master/litmusbook/openebs_setup.yaml
+-e "s/value: master/value: $releaseBranch/g" providers/openebs/installers/operator/master/litmusbook/openebs_setup.yaml
 cat providers/openebs/installers/operator/master/litmusbook/openebs_setup.yaml
 
 #################
@@ -130,7 +136,7 @@ fi
 }
 
 if [ "$1" == "node" ];then
-  node $2 $3 $4
+  node $2 $3 $4 $5 $6
 else
   pod
 fi

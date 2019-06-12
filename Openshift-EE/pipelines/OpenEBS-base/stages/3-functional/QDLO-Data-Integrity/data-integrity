@@ -48,10 +48,12 @@ bash Openshift-EE/utils/event_updater jobname:data-integrity-cstor $test_name jo
 
 rc_val=$(echo $?)
 
+# Obtain the status of the test using litmusresult(lr) 
 testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
-#python3 Openshift-EE/utils/result/result_update.py $job_id QDLO 3-functional "Ensure the data integrity in openebs volume using fio" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 
+# Update the result of the test case in github mayadata-io/e2e-openshift repository.
 if [ "$rc_val" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id QDLO 3-functional "Ensure the data integrity in openebs volume using fio" $testResult $pipeline_id "$current_time" $commit_id $gitToken
 exit 1;
 fi
 
@@ -59,6 +61,10 @@ current_time=$(eval $time)
 bash Openshift-EE/utils/e2e-cr jobname:data-integrity-cstor jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
 
 python3 Openshift-EE/utils/result/result_update.py $job_id QDLO 3-functional "Ensure the data integrity in openebs volume using fio" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
 
 }
 
