@@ -42,7 +42,6 @@ while true; do
   fi
 done
 
-
 ## Wait till the ansibletest container terminates && also confirm job completion status. This is done to ensure
 ## that execution of auxiliary containers such as loggers is completed. Getting the ansibletest ccontainer to completed state 
 ## satisfies the "necessary" condition for test job completion
