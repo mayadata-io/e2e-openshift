@@ -23,24 +23,19 @@ bash ../Openshift-EE/utils/error_handler ${retcode} msg="Unable to run litmusboo
 
 litmusPodCmd="kubectl get pod --no-headers -n litmus -o jsonpath='{.items[?(@.metadata.labels.job-name==\"${job_name}\")].metadata.name}'"
 
-# Loop till running litmus pod is got. If not able to find the pod, print error message
-# number of times we want to try again to get the name of litmus pod
 let retry_count=7  
 
 while true; do
   litmus_pod=$(eval ${litmusPodCmd}); rc=$?
-  if [[ $rc -eq 0 ]]; then
-    # if pod is not found it returns null. If pod name is not got sleep for 5 sec and try again.
+  if [[ $rc -eq 0 ]]; then  
     if [[ -z ${litmus_pod} ]]; then   
       sleep 5
       retry_count=$((retry_count-1))
       echo "unable to get litmus pod name....trying again"
       if [[ $retry_count -eq 0 ]]; then
-        # retry count is over.. pod is not found.. exit from while loop by printing error message.
         echo "unable to get litmus pod name exiting"  
         exit 1;
       fi
-    # if pod is found,exit from while loop
     else      
       break;
     fi
