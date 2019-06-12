@@ -29,17 +29,14 @@ while true; do
   litmus_pod=$(eval ${litmusPodCmd}); rc=$?
   if [[ $rc -eq 0 ]]; then
     if [[ -z ${litmus_pod} ]]; then   # if pod is not found it returns null. If pod name is not got sleep for 10 sec and try again.
-      sleep 10
+      sleep 5
       retry_count=$((retry_count-1))
       echo "unable to find test runner pod ....trying again"
       if [[ $retry_count -eq 0 ]]; then
         echo "unable to find test runner pod exiting"  # retry count is over.. pod is not found.. exit from while loop
         exit 1;
-      fi
-    else
-      echo "Litmus pod is $litmus_pod"  #if pod is found, print the litmus pod and exit from while loop 
-      break;
-    fi
+      fi 
+    fi   
   fi
 done
     
