@@ -23,23 +23,14 @@ bash ../Openshift-EE/utils/error_handler ${retcode} msg="Unable to run litmusboo
 
 litmusPodCmd="kubectl get pod --no-headers -n litmus -o jsonpath='{.items[?(@.metadata.labels.job-name==\"${job_name}\")].metadata.name}'"
 
-# Loop till the running litmus pod is got. If not able to find the pod, print error message
-let retry_count=7   # number of times we want to try again to get the name of litmus pod
-while true; do
+while true; do 
   litmus_pod=$(eval ${litmusPodCmd}); rc=$?
-  if [[ $rc -eq 0 ]]; then
-    if [[ -z ${litmus_pod} ]]; then   # if pod is not found it returns null. If pod name is not got sleep for 5 sec and try again.
-      sleep 5
-      retry_count=$((retry_count-1))
-      echo "unable to find test runner pod ....trying again"
-      if [[ $retry_count -eq 0 ]]; then
-        echo "unable to find test runner pod exiting"  # retry count is over.. pod is not found.. exit from while loop
-        exit 1;
-      fi 
-    fi   
+  if [[ $rc -eq 0 && -z ${litmus_pod} ]]; then  # if pod is not found it returns null. If pod name is not got sleep for 5 sec and try again.
+    sleep 5                           
+  else break;   # if you get the pod name exit from while loop
   fi
 done
-    
+
 ## Wait till the ansibletest container terminates && also confirm job completion status. This is done to ensure
 ## that execution of auxiliary containers such as loggers is completed. Getting the ansibletest ccontainer to completed state 
 ## satisfies the "necessary" condition for test job completion
