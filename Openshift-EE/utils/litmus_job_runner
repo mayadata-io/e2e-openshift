@@ -30,7 +30,7 @@ let retry_count=7
 while true; do
   litmus_pod=$(eval ${litmusPodCmd}); rc=$?
   if [[ $rc -eq 0 ]]; then
-    # if pod is not found it returns null. If pod name is not got sleep for 5 sec sec and try again.
+    # if pod is not found it returns null. If pod name is not got sleep for 5 sec and try again.
     if [[ -z ${litmus_pod} ]]; then   
       sleep 5
       retry_count=$((retry_count-1))
