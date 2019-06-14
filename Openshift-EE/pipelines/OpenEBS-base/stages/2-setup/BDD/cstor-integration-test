@@ -22,8 +22,6 @@ bash Openshift-EE/utils/e2e-cr jobname:cstor-integration-test jobphase:Running i
 
 cd /home/devuser/go/src/github.com/openebs
 
-git clone https://github.com/openebs/maya.git
-
 cd maya/tests/cstor-pool/
 
 ginkgo -v -- -kubeconfig=$HOME/.kube/config
