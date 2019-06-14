@@ -147,7 +147,7 @@ cp experiments/functional/scale_jiva_replica/run_litmus_test.yml busybox_scale_j
 EOF
 
 sed -i -e 's/value: app-percona-ns/value: jiva-replica-scaleup/g' \
--e 's/percona-mysql-claim/busybox-jiva-replica-scaleup/g'  busybox_scale_jiva_rep.yml
+-e 's/value: '\''percona-mysql-claim'\''/value: '\''busybox-jiva-replica-scaleup'\''/g'  busybox_scale_jiva_rep.yml
 
 cat  busybox_scale_jiva_rep.yml
  # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
