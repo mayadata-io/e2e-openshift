@@ -28,7 +28,7 @@ bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-clone jobphase:Running init_time
 cd /home/devuser/go/src/github.com/openebs
 
 # Running BDD test for jiva-clone
-cd maya/tests/jiva/clone && ginkgo -v -- -kubeconfig=$HOME/.kube/config --replicas=3
+cd maya/tests/jiva/clone && ginkgo -v -- -kubeconfig=$HOME/.kube/config
 
 #Evaluating result based on the return count
 

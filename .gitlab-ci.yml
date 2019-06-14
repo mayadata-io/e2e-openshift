@@ -43,6 +43,34 @@ BDD-STRIPED-SPARSE-SPC:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/cstor-integration-test
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/cstor-integration-test
 
+BDD-INVALID-STORAGE-POOL-CLAIM:
+  image: openebs/openshift-ci:latest
+  stage: OPENEBS-SETUP
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/cstor/negative/invalid-storage-pool-claim
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/cstor/negative/invalid-storage-pool-claim
+
+BDD-CSTOR-VOLUME-CLONE-PROVISIONING:
+  image: openebs/openshift-ci:latest
+  stage: OPENEBS-SETUP
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/cstor/clone/volume-clone-provisioning
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/cstor/clone/volume-clone-provisioning
+
+BDD-CSTOR-SNAPSHOT-PROVISIONING:
+  image: openebs/openshift-ci:latest
+  stage: OPENEBS-SETUP
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/cstor/snapshot/cstor-snapshot-provisioning
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/cstor/snapshot/cstor-snapshot-provisioning
+
+BDD-CSTOR-VOLUME-PROVISIONING:
+  image: openebs/openshift-ci:latest
+  stage: OPENEBS-SETUP
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/cstor/volume/cstor-volume-provisioning
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/cstor/volume/cstor-volume-provisioning
+
 BDD-JIVA-NODE-STICKINESS:
   image: openebs/openshift-ci:latest
   stage: OPENEBS-SETUP
@@ -70,7 +98,7 @@ BDD-JIVA-VOLUME:
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/Jiva/jiva-volume
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/Jiva/jiva-volume
-    
+
 .func_test_template:
   image: openebs/openshift-ci:latest
   stage: FUNCTIONAL
