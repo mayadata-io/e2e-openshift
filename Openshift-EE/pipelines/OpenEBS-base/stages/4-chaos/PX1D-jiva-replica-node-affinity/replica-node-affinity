@@ -276,6 +276,10 @@ current_time=$(eval $time)
 bash Openshift-EE/utils/e2e-cr jobname:jiva-replica-node-affinity jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
 # Update the result of the test case in github mayadata-io/e2e-openshift repository.
 python3 Openshift-EE/utils/result/result_update.py $job_id PX1D 4-chaos "Jiva replica node affinity" Pass $pipeline_id "$current_time" $commit_id $gittoken
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
 }
 
 if [ "$1" == "node" ];then

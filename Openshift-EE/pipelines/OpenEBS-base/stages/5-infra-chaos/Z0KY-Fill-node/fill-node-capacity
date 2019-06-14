@@ -54,8 +54,9 @@ bash ../Openshift-EE/utils/litmus_job_runner label='name:node-storage-fill' fill
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:fill-node-capacity $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+rc_val=$(echo $?)
 
-if [ "$?" != "0" ]; then
+if [ "$rc_val" != "0" ]; then
 python3 Openshift-EE/utils/result/result_update.py $job_id Z0KY 5-infra-chaos "Fill the node capacity and check the openebs pool pod behavior" Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
@@ -63,6 +64,10 @@ fi
 current_time=$(eval $time)
 bash Openshift-EE/utils/e2e-cr jobname:fill-node-capacity jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
 python3 Openshift-EE/utils/result/result_update.py $job_id Z0KY 5-infra-chaos "Fill the node capacity and check the openebs pool pod behavior" Pass $pipeline_id "$current_time" $commit_id $gittoken
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
 }
 
 if [ "$1" == "node" ];then

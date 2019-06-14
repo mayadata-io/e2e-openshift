@@ -84,6 +84,12 @@ BDD-JIVA-VOLUME:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/9AKX-snapshot/snapshot
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/9AKX-snapshot/snapshot
 
+4E0O-Jiva-Volume_Scaleup:
+  extends: .func_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/4E0O-Jiva-Volume-scaleup/jiva-volume-scaleup
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/4E0O-Jiva-Volume-scaleup/jiva-volume-scaleup
+
 ZK9B-Create-Clone:
   extends: .func_test_template
   script: 
