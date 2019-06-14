@@ -67,10 +67,9 @@ bash Openshift-EE/utils/event_updater jobname:data-integrity-jiva $test_name job
 rc_val=$(echo $?)
 
 testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
-#python3 Openshift-EE/utils/result/result_update.py $job_id UH9A 3-functional "Ensure the data integrity in openebs volume using fio" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 
 if [ "$rc_val" != "0" ]; then
-exit 1;
+python3 Openshift-EE/utils/result/result_update.py $job_id UH9A 3-functional "Ensure the data integrity in openebs volume using fio" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 fi
 
 current_time=$(eval $time)
@@ -78,6 +77,9 @@ bash Openshift-EE/utils/e2e-cr jobname:data-integrity-jiva jobphase:Completed en
 
 python3 Openshift-EE/utils/result/result_update.py $job_id UH9A 3-functional "Ensure the data integrity in openebs volume using fio" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
 }
 
 if [ "$1" == "node" ];then
