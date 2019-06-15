@@ -232,13 +232,12 @@ sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovisi
 -e 's/value: app-busybox-ns/value: jiva-replica-scaleup/g' \
 -e 's/value: provision/value: deprovision/g' deprovision_busybox_jiva_replica.yml
 
-echo "Running the litmus test for Busybox Deployment.."
 cat deprovision_busybox_jiva_replica.yml
 
 bash ../Openshift-EE/utils/litmus_job_runner label='app:deprovision-jiva-busybox-rep-scaleup' job=deprovision_busybox_jiva_replica.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
-bash Openshift-EE/utils/event_updater jobname:pool-network-delay $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/event_updater jobname:jiva-replica-scaleup $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 return_count=$?
 
 if [ "return_count" != "0" ]; then
@@ -247,7 +246,7 @@ exit 1;
 fi
 
 current_time=$(eval $time)
-bash Openshift-EE/utils/e2e-cr jobname:pool-network-delay jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
+bash Openshift-EE/utils/e2e-cr jobname:jiva-replica-scaleup jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
 python3 Openshift-EE/utils/result/result_update.py $job_id 4E0O 3-functional "Verify if the Jiva replicas can be scaled up" Pass $pipeline_id "$current_time" $commit_id $gittoken
 
 if [ "return_count" != "0" ]; then
