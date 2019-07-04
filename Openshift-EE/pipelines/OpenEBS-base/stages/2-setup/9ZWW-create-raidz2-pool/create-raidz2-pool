@@ -71,7 +71,6 @@ bash Openshift-EE/utils/event_updater jobname:s2-j5-cstor-raidz2-pool $test_name
 #################
 rc_val=$(echo $?)
 
-
 ## Check the test status & result from the litmus result custom resource
 source ~/.profile
 gittoken=$(echo "$github_token")
