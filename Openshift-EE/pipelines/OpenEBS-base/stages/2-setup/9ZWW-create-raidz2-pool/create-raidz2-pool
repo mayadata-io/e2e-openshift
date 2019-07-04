@@ -54,13 +54,15 @@ sed -i -e 's/app: cstor-block-device-pool-provision/app: cstor-raidz2-pool-provi
 -e 's/value: striped/value: raidz2' \
 -e 's/value: openebs-cstor-disk/value: openebs-cstor-raidz2' create_raidz2_pool.yml
 
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' create_raidz2_pool.yml
+
 cat create_raidz2_pool.yml
 
 bash ../Openshift-EE/utils/litmus_job_runner label='app:cstor-raidz2-pool-provision' job=create_raidz2_pool.yml
-
-echo "Dumping state of cluster post job run"; echo ""
 bash ../Openshift-EE/utils/dump_cluster_state;
-
 cd ..
 bash Openshift-EE/utils/event_updater jobname:s2-j5-cstor-raidz2-pool $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 

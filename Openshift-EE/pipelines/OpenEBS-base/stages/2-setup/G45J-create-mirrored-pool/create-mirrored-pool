@@ -54,13 +54,15 @@ sed -i -e 's/app: cstor-block-device-pool-provision/app: cstor-mirrored-pool-pro
 -e 's/value: striped/value: mirrored' \
 -e 's/value: openebs-cstor-disk/value: openebs-cstor-mirror' create_mirrored_pool.yml
 
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' create_mirrored_pool.yml
+
 cat create_mirrored_pool.yml
 
 bash ../Openshift-EE/utils/litmus_job_runner label='app:cstor-mirrored-pool-provision' job=create_mirrored_pool.yml
-
-echo "Dumping state of cluster post job run"; echo ""
 bash ../Openshift-EE/utils/dump_cluster_state;
-
 cd ..
 bash Openshift-EE/utils/event_updater jobname:s2-j3-cstor-mirrored-pool $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
@@ -68,7 +70,6 @@ bash Openshift-EE/utils/event_updater jobname:s2-j3-cstor-mirrored-pool $test_na
 ## GET RESULT  ##
 #################
 rc_val=$(echo $?)
-
 
 ## Check the test status & result from the litmus result custom resource
 source ~/.profile

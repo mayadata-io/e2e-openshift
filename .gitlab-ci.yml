@@ -54,7 +54,7 @@ HC5P-RAIDZ2-POOL:
   image: openebs/openshift-ci:latest
   stage: OPENEBS-SETUP
   script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/9ZWW-create-raidz2-pool/create-raidz2-poola
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/9ZWW-create-raidz2-pool/create-raidz2-pool
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/9ZWW-create-raidz2-pool/create-raidz2-pool
 
 BDD-STRIPED-SPARSE-SPC:
