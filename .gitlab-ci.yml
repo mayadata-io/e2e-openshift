@@ -36,21 +36,21 @@ HC5P-STRIPED-POOL:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/HC5P-create-striped-pool/create-striped-pool
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/HC5P-create-striped-pool/create-striped-pool
 
-HC5P-MIRRORED-POOL:
+G45J-MIRRORED-POOL:
   image: openebs/openshift-ci:latest
   stage: OPENEBS-SETUP
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/G45J-create-mirrored-pool/create-mirrored-pool
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/G45J-create-mirrored-pool/create-mirrored-pool
 
-HC5P-RAIDZ1-POOL:
+37Y6-RAIDZ1-POOL:
   image: openebs/openshift-ci:latest
   stage: OPENEBS-SETUP
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/37Y6-create-raidz1-pool/create-raidz1-pool
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/37Y6-create-raidz1-pool/create-raidz1-pool
 
-HC5P-RAIDZ2-POOL:
+9ZWW-RAIDZ2-POOL:
   image: openebs/openshift-ci:latest
   stage: OPENEBS-SETUP
   script:
