@@ -75,12 +75,12 @@ rc_val=$(echo $?)
 source ~/.profile
 gittoken=$(echo "$github_token")
 testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
-#python3 Openshift-EE/utils/result/result_update.py $job_id 37Y6 2-setup "Create cStor based Striped storage pool on disks." $testResult $pipeline_id "$current_time" $commit_id $gittoken
+#python3 Openshift-EE/utils/result/result_update.py $job_id 37Y6 2-setup "Create cStor based RAIDZ1 storage pool on disks and corresponding storage class" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 
 current_time=$(eval $time)
 bash Openshift-EE/utils/e2e-cr jobname:s2-j4-cstor-raidz1-pool jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
 
-python3 Openshift-EE/utils/result/result_update.py $job_id 37Y6 2-setup "Create cStor based RAIDZ1 storage pool on disks and correspondig storage class" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id 37Y6 2-setup "Create cStor based RAIDZ1 storage pool on disks and corresponding storage class" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 if [ "$rc_val" != "0" ]; then
 exit 1;
 fi
