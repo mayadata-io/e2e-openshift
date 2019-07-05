@@ -50,9 +50,9 @@ EOF
 sed -i -e 's/app: cstor-block-device-pool-provision/app: cstor-raidz2-pool-provision/g' \
 -e 's/generateName: cstor-block-device-pool-provision/generateName: cstor-block-device-raidz2-pool-provision/g' \
 -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
--e 's/value: cstor-block-disk-pool/value: cstor-block-disk-pool-raidz2' \
--e 's/value: striped/value: raidz2' \
--e 's/value: openebs-cstor-disk/value: openebs-cstor-raidz2' create_raidz2_pool.yml
+-e 's/value: cstor-block-disk-pool/value: cstor-block-disk-pool-raidz2/g' \
+-e 's/value: striped/value: raidz2/g' \
+-e 's/value: openebs-cstor-disk/value: openebs-cstor-raidz2/g' create_raidz2_pool.yml
 
 sed -i '/command:/i \
           - name: RUN_ID\

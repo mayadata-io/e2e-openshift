@@ -50,9 +50,9 @@ EOF
 sed -i -e 's/app: cstor-block-device-pool-provision/app: cstor-mirrored-pool-provision/g' \
 -e 's/generateName: cstor-block-device-pool-provision/generateName: cstor-block-device-mirrored-pool-provision/g' \
 -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
--e 's/value: cstor-block-disk-pool/value: cstor-block-disk-pool-mirror' \
--e 's/value: striped/value: mirrored' \
--e 's/value: openebs-cstor-disk/value: openebs-cstor-mirror' create_mirrored_pool.yml
+-e 's/value: cstor-block-disk-pool/value: cstor-block-disk-pool-mirror/g' \
+-e 's/value: striped/value: mirrored/g' \
+-e 's/value: openebs-cstor-disk/value: openebs-cstor-mirror/g' create_mirrored_pool.yml
 
 sed -i '/command:/i \
           - name: RUN_ID\

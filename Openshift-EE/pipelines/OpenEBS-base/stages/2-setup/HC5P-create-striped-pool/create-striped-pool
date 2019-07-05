@@ -49,8 +49,8 @@ EOF
 sed -i -e 's/app: cstor-block-device-pool-provision/app: cstor-striped-pool-provision/g' \
 -e 's/generateName: cstor-block-device-pool-provision/generateName: cstor-block-device-striped-pool-provision/g' \
 -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
--e 's/value: cstor-block-disk-pool/value: cstor-block-disk-pool-stripe' \
--e 's/value: openebs-cstor-disk/value: openebs-cstor-stripe' create_striped_pool.yml
+-e 's/value: cstor-block-disk-pool/value: cstor-block-disk-pool-stripe/g' \
+-e 's/value: openebs-cstor-disk/value: openebs-cstor-stripe/g' create_striped_pool.yml
 
 sed -i '/command:/i \
           - name: RUN_ID\
