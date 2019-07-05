@@ -21,6 +21,9 @@ current_time=$(eval $time)
 echo "*******Creating cstor-pool**************"
 bash Openshift-EE/utils/pooling jobname:bdd-jiva-node-stickiness
 bash Openshift-EE/utils/e2e-cr jobname:s2-j2-cstor-striped-pool jobphase:Running init_time:"$current_time"
+bash Openshift-EE/utils/e2e-cr jobname:s2-j3-cstor-mirrored-pool jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:s2-j4-cstor-raidz1-pool jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:s2-j5-cstor-raidz2-pool jobphase:Waiting
 
 run_id="striped";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=cstor-block-device-pool-provision metadata=${run_id})
 echo $test_name
