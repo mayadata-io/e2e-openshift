@@ -20,8 +20,8 @@ echo $present_dir
 
 #pooling over previous job to complete
 echo "***********Applying openebs-storage-clas********"
-bash Openshift-EE/utils/pooling jobname:s2-j2-cstor-pool
-bash Openshift-EE/utils/e2e-cr jobname:s2-j3-policies jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/pooling jobname:s2-j5-cstor-raidz2-pool
+bash Openshift-EE/utils/e2e-cr jobname:s2-j6-policies jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=cstor-storage-policies metadata="")
 echo $test_name
@@ -40,7 +40,7 @@ echo "Dumping state of cluster post job run"; echo ""
 bash ../Openshift-EE/utils/dump_cluster_state;
 
 cd ..
-bash Openshift-EE/utils/event_updater jobname:s2-j3-policies $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/event_updater jobname:s2-j6-policies $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 #################
 ## GET RESULT  ##
 #################
@@ -53,14 +53,13 @@ testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-column
 #python3 Openshift-EE/utils/result/result_update.py $job_id 1CXH 2-setup "Create K8s storage classes adhering the policies supported by OpenEBS" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 
 current_time=$(eval $time)
-bash Openshift-EE/utils/e2e-cr jobname:s2-j3-policies jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass 
+bash Openshift-EE/utils/e2e-cr jobname:s2-j6-policies jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass 
 
 python3 Openshift-EE/utils/result/result_update.py $job_id 1CXH 2-setup "Create K8s storage classes adhering the policies supported by OpenEBS" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 
 if [ "$rc_val" != "0" ]; then
 exit 1;
 fi
-
 }
 
 if [ "$1" == "node" ];then
