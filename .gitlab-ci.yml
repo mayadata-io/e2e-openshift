@@ -29,12 +29,33 @@ K9YC-OpenEBS:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/1CXH-storage-policies/openebs-sc
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/1CXH-storage-policies/openebs-sc
   
-HC5P-CSTOR-POOL:
+HC5P-STRIPED-POOL:
   image: openebs/openshift-ci:latest
   stage: OPENEBS-SETUP
   script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/HC5P-create-striped-pool/create-pool
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/HC5P-create-striped-pool/create-pool
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/HC5P-create-striped-pool/create-striped-pool
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/HC5P-create-striped-pool/create-striped-pool
+
+G45J-MIRRORED-POOL:
+  image: openebs/openshift-ci:latest
+  stage: OPENEBS-SETUP
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/G45J-create-mirrored-pool/create-mirrored-pool
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/G45J-create-mirrored-pool/create-mirrored-pool
+
+37Y6-RAIDZ1-POOL:
+  image: openebs/openshift-ci:latest
+  stage: OPENEBS-SETUP
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/37Y6-create-raidz1-pool/create-raidz1-pool
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/37Y6-create-raidz1-pool/create-raidz1-pool
+
+9ZWW-RAIDZ2-POOL:
+  image: openebs/openshift-ci:latest
+  stage: OPENEBS-SETUP
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/9ZWW-create-raidz2-pool/create-raidz2-pool
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/9ZWW-create-raidz2-pool/create-raidz2-pool
 
 BDD-STRIPED-SPARSE-SPC:
   image: openebs/openshift-ci:latest

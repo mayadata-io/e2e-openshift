@@ -42,8 +42,11 @@ bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-clone jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:bdd-cstor-volume-clone-provisioning jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:bdd-cstor-snapshot-provisioning jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:bdd-cstor-volume-provisioning jobphase:Waiting
-bash Openshift-EE/utils/e2e-cr jobname:s2-j3-policies jobphase:Waiting 
-bash Openshift-EE/utils/e2e-cr jobname:s2-j2-cstor-pool jobphase:Waiting 
+bash Openshift-EE/utils/e2e-cr jobname:s2-j6-policies jobphase:Waiting 
+bash Openshift-EE/utils/e2e-cr jobname:s2-j2-cstor-striped-pool jobphase:Waiting 
+bash Openshift-EE/utils/e2e-cr jobname:s2-j3-cstor-mirrored-pool jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:s2-j4-cstor-raidz1-pool jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:s2-j5-cstor-raidz2-pool jobphase:Waiting
 
 source ~/.profile
 
