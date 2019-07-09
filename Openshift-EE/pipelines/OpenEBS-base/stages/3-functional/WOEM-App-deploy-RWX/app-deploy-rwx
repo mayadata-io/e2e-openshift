@@ -1,0 +1,69 @@
+#!/bin/bash
+set -x
+
+pod() {
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/WOEM-App-deploy-RWX/app-deploy-rwx node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+}
+
+node() {
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+case_id=WOEM
+time="date"
+source ~/.profile
+gittoken=$(echo "$github_token")
+commit_id=$(echo $3)
+current_time=$(eval $time)
+
+bash Openshift-EE/utils/e2e-cr jobname:app-deploy-rwx jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:app-deploy-rwx jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=wordpress-deployment metadata="")
+echo $test_name
+
+cd litmus
+
+echo "Running the litmus test.."
+cp apps/wordpress/deployers/run_litmus_test.yml deploy_app.yml
+
+cat deploy_app.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:wordpress-litmus' job=deploy_app.yml
+
+echo "Dumping state of cluster post job run"; echo ""
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+
+bash Openshift-EE/utils/event_updater jobname:app-deploy-rwx $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+exit 1;
+fi
+
+#################
+## GET RESULT  ##
+#################
+
+rc_val=$(echo $?)
+test_case_id="WOEM"
+source ~/.profile
+gittoken=$(echo "$github_token")
+testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+
+## Check the test status & result from the litmus result custom resource
+current_time=$(eval $time)
+bash Openshift-EE/utils/e2e-cr jobname:app-deploy-rwx jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
+
+python3 Openshift-EE/utils/result/result_update.py $job_id WOEM 3-functional "Deploy the application using nfs-provisioner accessmode as a readwritemany" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4
+else
+  pod
+fi
