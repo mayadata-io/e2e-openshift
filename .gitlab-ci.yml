@@ -120,6 +120,13 @@ BDD-JIVA-VOLUME:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/Jiva/jiva-volume
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/Jiva/jiva-volume
     
+AP1O-NFS-PROVISION:
+  image: openebs/openshift-ci:latest
+  stage: OPENEBS-SETUP
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/AP1O-nfs-provision/nfs-provision
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/AP1O-nfs-provision/nfs-provision
+
 .func_test_template:
   image: openebs/openshift-ci:latest
   stage: FUNCTIONAL
@@ -270,7 +277,13 @@ Y4ET-Jiva-snapshot-clone:
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/4Q90-Jiva-pods-openebs-namespace/jiva-pods-openebs-ns
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/4Q90-Jiva-pods-openebs-namespace/jiva-pods-openebs-ns
-       
+
+WOEM-RWX-APP-DEPLOY:
+  extends: .func_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/WOEM-App-deploy-RWX/app-deploy-rwx
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/WOEM-App-deploy-RWX/app-deploy-rwx
+
 .chaos_test_template:
   image: openebs/openshift-ci:latest
   stage: CHAOS
