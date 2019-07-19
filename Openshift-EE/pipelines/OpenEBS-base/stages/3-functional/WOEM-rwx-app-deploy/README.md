@@ -24,13 +24,3 @@ Administrator should be able to use this job to deploy application with openebs 
 
 #### Test Result
 
-
-
-
-
-
-
-
-
-
-
