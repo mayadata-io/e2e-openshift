@@ -15,7 +15,7 @@ PCZD-OpenShift-3.10:
     - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/1-cluster-setup/PCZD-cluster-setup/cluster-state
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/1-cluster-setup/PCZD-cluster-setup/cluster-state
 
-K9YC-OpenEBS:
+K9YC-OpenEBS-Deployment:
   image: openebs/openshift-ci:latest
   stage: OPENEBS-SETUP
   script:
@@ -127,43 +127,43 @@ BDD-JIVA-VOLUME:
   dependencies:
     - K9YC-OpenEBS
      
-9AKX-Create-Snapshot:
+9AKX-cStor-Create-Snapshot:
   extends: .func_test_template
   script: 
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/9AKX-snapshot/snapshot
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/9AKX-snapshot/snapshot
 
-ZK9B-Create-Clone:
+ZK9B-cStor-Create-Clone:
   extends: .func_test_template
   script: 
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/ZK9B-snapshot-clone/snapshot-clone
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/ZK9B-snapshot-clone/snapshot-clone
 
-6RQL-Clone-different-capacity:
+6RQL-cStor-Clone-different-capacity:
   extends: .func_test_template
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/6RQL-Clone-different-capacity/clone-different-capacity
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/6RQL-Clone-different-capacity/clone-different-capacity
 
-5O5V-Parent-Volume-Delete:
+5O5V-cStor-Parent-Volume-Delete:
   extends: .func_test_template
   script: 
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/5O5V-Clone-parent-vol-delete/clone-parent-vol-delete
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/5O5V-Clone-parent-vol-delete/clone-parent-vol-delete
 
-JAIP-STS-App-Target-Affinity:
+JAIP-cStor-STS-App-Target-Affinity:
   extends: .func_test_template
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/JAIP-STS-App-Target-Affinity/sts-app-target-affinity
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/JAIP-STS-App-Target-Affinity/sts-app-target-affinity
 
-VZFL-App-Target-Affinity:
+VZFL-cStor-App-Target-Affinity:
   extends: .func_test_template
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/VZFL-App-Target-affinity/app-target-affinity
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/VZFL-App-Target-affinity/app-target-affinity
 
-02EA-CAS-Performance:
+02EA-cStor-CAS-Performance:
   extends: .func_test_template
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/02EA-CAS-performance/cas-performance
@@ -175,13 +175,13 @@ VZFL-App-Target-Affinity:
       #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/ENBK-Application-Upgrade/application-upgrade
       #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/ENBK-Application-Upgrade/application-upgrade
 
-ZD8F-App-Scaleup:
+ZD8F-cStor-App-Scaleup:
   extends: .func_test_template
   script: 
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/ZD8F-Sts-App-replica-scaleup/app-replica-scaleup
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/ZD8F-Sts-App-replica-scaleup/app-replica-scaleup
 
-4E0O-Storage-Scaleup:
+4E0O-Jiva-Storage-Scaleup:
   extends: .func_test_template
   script: 
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/4E0O-Jiva-Volume-scaleup/jiva-volume-scaleup
@@ -193,25 +193,25 @@ ZD8F-App-Scaleup:
       #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/GV2D-Storage-volume-upgrade/storage-volume-upgrade
       #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/GV2D-Storage-volume-upgrade/storage-volume-upgrade
 
-WHAP-Volume-Capacity-Fill:
+WHAP-cStor-Volume-Capacity-Fill:
   extends: .func_test_template
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/WHAP-volume-capacity-fill/volume-capacity-fill
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/WHAP-volume-capacity-fill/volume-capacity-fill
       
-4ZWU-STS-Volume-Distribute:
+4ZWU-cStor-STS-Volume-Distribute:
   extends: .func_test_template
   script: 
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/4ZWU-STS-Volume-Distribution/volume-distribution
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/4ZWU-STS-Volume-Distribution/volume-distribution
 
-QDLO-Data-integrity:
+QDLO-cStor-Data-integrity:
   extends: .func_test_template
   script: 
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/QDLO-Data-Integrity/data-integrity
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/QDLO-Data-Integrity/data-integrity
 
-OBS2-Memory-Usage:
+OBS2-cStor-Memory-Usage:
   extends: .func_test_template
   script: 
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/OBS2-Memory-Consumption/memory-consumption
