@@ -119,6 +119,20 @@ BDD-JIVA-VOLUME:
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/Jiva/jiva-volume
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/Jiva/jiva-volume
+
+AP1O-NFSv4-PROVISION:
+  image: openebs/openshift-ci:latest
+  stage: OPENEBS-SETUP
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/AP1O-nfsv4-provision/nfsv4-provision
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/AP1O-nfsv4-provision/nfsv4-provision
+
+Q2JG-NFSv3-PROVISION:
+  image: openebs/openshift-ci:latest
+  stage: OPENEBS-SETUP
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/Q2JG-nfsv3-provision/nfsv3-provision
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/Q2JG-nfsv3-provision/nfsv3-provision    
     
 .func_test_template:
   image: openebs/openshift-ci:latest
