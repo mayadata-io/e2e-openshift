@@ -139,7 +139,7 @@ Q2JG-NFSv3-PROVISION:
   stage: FUNCTIONAL
   when: always
   dependencies:
-    - K9YC-OpenEBS
+    - K9YC-OpenEBS-Deployment
      
 9AKX-cStor-Create-Snapshot:
   extends: .func_test_template
@@ -290,7 +290,7 @@ Y4ET-Jiva-snapshot-clone:
   stage: CHAOS
   when: always
   dependencies:
-    - K9YC-OpenEBS
+    - K9YC-OpenEBS-Deployment
 
 1PP5-App-Kill:
   extends: .chaos_test_template
@@ -465,7 +465,7 @@ PX1D-Jiva-replica-node-affinity:
   stage: INFRA-CHAOS
   when: always
   dependencies:
-    - K9YC-OpenEBS      
+    - K9YC-OpenEBS-Deployment
 
 BF12-Taint-app-Node:
   extends: .infra_chaos_test_template
