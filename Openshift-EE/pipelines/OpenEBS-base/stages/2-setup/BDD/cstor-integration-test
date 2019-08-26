@@ -22,7 +22,7 @@ bash Openshift-EE/utils/e2e-cr jobname:cstor-integration-test jobphase:Running i
 
 cd /home/devuser/go/src/github.com/openebs
 
-cd maya/tests/cstor-pool/
+cd maya/tests/cstor/pool/reconciliation
 
 ginkgo -v -- -kubeconfig=$HOME/.kube/config
 
