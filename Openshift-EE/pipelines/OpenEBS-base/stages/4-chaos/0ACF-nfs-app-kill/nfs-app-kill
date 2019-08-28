@@ -241,13 +241,13 @@ sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovisi
 -e 's/value: statefulset/value: deployment/g' \
 -e 's/value: openebs-busybox/value: openebs-bb-appkill/g' \
 -e 's/value: openebs-cstor-sparse/value: openebs-nfs4/g' \
--e 's/value: app-busybox-ns/value: nfs-app-kill/g' \
+-e 's/value: app-busybox-ns/value: app-nfs-ns/g' \
 -e 's/value: provision/value: deprovision/g' deprovision_nfs_app_kill.yml
 
 # Running the litmus test for Busybox Deprovision
 cat deprovision_nfs_app_kill.yml
 # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
-bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-deprovision-nfs-app-kill' job=deprovision_nfs_app_kill.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-deprovision-app-nfs-ns' job=deprovision_nfs_app_kill.yml
 cd ..
 # Get the cluster state Once the litmus jobs completed.
 bash Openshift-EE/utils/dump_cluster_state;

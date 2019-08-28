@@ -19,7 +19,7 @@ echo $present_dir
 bash Openshift-EE/utils/pooling jobname:cleanup-cspc-striped-pool
 bash Openshift-EE/utils/e2e-cr jobname:openebs-cleanup jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
-run_id="cleanup-cspc";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebscleanup metadata=${run_id})
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebscleanup metadata="")
 echo $test_name
 cd litmus
 
@@ -32,7 +32,7 @@ cp providers/openebs/installers/operator/master/litmusbook/openebs_cleanup.yaml 
 
 cat cleanup_openebs.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:cstor-cspc-pool-deprovision' job=cleanup_openebs.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='provider:openebs-cleanup' job=cleanup_openebs.yml
 bash ../Openshift-EE/utils/dump_cluster_state;
 cd ..
 bash Openshift-EE/utils/event_updater jobname:openebs-cleanup $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
