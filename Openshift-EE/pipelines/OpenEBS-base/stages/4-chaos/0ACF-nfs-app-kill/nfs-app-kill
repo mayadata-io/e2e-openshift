@@ -100,12 +100,12 @@ sed -i -e 's/value: app-busybox-ns/value: app-nfs-ns/g' \
 -e 's/app=busybox-sts/app=nfs-app-kill/g' \
 -e 's/liveness: litmus-busybox-liveness/liveness: busybox-liveness-nfs-app-kill/g' busybox_loadgen_nfs_app_kill.yml
 
-cat busybox_loadgen_nfs_app_kill.yml
-
 sed -i '/command:/i \
           - name: RUN_ID\
             value: '"$run_id"'\
-' busybox_loadgen_app_kill.yml
+' busybox_loadgen_nfs_app_kill.yml
+
+cat busybox_loadgen_nfs_app_kill.yml
 
 # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
 bash ../Openshift-EE/utils/litmus_job_runner label='liveness:busybox-liveness-nfs-app-kill' job=busybox_loadgen_nfs_app_kill.yml
@@ -126,7 +126,7 @@ fi
 
 # Performing Application Pod Chaos
 
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase=application-pod-failure metadata="")
+run_id="nfs";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=application-pod-failure metadata=${run_id})
 echo $test_name
 
 cd litmus
@@ -134,12 +134,19 @@ cd litmus
 cp experiments/chaos/app_pod_failure/run_litmus_test.yml nfs_app_kill.yml
 
 sed -i -e 's/app=jenkins-app/app=nfs-app-kill/g' \
+-e 's/name: application-pod-failure/name: nfs-application-pod-failure/g' \
 -e 's/value: app-jenkins-ns/value: app-nfs-ns/g' nfs_app_kill.yml
 
 echo "Running the litmus test for Busybox Deployment application pod kill.."
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' nfs_app_kill.yml
+
 cat nfs_app_kill.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='name:application-pod-failure' job=nfs_app_kill.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='name:nfs-application-pod-failure' job=nfs_app_kill.yml
 cd ..
 # Get the cluster state Once the litmus jobs completed.
 bash Openshift-EE/utils/dump_cluster_state;
