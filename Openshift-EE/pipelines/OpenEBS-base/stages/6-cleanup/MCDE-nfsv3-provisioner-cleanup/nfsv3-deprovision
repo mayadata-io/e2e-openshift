@@ -47,6 +47,7 @@ sed -i '/command:/i \
 echo "Running the litmus test.."
 
 cat nfsv3-deprovision.yml
+rc_val=$(echo $?)
 
 bash ../Openshift-EE/utils/litmus_job_runner label='app:nfsv3-deprovision-litmus' job=nfsv3-deprovision.yml
 bash ../Openshift-EE/utils/dump_cluster_state;
@@ -56,7 +57,7 @@ bash Openshift-EE/utils/event_updater jobname:nfsv3-deprovision $test_name jobid
 #################
 ## GET RESULT  ##
 #################
-rc_val=$(echo $?)
+#rc_val=$(echo $?)
 
 ## Check the test status & result from the litmus result custom resource
 source ~/.profile
