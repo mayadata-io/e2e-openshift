@@ -13,7 +13,7 @@ case_id=0FN8
 commit_id=$(echo $3)
 source ~/.profile
 gittoken=$(echo "$github_token")
-
+kubectl taint node gitlab-node1.mayalabs.io infra-aid:NoSchedule-
 time="date"
 current_time=$(eval $time)
 
@@ -53,7 +53,7 @@ echo "Running the litmus test.."
 
 cat nfsv4-deprovision.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:nfs-deprovision-litmus' job=nfsv4-deprovision.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='app:nfsv4-deprovision-litmus' job=nfsv4-deprovision.yml
 bash ../Openshift-EE/utils/dump_cluster_state;
 cd ..
 bash Openshift-EE/utils/event_updater jobname:nfsv4-deprovision $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
