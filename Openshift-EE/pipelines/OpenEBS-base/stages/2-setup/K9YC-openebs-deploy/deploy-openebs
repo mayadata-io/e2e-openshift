@@ -2,7 +2,7 @@
 set -x
 pod() {
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/mayadata-io/e2e-openshift.git'
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/K9YC-openebs-deploy/deploy-openebs node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$NDM_TAG'"' '"'$RELEASE_BRANCH'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/K9YC-openebs-deploy/deploy-openebs node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$NDM_TAG'"' '"'$RELEASE_BRANCH'"' '"'$E_USER'"' '"'$E_PASSWORD'"'
 }
 
 node() {
@@ -12,6 +12,8 @@ commit_id=$(echo $3)
 case_id=K9YC
 releaseBranch=$(echo $5)
 ndmTag=$(echo $4)
+elastic_user=$(echo $6)
+elastic_password=$(echo $7)
 
 time="date"
 current_time=$(eval $time)
@@ -24,7 +26,7 @@ for i in efk-vars.yml efk.yml get_url.yml; do
 done
 
 echo "EFK: Deploying Aggregrator and Forwarder on client"
-ansible-playbook efk.yml --extra-vars "commit_id=$commit_id pipeline_id=$pipeline_id" 
+ansible-playbook efk.yml --extra-vars "commit_id=$commit_id pipeline_id=$pipeline_id e_user=$elastic_user e_password=$elastic_password" 
 
 # Applying e2e-CRD
 echo "***Applying e2e-crd***********"
