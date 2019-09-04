@@ -83,7 +83,7 @@ cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 
 # Update the e2e event for the job.
-bash Openshift-EE/utils/event_updater jobname:deplo-e 's/value: openebs-standalone/value: openebs-jiva-deafult/g'-e 's/value: openebs-standalone/value: openebs-jiva-deafult/g'y-cassandra-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/event_updater jobname:deploy-cassandra-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 rc_val=$(echo $?)
 
