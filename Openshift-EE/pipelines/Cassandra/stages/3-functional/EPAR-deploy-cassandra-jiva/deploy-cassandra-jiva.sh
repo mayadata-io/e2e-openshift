@@ -48,6 +48,9 @@ cd litmus
 # copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
 cp apps/cassandra/deployers/run_litmus_test.yml deploy_cassandra_jiva.yml
 
+################
+# LitmusBook 1 #
+################
 # Update the environmental variables in litmus job spec.
 : << EOF
 -------------------------------------------------------------------------------------------------------------------- 
