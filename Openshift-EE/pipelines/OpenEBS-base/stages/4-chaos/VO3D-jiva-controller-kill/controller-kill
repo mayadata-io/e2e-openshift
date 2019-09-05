@@ -158,12 +158,23 @@ EOF
 sed -i -e 's/value: percona-mysql-claim/value: busybox-ctrl-kill/g' \
 -e 's/generateName: openebs-target-failure/generateName: openebs-controller-failure/g' \
 -e 's/openebs-target-failure/openebs-controller-failure/g' \
+-e 's/name: target-failure/name: ctrl-failure/g' \
 -e 's/value: '\''name=percona'\''/value: '\''app=ctrl-kill'\''/g' \
 -e 's/value: app-percona-ns/value: ctrl-kill/g' run_ctrl_kill_test.yml
 
 sed -i '/command:/i \
           - name: RUN_ID\
             value: '"$run_id"'\
+' run_ctrl_kill_test.yml
+
+## Replace the value of DATA_PERSISTENCE with application name in litmus experiment.
+sed -i '/name: DATA_PERSISTENCE/{n;s/.*/            value: busybox/}' run_ctrl_kill_test.yml
+
+## Insert the set of variables for busybox data consistency util into configmap spec.
+sed -i '/parameters.yml: |/a \
+    blocksize: 4k\
+    blockcount: 1024\
+    testfile: ctrlkilltest
 ' run_ctrl_kill_test.yml
 
 cat run_ctrl_kill_test.yml
