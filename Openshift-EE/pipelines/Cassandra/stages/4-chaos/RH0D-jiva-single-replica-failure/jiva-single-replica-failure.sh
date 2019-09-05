@@ -71,8 +71,8 @@ sed -i -e 's/percona-mysql-claim/openebs-cassandra-jiva/g'\
 -e 's/value: app-percona-ns/value: app-cass-ns-jiva/g' run_single_rep_failure.yml
 
 sed -i '/command:/i \
-- name: RUN_ID\
-value: '"$run_id"'\
+          - name: RUN_ID\
+            value: '"$run_id"'\
 ' run_single_rep_failure.yml
 
 cat run_single_rep_failure.yml

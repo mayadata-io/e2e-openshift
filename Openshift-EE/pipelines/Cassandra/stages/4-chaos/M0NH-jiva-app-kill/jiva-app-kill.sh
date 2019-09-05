@@ -40,7 +40,7 @@ bash Openshift-EE/utils/e2e-cr jobname:jiva-app-kill jobphase:Running init_time:
 
 #### Generating test name using test case name
 
-run_id="jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=application-pod-failure metadata="")
+run_id="jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=application-pod-failure metadata=${run_id})
 echo $test_name
 
 cd litmus
@@ -68,8 +68,8 @@ sed -i -e 's/value: '\''app=jenkins-app'\''/value: '\''app=cassandra-jiva'\''/g'
 -e 's/value: app-jenkins-ns/value: app-cass-ns-jiva/g' app_kill_jiva.yml
 
 sed -i '/command:/i \
-- name: RUN_ID\
-value: '"$run_id"'\
+          - name: RUN_ID\
+            value: '"$run_id"'\
 ' jiva_app_kill.yml
 
 cat jiva_app_kill.yml

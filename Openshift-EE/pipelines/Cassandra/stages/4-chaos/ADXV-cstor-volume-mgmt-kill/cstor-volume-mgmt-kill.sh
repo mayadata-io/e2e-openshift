@@ -56,8 +56,8 @@ sed -i -e 's/value: percona-mysql-claim/value: openebs-cassandra/g' \
 -e 's/value: app-percona-ns/value: app-cass-ns/g' run_cstor_volume_mgmt_kill_test.yml
 
 sed -i '/command:/i \
-- name: RUN_ID\
-value: '"$run_id"'\
+          - name: RUN_ID\
+            value: '"$run_id"'\
 ' run_cstor_volume_mgmt_kill_test.yml
 
 cat run_cstor_volume_mgmt_kill_test.yml
