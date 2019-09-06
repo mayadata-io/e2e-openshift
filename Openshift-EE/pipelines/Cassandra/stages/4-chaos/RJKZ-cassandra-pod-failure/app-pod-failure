@@ -39,6 +39,9 @@ bash Openshift-EE/utils/e2e-cr jobname:jiva-app-kill jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:jiva-single-replica-failure jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:jiva-replica-network-delay jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:jiva-replica-failure jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:jiva-controller-kill jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:target-network-delay jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:target-network-loss jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:cassandra-pod-failure jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:cassandra-pod-failure jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 bash Openshift-EE/utils/e2e-cr jobname:cstor-target-kill jobphase:Waiting
