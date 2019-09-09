@@ -35,12 +35,8 @@ bash Openshift-EE/utils/pooling jobname:cstor-pool-delete
 bash Openshift-EE/utils/e2e-cr jobname:cstor-volume-mgmt-kill jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 
-################
-# LitmusBook 1 #
-################
-
 # Performing Cstor volume Management kill
-#### Generating test name using test case name
+##Generating test name using test case name
 
 run_id="mgmt";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-target-failure metadata=${run_id})
 echo $test_name
@@ -49,10 +45,24 @@ cd litmus
 # copy the content of chaos `run_litmus_test.yml` litmusbook into a different file to update the test specific parameters.
 cp experiments/chaos/openebs_target_failure/run_litmus_test.yml run_cstor_volume_mgmt_kill_test.yml
 
+# Update the environmental variables in litmus job spec.
+
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value                 | test specifc value                             |
+  ---------------------------------------------------------------------------------------------------------------------|
+ | pvcName           | env    | value: percona-mysql-claim            | value: openebs-cassandra                       | 
+ | Litmus Job name   | name   | generateName: openebs-target-failure  | generateName: cstor-volume-mgmt-kill           |
+ | Litmus job label  | label  | name: openebs-target-failure          | name: cstor-volume-mgmt-kill                         |
+ | appLabel          | env    | value: name=percona                   | value: app=cassandra                           |
+ | appNamespace      | env    | app-percon-ns                         | app-cass-ns                                    | 
+  ---------------------------------------------------------------------------------------------------------------------
+EOF
 
 sed -i -e 's/value: percona-mysql-claim/value: openebs-cassandra/g' \
--e 's/name: openebs-target-failure/name: openebs-cstor-volume-mgmt-failure/g' \
--e 's/value: '\''name=percona'\''/value: '\''app=cstor-volume-mgmt-kill'\''/g' \
+-e 's/generateName: openebs-target-failure/generateName: cstor-volume-mgmt-fkill/g' \
+-e 's/name: openebs-target-failure/name: cstor-volume-mgmt-kill/g' \
+-e 's/value: '\''name=percona'\''/value: '\''app=cassandra'\''/g' \
 -e 's/value: app-percona-ns/value: app-cass-ns/g' run_cstor_volume_mgmt_kill_test.yml
 
 sed -i '/command:/i \
@@ -63,7 +73,7 @@ sed -i '/command:/i \
 cat run_cstor_volume_mgmt_kill_test.yml
 
 # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
-bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-cstor-volume-mgmt-failure' job=run_cstor_volume_mgmt_kill_test.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='name:cstor-volume-mgmt-kill' job=run_cstor_volume_mgmt_kill_test.yml
 cd ..
 
 # Print the cluster state once the litmus job is completed.

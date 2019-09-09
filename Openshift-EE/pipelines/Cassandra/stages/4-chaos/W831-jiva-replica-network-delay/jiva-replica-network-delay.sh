@@ -33,9 +33,7 @@ echo $present_dir
 bash Openshift-EE/utils/pooling jobname:jiva-single-replica-failure
 bash Openshift-EE/utils/e2e-cr jobname:jiva-replica-network-delay jobphase:Running jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
-################
-# LitmusBook 1 #
-################
+##Generating test name using test case name
 
 run_id="jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-replica-network-delay metadata=${run_id})
 echo $test_name
@@ -55,7 +53,7 @@ cp experiments/chaos/openebs_replica_network_delay/run_litmus_test.yml run_rep_n
   ----------------------------------------------------------------------------------------------------------------------------
 EOF
 
-sed -i -e 's/name=percona/app=cassandra-jiva/g' \
+-e 's/value: '\''name=percona'\''/value: '\''app=cassandra-jiva'\''/g' \
 -e 's/value: app-percona-ns/value: app-cass-ns-jiva/g' \
 -e 's/generateName: openebs-replica-network-delay/generateName: openebs-replica-network-delay-jiva/g' \
 -e 's/name: openebs-replica-network/name: openebs-replica-network-jiva/g' \

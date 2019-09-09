@@ -34,10 +34,6 @@ bsah Openshift-EE/utils/pooling jobname:cstor-volume-mgmt-kill
 bash Openshift-EE/utils/e2e-cr jobname:jiva-app-kill jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 
-################
-# LitmusBook 1 #
-################
-
 #### Generating test name using test case name
 
 run_id="jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=application-pod-failure metadata=${run_id})

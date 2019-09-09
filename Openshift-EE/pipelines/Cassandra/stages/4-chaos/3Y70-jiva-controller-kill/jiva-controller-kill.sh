@@ -62,7 +62,7 @@ EOF
 
 sed -i -e 's/value: percona-mysql-claim/value: openebs-cassandra-jiva/g' \
 -e 's/generateName: openebs-target-failure/generateName: openebs-controller-failure-jiva/g' \
--e 's/openebs-target-failure/openebs-controller-failure-jiva/g' \
+-e 's/name: openebs-target-failure/name: openebs-controller-failure-jiva/g' \
 -e 's/value: '\''name=percona'\''/value: '\''app=cassandra-jiva'\''/g' \
 -e 's/value: app-percona-ns/value: app-cass-ns-jiva/g' run_ctrl_kill_test.yml
 

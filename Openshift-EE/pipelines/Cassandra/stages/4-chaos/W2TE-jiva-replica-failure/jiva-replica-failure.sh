@@ -33,11 +33,7 @@ echo $present_dir
 bash Openshift-EE/utils/pooling jobname:jiva-replica-network-delay
 bash Openshift-EE/utils/e2e-cr jobname:jiva-replica-failure jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
-
-################
-# LitmusBook 1 #
-################
-
+#### Generating test name using test case name
 
 run_id="jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-volume-replica-failure metadata=${run_id})
 echo $test_name
@@ -45,6 +41,7 @@ echo $test_name
 cd litmus
 cp experiments/chaos/openebs_volume_replica_failure/run_litmus_test.yml run_rep_fail_test_jiva.yml
 
+# Update the environmental variables in litmus job spec.
 : << EOF
   ---------------------------------------------------------------------------------------------------------------------
  | specAttribute     | kind   |         default value                        | test specifc value                       |
@@ -57,7 +54,7 @@ cp experiments/chaos/openebs_volume_replica_failure/run_litmus_test.yml run_rep_
   ----------------------------------------------------------------------------------------------------------------------
 EOF
 
-sed -i -e 's/name=percona/app=cassandra-jiva/g' \
+-e 's/value: '\''name=percona'\''/value: '\''app=cassandra-jiva'\''/g' \
 -e 's/value: app-percona-ns/value: app-cass-ns-jiva/g' \
 -e 's/generateName: openebs-volume-replica-failure/generateName: replica-failure-jiva/g' \
 -e 's/name: openebs-volume-replica-failure/name: replica-failure-jiva/g' \
@@ -70,20 +67,28 @@ sed -i '/command:/i \
 
 cat run_rep_fail_test_jiva.yml
 
+# Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
+
 bash ../Openshift-EE/utils/litmus_job_runner label='name:replica-failure-jiva' job=run_rep_fail_test_jiva.yml
 cd ..
-bash Openshift-EE/utils/dump_cluster_state;
-bash Openshift-EE/utils/event_updater jobname:jiva-replica-failure $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
+# Get the cluster state Once the litmus jobs completed.
+bash Openshift-EE/utils/dump_cluster_state;
+
+# Update the e2e event for the job.
+bash Openshift-EE/utils/event_updater jobname:jiva-replica-failure $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 rc_val=$(echo $?)
 
+# Obtain the status of the test using litmusresult(lr) 
 testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
 
 
 current_time=$(eval $time)
 
+# Update the e2e cr once the job is completed
 bash Openshift-EE/utils/e2e-cr jobname:jiva-replica-failure jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:$testResult
+
 python3 Openshift-EE/utils/result/result_update.py $job_id $case_id 4-chaos "Fails Jiva Replica and verify successful recovery" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 
 if [ "$rc_val" != "0" ]; then

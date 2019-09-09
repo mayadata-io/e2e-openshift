@@ -34,11 +34,8 @@ echo $present_dir
 
 bash Openshift-EE/utils/pooling jobname:jiva-app-kill
 
-bash Openshift-EE/utils/e2e-cr jobname:jiva-single-rep-kill jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:jiva-single-rep-failure jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
-################
-# LitmusBook 1 #
-################
 
 ##### Run the litmus book to perform the Single Replica Failure failure on JIVA
 
@@ -64,10 +61,10 @@ cp experiments/chaos/openebs_volume_replica_failure/run_litmus_test.yml run_sing
 --------------------------------------------------------------------------------------------------------------------
 EOF
 
-sed -i -e 's/percona-mysql-claim/openebs-cassandra-jiva/g'\
+sed -i -e 's/value: percona-mysql-claim/value: openebs-cassandra-jiva/g'\
 -e 's/generateName: openebs-volume-replica-failure/generateName: single-replica-failure-jiva/g' \
--e 's/openebs-volume-replica-failure/single-replica-failure-jiva/g' \
--e 's/name=percona/app=cassandra-jiva/g' \
+-e 's/name: openebs-volume-replica-failure/name: single-replica-failure-jiva/g' \
+-e 's/value: '\''name=percona'\''/value: '\''app=cassandra-jiva'\''/g' \
 -e 's/value: app-percona-ns/value: app-cass-ns-jiva/g' run_single_rep_failure.yml
 
 sed -i '/command:/i \
@@ -86,18 +83,18 @@ cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 
 # Update the e2e event for the job.
-bash Openshift-EE/utils/event_updater jobname:jiva-single-rep-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/event_updater jobname:jiva-single-rep-failure $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 rc_val=$(echo $?)
 
 current_time=$(eval $time)
-# Obtain the status of the test using litmusresult(lr) 
 
+# Obtain the status of the test using litmusresult(lr) 
 testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
 
 # Update the e2e cr once the job is completed
 
-bash Openshift-EE/utils/e2e-cr jobname:jiva-single-rep-kill jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:$testResult
+bash Openshift-EE/utils/e2e-cr jobname:jiva-single-rep-failure jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:$testResult
 
 python3 Openshift-EE/utils/result/result_update.py $job_id $case_id $gitlab_stage 'Induce failure on JIVA single replica deployment and check if it gets scheduled immediately and the application is available' $testResult $pipeline_id "$current_time" $commit_id $gittoken
 
