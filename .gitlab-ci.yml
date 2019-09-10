@@ -42,11 +42,11 @@ OJEF-CSTOR-POOL:
   dependencies:
     - SKLV-OpenEBS
      
-FRYG-Cassandra-Provision:
+FRYG-Cassandra-Provision-cStor:
   extends: .func_test_template
   script: 
-    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/3-functional/FRYG-deploy-cassandra/cassandra-deploy
-    - ./Openshift-EE/pipelines/Cassandra/stages/3-functional/FRYG-deploy-cassandra/cassandra-deploy
+    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/3-functional/FRYG-deploy-cassandra-cstor/cassandra-deploy-cstor
+    - ./Openshift-EE/pipelines/Cassandra/stages/3-functional/FRYG-deploy-cassandra-cstor/cassandra-deploy-cstor
 
 EPAR-Cassandra-Provision-Jiva:
   extends: .func_test_template
