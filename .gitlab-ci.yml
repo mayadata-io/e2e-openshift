@@ -6,7 +6,8 @@ stages:
   - FUNCTIONAL
   - CHAOS
   - INFRA-CHAOS
-  - CLEANUP
+  - OPENEBS-CLEANUP
+  - CLUSTER-CLEANUP
 
 PCZD-OpenShift-3.10:
   image: openebs/openshift-ci:latest
@@ -15,7 +16,7 @@ PCZD-OpenShift-3.10:
     - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/1-cluster-setup/PCZD-cluster-setup/cluster-state
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/1-cluster-setup/PCZD-cluster-setup/cluster-state
 
-K9YC-OpenEBS-Deployment:
+K9YC-OpenEBS:
   image: openebs/openshift-ci:latest
   stage: OPENEBS-SETUP
   script:
@@ -50,12 +51,19 @@ G45J-MIRRORED-POOL:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/37Y6-create-raidz1-pool/create-raidz1-pool
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/37Y6-create-raidz1-pool/create-raidz1-pool
 
-9ZWW-RAIDZ2-POOL:
+# 9ZWW-RAIDZ2-POOL:
+#   image: openebs/openshift-ci:latest
+#   stage: OPENEBS-SETUP
+#   script:
+#     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/9ZWW-create-raidz2-pool/create-raidz2-pool
+#     - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/9ZWW-create-raidz2-pool/create-raidz2-pool
+
+KUSG-CSPC-STRIPE-POOL:
   image: openebs/openshift-ci:latest
   stage: OPENEBS-SETUP
   script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/9ZWW-create-raidz2-pool/create-raidz2-pool
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/9ZWW-create-raidz2-pool/create-raidz2-pool
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/KUSG-create-cspc-stripe-pool/cspc-create-striped-pool
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/KUSG-create-cspc-stripe-pool/cspc-create-striped-pool
 
 BDD-STRIPED-SPARSE-SPC:
   image: openebs/openshift-ci:latest
@@ -119,7 +127,7 @@ BDD-JIVA-VOLUME:
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/Jiva/jiva-volume
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/Jiva/jiva-volume
-
+    
 AP1O-NFSv4-PROVISION:
   image: openebs/openshift-ci:latest
   stage: OPENEBS-SETUP
@@ -133,13 +141,13 @@ Q2JG-NFSv3-PROVISION:
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/Q2JG-nfsv3-provision/nfsv3-provision
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/Q2JG-nfsv3-provision/nfsv3-provision    
-    
+
 .func_test_template:
   image: openebs/openshift-ci:latest
   stage: FUNCTIONAL
   when: always
   dependencies:
-    - K9YC-OpenEBS-Deployment
+    - K9YC-OpenEBS
      
 9AKX-cStor-Create-Snapshot:
   extends: .func_test_template
@@ -195,7 +203,7 @@ ZD8F-cStor-App-Scaleup:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/ZD8F-Sts-App-replica-scaleup/app-replica-scaleup
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/ZD8F-Sts-App-replica-scaleup/app-replica-scaleup
 
-4E0O-Jiva-Storage-Scaleup:
+4E0O-Jiva-Volume-Scaleup:
   extends: .func_test_template
   script: 
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/4E0O-Jiva-Volume-scaleup/jiva-volume-scaleup
@@ -284,13 +292,19 @@ Y4ET-Jiva-snapshot-clone:
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/4Q90-Jiva-pods-openebs-namespace/jiva-pods-openebs-ns
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/4Q90-Jiva-pods-openebs-namespace/jiva-pods-openebs-ns
-       
+
+WOEM-RWX-APP-DEPLOY:
+  extends: .func_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/WOEM-App-deploy-RWX/app-deploy-rwx
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/WOEM-App-deploy-RWX/app-deploy-rwx
+
 .chaos_test_template:
   image: openebs/openshift-ci:latest
   stage: CHAOS
   when: always
   dependencies:
-    - K9YC-OpenEBS-Deployment
+    - K9YC-OpenEBS
 
 1PP5-App-Kill:
   extends: .chaos_test_template
@@ -386,7 +400,7 @@ QURH-Clone-Rebuild-post-snapshot-rebuild:
   extends: .chaos_test_template
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/0ACF-nfs-app-kill/nfs-app-kill
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/0ACF-nfs-app-kill/nfs-app-kill
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/0ACF-nfs-app-kill/nfs-app-kill    
 
       #RTOH-Kubelet-Crash:
       #  extends: .chaos_test_template
@@ -471,7 +485,7 @@ PX1D-Jiva-replica-node-affinity:
   stage: INFRA-CHAOS
   when: always
   dependencies:
-    - K9YC-OpenEBS-Deployment
+    - K9YC-OpenEBS      
 
 BF12-Taint-app-Node:
   extends: .infra_chaos_test_template
@@ -491,20 +505,58 @@ Z0KY-Exhaust-node-capacity:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/5-infra-chaos/Z0KY-Fill-node/fill-node-capacity
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/5-infra-chaos/Z0KY-Fill-node/fill-node-capacity
 
+.cleanup_test_template:
+  image: openebs/openshift-ci:latest
+  stage:  OPENEBS-CLEANUP
+  when: always
+  dependencies:
+    - K9YC-OpenEBS
 
-      #GP95-openebs-Uninstall:
-      #  image: openebs/openshift-ci:latest
-      #  stage: CLEANUP
-      #  when: always
-      #  dependencies:
-      #    - K9YC-OpenEBS
-      #  script:
-      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/5-cleanup/GP95-openebs-cleanup/openebs-cleanup
-      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/5-cleanup/GP95-openebs-cleanup/openebs-cleanup
+0FN8-nfsv4-provisioner-cleanup:
+  extends: .cleanup_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/0FN8-nfsv4-provisioner-cleanup/nfs-provisioner-cleanup
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/0FN8-nfsv4-provisioner-cleanup/nfs-provisioner-cleanup    
+
+MCDE-nfsv3-provisioner-cleanup:
+  extends: .cleanup_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/MCDE-nfsv3-provisioner-cleanup/nfsv3-deprovision
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/MCDE-nfsv3-provisioner-cleanup/nfsv3-deprovision
+
+0NQ0-cleanup-spc-striped-pool:
+  extends: .cleanup_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/0NQ0-cleanup-spc-striped-pool/cleanup-spc-striped-pool
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/0NQ0-cleanup-spc-striped-pool/cleanup-spc-striped-pool
+
+P7Q4-cleanup-spc-mirrored-pool:
+  extends: .cleanup_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/P7Q4-cleanup-spc-mirrored-pool/cleanup-spc-mirrored-pool
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/P7Q4-cleanup-spc-mirrored-pool/cleanup-spc-mirrored-pool
+
+ZNSF-cleanup-spc-raidz1-pool:
+  extends: .cleanup_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/ZNSF-cleanup-spc-raidz1-pool/cleanup-spc-raidz1-pool
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/ZNSF-cleanup-spc-raidz1-pool/cleanup-spc-raidz1-pool
+
+XC0I-cleanup-cspc-striped-pool:
+  extends: .cleanup_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/XC0I-cleanup-cspc-striped-pool/cleanup-cspc-striped-pool
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/XC0I-cleanup-cspc-striped-pool/cleanup-cspc-striped-pool
+ 
+GP95-openebs-Uninstall:
+  extends: .cleanup_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/GP95-openebs-cleanup/openebs-cleanup
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/GP95-openebs-cleanup/openebs-cleanup
 
 4SMQ-cluster-Delete:
   image: openebs/openshift-ci:latest
-  stage: CLEANUP
+  stage: CLUSTER-CLEANUP
   when: always
   dependencies:
     - PCZD-OpenShift-3.10
