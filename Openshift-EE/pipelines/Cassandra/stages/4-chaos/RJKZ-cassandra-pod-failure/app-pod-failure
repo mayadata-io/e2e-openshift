@@ -40,6 +40,19 @@ bash Openshift-EE/utils/e2e-cr jobname:cstor-target-kill jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:cstor-pool-kill jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:cstor-target-network-delay jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:cstor-pool-delete jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:cstor-volume-mgmt-kill jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:jiva-app-kill jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:jiva-single-replica-failure jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:jiva-replica-network-delay jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:jiva-replica-failure jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:jiva-controller-kill jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:target-network-delay jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:target-network-loss jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:app-kill jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:cstor-volume-istgt-kill jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:nfs-app-kill jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:jiva-controller-network-delay jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:jiva-replica-node-affinity jobphase:Waiting
 
 #### Generating test name using test case name
 
