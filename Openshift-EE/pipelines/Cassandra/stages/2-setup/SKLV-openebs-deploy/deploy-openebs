@@ -3,7 +3,7 @@ set -x
 
 pod() 
 {
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/Cassandra/stages/2-setup/SKLV-openebs-deploy/deploy-openebs node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/Cassandra/stages/2-setup/SKLV-openebs-deploy/deploy-openebs node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"' '"'$RELEASE_BRANCH'"' '"'$NDM_TAG'"' '"'$E_USER'"' '"'$E_PASSWORD'"'
 }
 
 node() 
@@ -16,6 +16,12 @@ pipeline_id=$(echo $2)
 
 #Gitlab commit id obtained fron gilab env ($CI_COMMIT_SHA)
 commit_id=$(echo $3)
+
+releaseTag=$(echo $4)
+releaseBranch=$(echo $5)
+ndmTag=$(echo $6)
+elastic_user=$(echo $7)
+elastic_password=$(echo $8)
 
 # Test-ID
 case_id=SKLV
@@ -46,25 +52,25 @@ bash Openshift-EE/utils/e2e-cr jobname:cstor-pool jobphase:Waiting
 source ~/.profile
 
 ##exporting jiva-controller-image as env##
-export OPENEBS_IO_JIVA_CONTROLLER_IMAGE=openebs/jiva:0.9.0
+export OPENEBS_IO_JIVA_CONTROLLER_IMAGE=openebs/jiva:$releaseTag
 ##exporting jiva-replica-image as env##
-export OPENEBS_IO_JIVA_REPLICA_IMAGE=openebs/jiva:0.9.0
+export OPENEBS_IO_JIVA_REPLICA_IMAGE=openebs/jiva:$releaseTag
 ##exporting m-apiserver as env##
-export MAYA_APISERVER_IMAGE=openebs/m-apiserver:0.9.0
+export MAYA_APISERVER_IMAGE=openebs/m-apiserver:$releaseTag
 ##exporting maya-volume-exporter as env##
-export OPENEBS_IO_VOLUME_MONITOR_IMAGE=openebs/m-exporter:0.9.0
+export OPENEBS_IO_VOLUME_MONITOR_IMAGE=openebs/m-exporter:$releaseTag
 ##exporting istgt-image as env##
-export OPENEBS_IO_CSTOR_VOLUME_MGMT_IMAGE=openebs/cstor-volume-mgmt:0.9.0
+export OPENEBS_IO_CSTOR_VOLUME_MGMT_IMAGE=openebs/cstor-volume-mgmt:$releaseTag
 ##exporting zfs-image as env##
-export OPENEBS_IO_CSTOR_POOL_MGMT_IMAGE=openebs/cstor-pool-mgmt:0.9.0
+export OPENEBS_IO_CSTOR_POOL_MGMT_IMAGE=openebs/cstor-pool-mgmt:$releaseTag
 ##exporting cstor-pool container image
-export OPENEBS_IO_CSTOR_POOL_IMAGE=openebs/cstor-pool:0.9.0
+export OPENEBS_IO_CSTOR_POOL_IMAGE=openebs/cstor-pool:$releaseTag
 ##exporting cstor-target image
-export OPENEBS_IO_CSTOR_TARGET_IMAGE=openebs/cstor-istgt:0.9.0
+export OPENEBS_IO_CSTOR_TARGET_IMAGE=openebs/cstor-istgt:$releaseTag
 ##exporting cstor_pool_exporter image
-export OPENEBS_IO_CSTOR_POOL_EXPORTER_IMAGE=openebs/m-exporter:0.9.0
+export OPENEBS_IO_CSTOR_POOL_EXPORTER_IMAGE=openebs/m-exporter:$releaseTag
 ##exporting ndm image
-export NODE_DISK_MANAGER_IMAGE=v0.3.5
+export NODE_DISK_MANAGER_IMAGE=$ndmTag
 
 echo "Generating test name***************************"
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebsinstaller metadata="")
@@ -80,7 +86,7 @@ python3 env.py -f providers/openebs/installers/operator/master/litmusbook/openeb
 
 echo "updated yaml"
 sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
--e 's/value: master/value: v0.9.x/g' providers/openebs/installers/operator/master/litmusbook/openebs_setup.yaml
+-e 's/value: master/value: $releaseBranch/g' providers/openebs/installers/operator/master/litmusbook/openebs_setup.yaml
 cat providers/openebs/installers/operator/master/litmusbook/openebs_setup.yaml
 
 #################
@@ -127,7 +133,7 @@ fi
 }
 
 if [ "$1" == "node" ];then
-  node $2 $3 $4
+  node $2 $3 $4 $5 $6 $7 $8 $9
 else
   pod
 fi
