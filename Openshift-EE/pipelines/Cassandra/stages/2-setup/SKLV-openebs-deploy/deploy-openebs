@@ -37,7 +37,7 @@ for i in efk-vars.yml efk.yml get_url.yml; do
 done
 
 echo "EFK: Deploying Aggregrator and Forwarder on client"
-ansible-playbook efk.yml --extra-vars "commit_id=$commit_id pipeline_id=$pipeline_id"
+ansible-playbook efk.yml --extra-vars "commit_id=$commit_id pipeline_id=$pipeline_id e_user=$elastic_user e_password=$elastic_password" 
 
 # Applying e2e-CRD
 echo "***Applying e2e-crd***********"
