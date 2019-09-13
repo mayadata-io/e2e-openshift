@@ -2,7 +2,7 @@
 set -x
 
 pod() {
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/Cassandra/stages/4-chaos/S193-target-network-delay/target-network-delay node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/Cassandra/stages/4-chaos/IVQO-target-network-loss/target-network-loss node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
 }
 
 node() {
@@ -17,7 +17,7 @@ pipeline_id=$2
 commit_id=$3 
 
 #test case ID.
-case_id=S193
+case_id=IVQO
 
 #github token to push the test result into github mayadata-io/e2e-openshift repository.
 #This token is set as an env in ~/.profile file in the test cluster.
@@ -30,17 +30,22 @@ current_time=$(eval $time)
 present_dir=$(pwd)
 echo $present_dir
 
-bash Openshift-EE/utils/pooling jobname:jiva-controller-kill
-bash Openshift-EE/utils/e2e-cr jobname:target-network-delay jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+#Creating e2e custom resource result for all the tests running in this stage.
+#In Gitlab, all the jobs in a stage runs parallely. Inorder to run this serially, each job in the stage waits for the other to get completed.
 
-echo "*******Performing network delay on Target**********"
+bash Openshift-EE/utils/pooling jobname:cstore-target-network-delay
+bash Openshift-EE/utils/e2e-cr jobname:cstore-target-network-loss jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+echo "*******Performing Network loss on target**********"
 ## testcase name is defined in test_vars of LitmusBook.
 
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-target-network-delay metadata="")
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-target-network-loss metadata="")
 echo $test_name
 
 cd litmus
-cp experiments/chaos/openebs_target_network_delay/run_litmus_test.yml run_targetdelay_test.yml
+
+# copy the content of chaos `run_litmus_test.yml` litmusbook into a different file to update the test specific parameters.
+cp experiments/chaos/openebs_target_network_loss/run_litmus_test.yml run_targetloss_test.yml
 
 # Update the environmental variables in litmus job spec.
 : << EOF
@@ -56,20 +61,20 @@ EOF
 
 sed -i -e 's/value: percona-mysql-claim/value: openebs-cassandra/g' \
 -e 's/value: '\''name=percona'\''/value: '\''app=cassandra'\''/g' \
--e 's/value: app-percona-ns/value: app-cass-ns/g' run_targetdelay_test.yml
+-e 's/value: app-percona-ns/value: app-cass-ns/g'
+-e 's/value: '\''enable'\''/value: '\'""\''/g' run_targetloss_test.yml
 
-cat run_targetdelay_test.yml
+cat run_targetloss_test.yml
 
 # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
-bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-target-network-delay' job=run_targetdelay_test.yml
-
+bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-target-network-loss' job=run_targetloss_test.yml
 cd ..
 
 # Print the cluster state once the litmus job is completed.
 bash Openshift-EE/utils/dump_cluster_state;
 
 # Update the e2e event for the job.
-bash Openshift-EE/utils/event_updater jobname:target-network-delay $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/event_updater jobname:target-network-loss $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 rc_val=$(echo $?)
 
@@ -79,9 +84,9 @@ testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-column
 current_time=$(eval $time)
 
 # Update the e2e cr once the job is completed
-bash Openshift-EE/utils/e2e-cr jobname:target-network-delay jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:$testResult
+bash Openshift-EE/utils/e2e-cr jobname:target-network-loss jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:$testResult
 
-python3 Openshift-EE/utils/result/result_update.py $job_id $case_id $gitlab_stage 'Induce delay in cstor target pod network and verify if the application is not impacted' $testResult $pipeline_id "$current_time" $commit_id $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id $case_id $gitlab_stage 'Induce cstor target network loss and check if it gets recovered successfully' $testResult $pipeline_id "$current_time" $commit_id $gittoken
 
 if [ "$rc_val" != "0" ]; then
 exit 1;
@@ -93,4 +98,3 @@ if [ "$1" == "node" ];then
 else
   pod
 fi
-

@@ -33,20 +33,37 @@ bash Openshift-EE/utils/e2e-cr jobname:cstor-pool jobphase:Running init_time:"$c
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=cstor-disk-pool-provision metadata="")
 echo $test_name
 cd litmus
+
+# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
+cp providers/cstor/cstor-block-device-pool/run_litmus_test.yml create_striped_pool.yml
+
 #################
 ## RUNNER MAIN ##
 #################
+
 echo "Running the litmus test.."
-sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' providers/cstor/cstor-disk-pool/run_litmus_test.yml
-run_test=providers/cstor/cstor-disk-pool/run_litmus_test.yml
 
-cat $run_test
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------------------------------------     
+ | specAttribute     | kind   |         default value                           | test specifc value                                           |
+  ---------------------------------------------------------------------------------------------------------------------------------------------
+ | Litmus job label  | label  | app: cstor-block-device-pool-provision          | app: cstor-striped-pool-provision                            |
+ | Litmus Job name   | name   | generateName: cstor-block-device-pool-provision | generateName: cstor-block-device-striped-pool-provision      |
+ | ImagePullPolicy   | value  | Always                                          | IfNotPresent                                                 |
+ | Pool name         | name   | cstor-block-disk-pool                           | cstor-block-disk-pool-stripe                                 |
+ ---------------------------------------------------------------------------------------------------------------------------------------------
+EOF
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:cstor-disk-pool-provision' job=$run_test
+sed -i -e 's/app: cstor-block-device-pool-provision/app: cstor-striped-pool-provision/g' \
+-e 's/generateName: cstor-block-device-pool-provision/generateName: cstor-block-device-striped-pool-provision/g' \
+-e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
+-e 's/value: cstor-block-disk-pool/value: cstor-block-disk-pool-stripe/g' create_striped_pool.yml
 
-echo "Dumping cluster resources after job execution"; echo ""
+
+cat create_striped_pool.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:cstor-striped-pool-provision' job=create_striped_pool.yml
 bash ../Openshift-EE/utils/dump_cluster_state;
-
 cd ..
 bash Openshift-EE/utils/event_updater jobname:cstor-pool $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
@@ -55,17 +72,18 @@ bash Openshift-EE/utils/event_updater jobname:cstor-pool $test_name jobid:"$job_
 #################
 rc_val=$(echo $?)
 
-
 ## Check the test status & result from the litmus result custom resource
 source ~/.profile
+
 gittoken=$(echo "$github_token")
+
 testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
-#python3 Openshift-EE/utils/result/result_update.py $job_id OJEF 2-setup "Create cStor based Striped storage pool on disks." $testResult $pipeline_id "$current_time" $commit_id $gittoken
+#python3 Openshift-EE/utils/result/result_update.py $job_id HC5P 2-setup "Create cStor based Striped storage pool on disks and corresponding storage class" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 
 current_time=$(eval $time)
 bash Openshift-EE/utils/e2e-cr jobname:cstor-pool jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
 
-python3 Openshift-EE/utils/result/result_update.py $job_id OJEF 2-setup "Create cStor based Striped storage pool on disks." $testResult $pipeline_id "$current_time" $commit_id $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id OJEF 2-setup "Create cStor based Striped storage pool on disks and corresponding storage class" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 if [ "$rc_val" != "0" ]; then
 exit 1;
 fi
@@ -76,4 +94,3 @@ if [ "$1" == "node" ];then
 else
   pod
 fi
-

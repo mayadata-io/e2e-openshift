@@ -34,15 +34,15 @@ echo $present_dir
 #Creating e2e custom resource result for all the tests running in this stage.
 #In Gitlab, all the jobs in a stage runs parallely. Inorder to run this serially, each job in the stage waits for the other to get completed.
 
-bash Openshift-EE/utils/pooling jobname:cstor-pool-kill
+bash Openshift-EE/utils/pooling jobname:cstor-pool-delete
 bash Openshift-EE/utils/e2e-cr jobname:cstor-target-network-delay jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 #### Generating test name using test case name
-
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-target-network-delay metadata="")
 echo $test_name
 
 cd litmus
+
 # copy the content of chaos `run_litmus_test.yml` litmusbook into a different file to update the test specific parameters.
 cp experiments/chaos/openebs_target_network_delay/run_litmus_test.yml target_delay.yml
 
