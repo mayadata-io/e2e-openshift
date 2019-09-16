@@ -35,7 +35,7 @@ bash Openshift-EE/utils/pooling jobname:delete-cassandra-cstor
 bash Openshift-EE/utils/e2e-cr jobname:delete-cassandra-jiva jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 #### Deleting Cassandra application
-run_id="jiva_delete"; test_name=$(bash Openshift-EE/utils/generate_test_name testcase=cassandra-deployment metadata=${run_id})
+run_id="jiva-delete"; test_name=$(bash Openshift-EE/utils/generate_test_name testcase=cassandra-deployment metadata=${run_id})
 echo $test_name
 
 cd litmus
