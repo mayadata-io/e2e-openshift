@@ -146,7 +146,7 @@ EOF
 sed -i -e 's/value: percona-mysql-claim/value: openebs-bb-controller-delay/g' \
 -e 's/generateName: openebs-target-network-delay-/generateName: openebs-target-network-delay-jiva/g' \
 -e 's/value: percona-mysql-claim/value: openebs-bb-controller-delay/g' \
--e 's/name: openebs-target-network-delay/name: network-delay-test-jiva/g' \
+-e 's/name: target-network-delay/name: network-delay-test-jiva/g' \
 -e 's/app=busybox-sts/app=busybox-controller-delay-jiva/g' \
 -e 's/value: '\''name=percona'\''/value: '\''app=busybox-controller-delay-jiva'\''/g' \
 -e 's/value: app-percona-ns/value: controller-delay-jiva/g' run_controller_delay_test_jiva.yml
@@ -154,6 +154,16 @@ sed -i -e 's/value: percona-mysql-claim/value: openebs-bb-controller-delay/g' \
 sed -i '/command:/i \
           - name: RUN_ID\
             value: '"$run_id"'\
+' run_controller_delay_test_jiva.yml
+
+## Replace the value of DATA_PERSISTENCE with application name in litmus experiment.
+sed -i '/name: DATA_PERSISTENCE/{n;s/.*/            value: busybox/}' run_controller_delay_test_jiva.yml
+
+## Insert the set of variables for busybox data consistency util into configmap spec.
+sed -i '/parameters.yml: |/a \
+    blocksize: 4k\
+    blockcount: 1024\
+    testfile: ctrlnwdelaytest
 ' run_controller_delay_test_jiva.yml
 
 cat run_controller_delay_test_jiva.yml
