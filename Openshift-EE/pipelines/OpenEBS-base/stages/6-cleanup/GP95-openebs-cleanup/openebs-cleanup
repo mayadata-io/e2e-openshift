@@ -30,11 +30,6 @@ cp providers/openebs/installers/operator/master/litmusbook/openebs_cleanup.yaml 
 ## RUNNER MAIN ##
 #################
 
-sed -i '/command:/i \
-          - name: OPENEBS_VERSION\
-            value: master\
-' cleanup_openebs.yml
-
 cat cleanup_openebs.yml
 
 bash ../Openshift-EE/utils/litmus_job_runner label='provider:openebs-cleanup' job=cleanup_openebs.yml
