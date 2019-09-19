@@ -30,14 +30,10 @@ cp providers/openebs/installers/operator/master/litmusbook/run_litmus_test.yaml 
 ## RUNNER MAIN ##
 #################
 
+
 sed -i -e 's/name: litmus-openebs-runner/name: litmus-openebs-deprovision/g' \
 -e 's/provider: openebs-runner/provider: openebs-deprovision/g' \
 -e 's/value: provision/value: deprovision/g' cleanup_openebs.yml
-
-sed -i '/command:/i \
-          - name: OPENEBS_VERSION\
-            value: master\
-' cleanup_openebs.yml
 
 cat cleanup_openebs.yml
 
