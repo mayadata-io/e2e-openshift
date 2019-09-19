@@ -91,59 +91,17 @@ NGGB-cstor-pool-kill:
     - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/NGGB-cstor-pool-kill/cstor-pool-kill
     - ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/NGGB-cstor-pool-kill/cstor-pool-kill
 
-OI4T-cstor-target-network-delay:
-  extends: .chaos_test_template
-  script: 
-    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/OI4T-cstor-target-network-delay/cstor-target-network-delay
-    - ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/OI4T-cstor-target-network-delay/cstor-target-network-delay
-
 Q3ZJ-cstor-pool-delete:
   extends: .chaos_test_template
   script: 
     - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/Q3ZJ-cstor-pool-delete/cstor-pool-delete
     - ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/Q3ZJ-cstor-pool-delete/cstor-pool-delete
 
-ADXV-cstor-volume-mgmt-kill:
+OI4T-cstor-target-network-delay:
   extends: .chaos_test_template
   script: 
-    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/ADXV-cstor-volume-mgmt-kill/cstor-volume-mgmt-kill
-    - ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/ADXV-cstor-volume-mgmt-kill/cstor-volume-mgmt-kill
-
-M0NH-jiva-app-kill:
-  extends: .chaos_test_template
-  script: 
-    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/M0NH-jiva-app-kill/jiva-app-kill
-    - ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/M0NH-jiva-app-kill/jiva-app-kill
-
-RH0D-jiva-single-replica-failure:
-  extends: .chaos_test_template
-  script: 
-    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/RH0D-jiva-single-replica-failure/jiva-single-replica-failure
-    - ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/RH0D-jiva-single-replica-failure/jiva-single-replica-failure
-
-W831-jiva-replica-network-delay:
-  extends: .chaos_test_template
-  script: 
-    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/W831-jiva-replica-network-delay/jiva-replica-network-delay
-    - ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/W831-jiva-replica-network-delay/jiva-replica-network-delay
-
-W2TE-jiva-replica-failure:
-  extends: .chaos_test_template
-  script: 
-    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/W2TE-jiva-replica-failure/jiva-replica-failure
-    - ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/W2TE-jiva-replica-failure/jiva-replica-failure
-
-3Y70-jiva-controller-kill:
-  extends: .chaos_test_template
-  script: 
-    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/3Y70-jiva-controller-kill/jiva-controller-kill
-    - ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/3Y70-jiva-controller-kill/jiva-controller-kill
-
-S193-target-network-delay:
-  extends: .chaos_test_template
-  script: 
-    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/S193-target-network-delay/target-network-delay
-    - ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/S193-target-network-delay/target-network-delay
+    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/OI4T-cstor-target-network-delay/cstor-target-network-delay
+    - ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/OI4T-cstor-target-network-delay/cstor-target-network-delay
 
 IVQO-target-network-loss:
   extends: .chaos_test_template
@@ -151,11 +109,11 @@ IVQO-target-network-loss:
     - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/IVQO-target-network-loss/target-network-loss
     - ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/IVQO-target-network-loss/target-network-loss
 
-MI15-app-kill:
+ADXV-cstor-volume-mgmt-kill:
   extends: .chaos_test_template
   script: 
-    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/MI15-app-kill/app-kill
-    - ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/MI15-app-kill/app-kill
+    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/ADXV-cstor-volume-mgmt-kill/cstor-volume-mgmt-kill
+    - ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/ADXV-cstor-volume-mgmt-kill/cstor-volume-mgmt-kill
 
 7WXC-cstor-volume-istgt-kill:
   extends: .chaos_test_template
@@ -163,13 +121,31 @@ MI15-app-kill:
     - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/7WXC-cstor-volume-istgt-kill/cstor-volume-istgt-kill
     - ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/7WXC-cstor-volume-istgt-kill/cstor-volume-istgt-kill
 
-5N53-nfs-app-kill:
+M0NH-jiva-app-kill:
   extends: .chaos_test_template
   script: 
-    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/5N53-nfs-app-kill/nfs-app-kill
-    - ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/5N53-nfs-app-kill/nfs-app-kill
+    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/M0NH-jiva-app-kill/jiva-app-kill
+    - ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/M0NH-jiva-app-kill/jiva-app-kill
 
-NPAT-jiva-controller-network-delay:
+W2TE-jiva-replica-failure:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/W2TE-jiva-replica-failure/jiva-replica-failure
+    - ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/W2TE-jiva-replica-failure/jiva-replica-failure
+
+W831-jiva-replica-network-delay:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/W831-jiva-replica-network-delay/jiva-replica-network-delay
+    - ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/W831-jiva-replica-network-delay/jiva-replica-network-delay
+
+3Y70-jiva-controller-kill:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/3Y70-jiva-controller-kill/jiva-controller-kill
+    - ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/3Y70-jiva-controller-kill/jiva-controller-kill
+
+S193-jiva-controller-network-delay:
   extends: .chaos_test_template
   script: 
     - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/NPAT-jiva-controller-network-delay/jiva-controller-network-delay
@@ -181,13 +157,21 @@ NPAT-jiva-controller-network-delay:
     - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/99H0-jiva-replica-node-affinity/jiva-replica-node-affinity
     - ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/99H0-jiva-replica-node-affinity/jiva-replica-node-affinity
 
-WWDM-deprovision-cassandra:
+WWDM-deprovision-cassandra-cstor:
   image: openebs/openshift-ci:latest
   stage: CLEANUP
   when: always
   script:
-    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/5-cleanup/WWDM-cassandra-cleanup/delete-cassandra
-    - ./Openshift-EE/pipelines/Cassandra/stages/5-cleanup/WWDM-cassandra-cleanup/delete-cassandra
+    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/5-cleanup/WWDM-cassandra-cstor-cleanup/delete-cassandra-cstor
+    - ./Openshift-EE/pipelines/Cassandra/stages/5-cleanup/WWDM-cassandra-cstor-cleanup/delete-cassandra-cstor
+ 
+5N53-deprovision-cassandra-jiva:
+  image: openebs/openshift-ci:latest
+  stage: CLEANUP
+  when: always
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/5-cleanup/5N53-cassandra-jiva-cleanup/delete-cassandra-jiva
+    - ./Openshift-EE/pipelines/Cassandra/stages/5-cleanup/WWDM-cassandra-jiva-cleanup/delete-cassandra-jiva
   
 M14G-cluster-Delete:
   image: openebs/openshift-ci:latest

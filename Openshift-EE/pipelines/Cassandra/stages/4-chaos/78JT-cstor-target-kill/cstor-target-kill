@@ -30,7 +30,6 @@ current_time=$(eval $time)
 present_dir=$(pwd)
 echo $present_dir
 
-
 #Creating e2e custom resource result for all the tests running in this stage.
 #In Gitlab, all the jobs in a stage runs parallely. Inorder to run this serially, each job in the stage waits for the other to get completed.
 
@@ -43,6 +42,7 @@ test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-target-f
 echo $test_name
 
 cd litmus
+
 # copy the content of chaos `run_litmus_test.yml` litmusbook into a different file to update the test specific parameters.
 cp experiments/chaos/openebs_target_failure/run_litmus_test.yml target_kill.yml
 

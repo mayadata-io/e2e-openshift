@@ -2,7 +2,7 @@
 set -x
 
 pod() {
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/Cassandra/stages/4-chaos/7WXC-cstor-volume-istgt-kill/cstor-volume-istgt-kill '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/Cassandra/stages/4-chaos/7WXC-cstor-volume-istgt-kill/cstor-volume-istgt-kill node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
 }
 
 node() {
@@ -30,7 +30,10 @@ current_time=$(eval $time)
 present_dir=$(pwd)
 echo $present_dir
 
-bash Openshift-EE/utils/pooling jobname:app-kill
+#Creating e2e custom resource result for all the tests running in this stage.
+#In Gitlab, all the jobs in a stage runs parallely. Inorder to run this serially, each job in the stage waits for the other to get completed.
+
+bash Openshift-EE/utils/pooling jobname:cstor-volume-mgmt-kill
 bash Openshift-EE/utils/e2e-cr jobname:cstor-volume-istgt-kill jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 echo "*******Performing Cstor pool Management kill**********"
@@ -39,10 +42,11 @@ run_id="istgt";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=o
 echo $test_name
 
 cd litmus
+
+# copy the content of chaos `run_litmus_test.yml` litmusbook into a different file to update the test specific parameters.
 cp experiments/chaos/openebs_target_failure/run_litmus_test.yml run_targetistgt_kill_test.yml
 
 # Update the environmental variables in litmus job spec.
-
 : << EOF
   ---------------------------------------------------------------------------------------------------------------------
  | specAttribute     | kind   |         default value                 | test specifc value                             |
@@ -72,9 +76,7 @@ sed -i '/command:/i \
 cat run_targetistgt_kill_test.yml
 
 # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
-
 bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-target-istgt-kill' job=run_targetistgt_kill_test.yml
-
 cd ..
 
 # Get the cluster state Once the litmus jobs completed.

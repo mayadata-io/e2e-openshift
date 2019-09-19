@@ -30,12 +30,15 @@ current_time=$(eval $time)
 present_dir=$(pwd)
 echo $present_dir
 
-bash Openshift-EE/utils/pooling jobname:jiva-replica-failure
+#Creating e2e custom resource result for all the tests running in this stage.
+#In Gitlab, all the jobs in a stage runs parallely. Inorder to run this serially, each job in the stage waits for the other to get completed.
+
+bash Openshift-EE/utils/pooling jobname:jiva-replica-network-delay
 bash Openshift-EE/utils/e2e-cr jobname:jiva-controller-kill jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 ##### Run the litmus book to perform the controller failure on JIVA
-
 ## testcase name is defined in test_vars of LitmusBook.
+
 run_id="jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-target-failure metadata=${run_id})
 echo $test_name
 
@@ -45,14 +48,13 @@ cd litmus
 cp experiments/chaos/openebs_target_failure/run_litmus_test.yml run_ctrl_kill_test.yml
 
 # Update the environmental variables in litmus job spec.
-
 : << EOF
   ---------------------------------------------------------------------------------------------------------------------
  | specAttribute     | kind   |         default value                 | test specifc value                             |
   ---------------------------------------------------------------------------------------------------------------------|
  | pvcName           | env    | value: percona-mysql-claim            | value: openebs-cassandra-jiva                  | 
- | Litmus Job name   | name   | generateName: openebs-target-failure  | generateName: openebs-controller-failure-jiva  |
- | Litmus job label  | label  | openebs-target-failure                | openebs-controller-failure-jiva                |
+ | Litmus Job name   | name   | generateName: openebs-target-failure  | generateName: openebs-controller-failure       |
+ | Litmus job label  | label  | openebs-target-failure                | openebs-controller-failure                     |
  | appLabel          | env    | value: name=percona                   | value: app=cassandra-jiva                      |
  | appNamespace      | env    | app-percon-ns                         | app-cass-ns-jiva                               | 
   ---------------------------------------------------------------------------------------------------------------------
@@ -61,8 +63,8 @@ EOF
 # Replacing the namespace, label and mode of deployment in the litmus book
 
 sed -i -e 's/value: percona-mysql-claim/value: openebs-cassandra-jiva/g' \
--e 's/generateName: openebs-target-failure/generateName: openebs-controller-failure-jiva/g' \
--e 's/name: openebs-target-failure/name: openebs-controller-failure-jiva/g' \
+-e 's/generateName: openebs-target-failure/generateName: openebs-controller-failure/g' \
+-e 's/name: openebs-target-failure/name: openebs-controller-failure/g' \
 -e 's/value: '\''name=percona'\''/value: '\''app=cassandra-jiva'\''/g' \
 -e 's/value: app-percona-ns/value: app-cass-ns-jiva/g' run_ctrl_kill_test.yml
 
@@ -74,7 +76,7 @@ sed -i '/command:/i \
 cat run_ctrl_kill_test.yml
 
 # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
-bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-controller-failure-jiva' job=run_ctrl_kill_test.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-controller-failure' job=run_ctrl_kill_test.yml
 cd ..
 
 # Print the cluster state once the litmus job is completed.

@@ -73,7 +73,7 @@ export OPENEBS_IO_CSTOR_POOL_EXPORTER_IMAGE=openebs/m-exporter:$releaseTag
 export NODE_DISK_MANAGER_IMAGE=$ndmTag
 
 echo "Generating test name***************************"
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebsinstaller metadata="")
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-provision metadata="")
 echo $test_name
 
 ## Clone the litmus repo, navigate to litmus root
@@ -81,13 +81,13 @@ echo $test_name
 git clone https://github.com/litmuschaos/litmus.git
 cd litmus
 
-wget https://raw.githubusercontent.com/openebs/e2e-infrastructure/master/env-update/env.py # script to update openebs_setup.yaml
-python3 env.py -f providers/openebs/installers/operator/master/litmusbook/openebs_setup.yaml
+wget https://raw.githubusercontent.com/openebs/e2e-infrastructure/master/env-update/env.py # script to update run_litmus_test.yaml
+python3 env.py -f providers/openebs/installers/operator/master/litmusbook/run_litmus_test.yaml
 
 echo "updated yaml"
 sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
--e "s/value: master/value: $releaseBranch/g" providers/openebs/installers/operator/master/litmusbook/openebs_setup.yaml
-cat providers/openebs/installers/operator/master/litmusbook/openebs_setup.yaml
+-e "s/value: master/value: $releaseBranch/g" providers/openebs/installers/operator/master/litmusbook/run_litmus_test.yaml
+cat providers/openebs/installers/operator/master/litmusbook/run_litmus_test.yaml
 
 #################
 ## RUNNER MAIN ##
@@ -103,8 +103,8 @@ kubectl create configmap kubeconfig --from-file=admin.conf -n litmus
 
 echo "Running litmus test for deploying openebs.."
 
-run_test=providers/openebs/installers/operator/master/litmusbook/openebs_setup.yaml
-bash ../Openshift-EE/utils/litmus_job_runner label='provider:openebs-setup' job=$run_test
+run_test=providers/openebs/installers/operator/master/litmusbook/run_litmus_test.yaml
+bash ../Openshift-EE/utils/litmus_job_runner label='provider:openebs-runner' job=$run_test
 
 echo "Dumping cluster resources after executing the job"; echo ""
 bash ../Openshift-EE/utils/dump_cluster_state;

@@ -31,9 +31,11 @@ current_time=$(eval $time)
 present_dir=$(pwd)
 echo $present_dir
 
-bash Openshift-EE/utils/pooling jobname:cstor-pool-delete 
-bash Openshift-EE/utils/e2e-cr jobname:cstor-volume-mgmt-kill jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+#Creating e2e custom resource result for all the tests running in this stage.
+#In Gitlab, all the jobs in a stage runs parallely. Inorder to run this serially, each job in the stage waits for the other to get completed.
 
+bash Openshift-EE/utils/pooling jobname:cstor-target-network-loss 
+bash Openshift-EE/utils/e2e-cr jobname:cstor-volume-mgmt-kill jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 # Performing Cstor volume Management kill
 ##Generating test name using test case name
@@ -42,11 +44,11 @@ run_id="mgmt";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=op
 echo $test_name
 
 cd litmus
+
 # copy the content of chaos `run_litmus_test.yml` litmusbook into a different file to update the test specific parameters.
 cp experiments/chaos/openebs_target_failure/run_litmus_test.yml run_cstor_volume_mgmt_kill_test.yml
 
 # Update the environmental variables in litmus job spec.
-
 : << EOF
   ---------------------------------------------------------------------------------------------------------------------
  | specAttribute     | kind   |         default value                 | test specifc value                             |
@@ -81,7 +83,6 @@ bash Openshift-EE/utils/dump_cluster_state;
 
 # Update the e2e event for the job.
 bash Openshift-EE/utils/event_updater jobname:cstor-volume-mgmt-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
-
 
 rc_val=$(echo $?)
 
