@@ -165,7 +165,7 @@ WWDM-deprovision-cassandra-cstor:
     - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/5-cleanup/WWDM-cassandra-cstor-cleanup/delete-cassandra-cstor
     - ./Openshift-EE/pipelines/Cassandra/stages/5-cleanup/WWDM-cassandra-cstor-cleanup/delete-cassandra-cstor
  
-5N53-deprovision-cassandra-cstor:
+5N53-deprovision-cassandra-jiva:
   image: openebs/openshift-ci:latest
   stage: CLEANUP
   when: always
