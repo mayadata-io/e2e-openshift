@@ -511,6 +511,12 @@ Z0KY-Exhaust-node-capacity:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/5-infra-chaos/Z0KY-Fill-node/fill-node-capacity
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/5-infra-chaos/Z0KY-Fill-node/fill-node-capacity
 
+VD8F-cstor-app-node-failure:
+  extends: .infra_chaos_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/5-infra-chaos/VD8F-node-failure-cstor/node-failure-cstor
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/5-infra-chaos/VD8F-node-failure-cstor/node-failure-cstor
+
 .cleanup_test_template:
   image: openebs/openshift-ci:latest
   stage:  OPENEBS-CLEANUP
