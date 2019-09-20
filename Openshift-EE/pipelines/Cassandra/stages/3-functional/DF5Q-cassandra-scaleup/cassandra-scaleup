@@ -56,7 +56,7 @@ cp experiments/functional/scale_app_replica/run_litmus_test.yml cassandra-scaleu
   ---------------------------------------------------------------------------------------------------------------------|
  | appLabel          | env    | app=cassa ndra                       | app=cassandra                                   |
  | appNamespace      | env    | app-cass -ns                         | app-cass-ns                                     |
- | REPLICA_COUNT     | env    | 2       			     | 2                                               |
+ | REPLICA_COUNT     | env    | 2       			                       | 2                                               |
   ----------------------------------------------------------------------------------------------------------------------
 EOF
 
@@ -93,4 +93,3 @@ if [ "$1" == "node" ];then
 else
   pod
 fi
-

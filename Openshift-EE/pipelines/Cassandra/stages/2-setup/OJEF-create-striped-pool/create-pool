@@ -30,7 +30,7 @@ echo "*******Creating cstor-pool**************"
 bash Openshift-EE/utils/pooling jobname:openebs-deploy
 bash Openshift-EE/utils/e2e-cr jobname:cstor-pool jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase=cstor-disk-pool-provision metadata="")
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=cstor-block-device-pool-provision metadata="")
 echo $test_name
 cd litmus
 

@@ -62,7 +62,7 @@ cp experiments/chaos/openebs_target_failure/run_litmus_test.yml run_cstor_volume
 EOF
 
 sed -i -e 's/value: percona-mysql-claim/value: openebs-cassandra/g' \
--e 's/generateName: openebs-target-failure/generateName: cstor-volume-mgmt-fkill/g' \
+-e 's/generateName: openebs-target-failure/generateName: cstor-volume-mgmt-kill/g' \
 -e 's/name: openebs-target-failure/name: cstor-volume-mgmt-kill/g' \
 -e 's/value: '\''name=percona'\''/value: '\''app=cassandra'\''/g' \
 -e 's/value: app-percona-ns/value: app-cass-ns/g' run_cstor_volume_mgmt_kill_test.yml
@@ -92,7 +92,7 @@ testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-column
 # Update the e2e cr once the job is completed
 bash Openshift-EE/utils/e2e-cr jobname:cstor-volume-mgmt-kill jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:$testResult
 
-python3 Openshift-EE/utils/result/result_update.py $job_id $case_id 4-chaos "Induce failure on cstor-volume-mgmt container in cstor-pool pod and check if it doesn't affect the application availability" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id $case_id 4-chaos "Induce failure on cstor-volume-mgmt container in cstor-pool pod and check if it doesn't affect the application availability" $testResult $pipeline_id "$current_time" $commit_id $gitToken
 
 if [ "$rc_val" != "0" ]; then
 exit 1;

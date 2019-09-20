@@ -44,7 +44,7 @@ echo $test_name
 cd litmus
 
 # copy the content of chaos `run_litmus_test.yml` litmusbook into a different file to update the test specific parameters.
-cp experiments/chaos/openebs_target_failure/run_litmus_test.yml run_targetistgt_kill_test.yml
+cp experiments/chaos/openebs_target_failure/run_litmus_test.yml run_target_istgt_kill_test.yml
 
 # Update the environmental variables in litmus job spec.
 : << EOF
@@ -62,21 +62,20 @@ EOF
 sed -i -e 's/value: percona-mysql-claim/value: openebs-cassandra/g' \
 -e 's/generateName: openebs-target-failure/generateName: openebs-target-istgt-kill/g' \
 -e 's/name: openebs-target-failure/name: openebs-target-istgt-kill/g' \
--e 's/value: target-zrepl-kill/value: target-kill/g' \
--e 's/value: cstor-volume-mgmt/value: cstor-istgt/g' \
--e 's/value: openebs-cstor-sparse/value: openebs-cstor-disk/g' \
+-e 's/"target-zrepl-kill"/"target-kill"/g' \
+-e 's/"cstor-volume-mgmt"/"cstor-istgt"/g' \
 -e 's/value: '\''name=percona'\''/value: '\''app=cassandra'\''/g' \
--e 's/value: app-percona-ns/value: app-cass-ns/g' run_targetistgt_kill_test.yml
+-e 's/value: app-percona-ns/value: app-cass-ns/g' run_target_istgt_kill_test.yml
 
 sed -i '/command:/i \
           - name: RUN_ID\
             value: '"$run_id"'\
-' run_targetistgt_kill_test.yml
+' run_target_istgt_kill_test.yml
 
-cat run_targetistgt_kill_test.yml
+cat run_target_istgt_kill_test.yml
 
 # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
-bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-target-istgt-kill' job=run_targetistgt_kill_test.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-target-istgt-kill' job=run_target_istgt_kill_test.yml
 cd ..
 
 # Get the cluster state Once the litmus jobs completed.
@@ -95,7 +94,7 @@ current_time=$(eval $time)
 # Update the e2e cr once the job is completed
 bash Openshift-EE/utils/e2e-cr jobname:cstor-volume-istgt-kill jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:$testResult
 
-python3 Openshift-EE/utils/result/result_update.py $job_id $case_id $gitlab_stage 'Induce chaos on cstor-target container(cstor-istgt) and check the behaviour' $testResult $pipeline_id "$current_time" $commit_id $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id $case_id 4-chaos 'Induce chaos on cstor-target container(cstor-istgt) and check the behaviour' $testResult $pipeline_id "$current_time" $commit_id $gitToken
 
 if [ "$rc_val" != "0" ]; then
 exit 1;

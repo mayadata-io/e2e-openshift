@@ -95,7 +95,7 @@ current_time=$(eval $time)
 # Update the e2e cr once the job is completed
 bash Openshift-EE/utils/e2e-cr jobname:jiva-controller-kill jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:$testResult
 
-python3 Openshift-EE/utils/result/result_update.py $job_id $case_id $gitlab_stage 'Induce failure on JIVA controller pod and check if it gets scheduled immediately and the application is available' $testResult $pipeline_id "$current_time" $commit_id $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id $case_id 4-chaos 'Induce failure on JIVA controller pod and check if it gets scheduled immediately and the application is available' $testResult $pipeline_id "$current_time" $commit_id $gitToken
 
 if [ "$rc_val" != "0" ]; then
 exit 1;

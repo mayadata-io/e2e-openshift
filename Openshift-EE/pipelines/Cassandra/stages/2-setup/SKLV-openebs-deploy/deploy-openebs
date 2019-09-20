@@ -137,4 +137,3 @@ if [ "$1" == "node" ];then
 else
   pod
 fi
-

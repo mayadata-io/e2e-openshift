@@ -48,7 +48,7 @@ FRYG-Cassandra-Provision-cStor:
     - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/3-functional/FRYG-deploy-cassandra-cstor/cassandra-deploy-cstor
     - ./Openshift-EE/pipelines/Cassandra/stages/3-functional/FRYG-deploy-cassandra-cstor/cassandra-deploy-cstor
 
-EPAR-Cassandra-Provision-Jiva:
+EPAR-Cassandra-Provision-jiva:
   extends: .func_test_template
   script: 
     - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/3-functional/EPAR-deploy-cassandra-jiva/deploy-cassandra-jiva

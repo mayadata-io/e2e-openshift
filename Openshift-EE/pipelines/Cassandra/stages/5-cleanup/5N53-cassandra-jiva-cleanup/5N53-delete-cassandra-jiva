@@ -56,9 +56,11 @@ cp apps/cassandra/deployers/run_litmus_test.yml delete_cassandra_jiva.yml
 EOF
 # Replacing the required parameters in the litmus experiment.
 
-sed -i -e 's/value: openebs-standalone/value: openebs-jiva-default/g'\
-       -e 's/value: provision/value: deprovision/g'\
-       -e 's/app: cassandra-deployment-litmus/app: cassandra-jiva-delete-litmus/g' delete_cassandra_jiva.yml
+sed -i -e 's/value: openebs-standalone/value: openebs-jiva-default/g' \
+-e 's/value: '\''app=cassandra'\''/value: '\''app=cassandra-jiva'\''/g' \
+-e 's/value: openebs-cassandra/value: openebs-cassandra-jiva/g' \
+-e 's/value: provision/value: deprovision/g' \
+-e 's/app: cassandra-deployment-litmus/app: cassandra-jiva-delete-litmus/g' delete_cassandra_jiva.yml
 
 sed -i '/command:/i \
           - name: RUN_ID\
@@ -103,4 +105,3 @@ if [ "$1" == "node" ];then
 else
   pod
 fi
-

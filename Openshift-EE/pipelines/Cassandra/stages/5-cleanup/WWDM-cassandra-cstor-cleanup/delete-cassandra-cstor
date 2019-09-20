@@ -53,7 +53,7 @@ cp apps/cassandra/deployers/run_litmus_test.yml delete_cassandra_cstor.yml
  | pvcName           | env    | openebs-cassandra                   | openebs-cassandra                               | 
  | storage class     | env    | openebs-standalone                  | openebs-cstor-sparse                            |
  | appNamespace      | env    | app-cass-ns                         | app-cass-ns                                     |
- | action            | env    | provision        		    | deprovision                                     |
+ | action            | env    | provision        		                | deprovision                                     |
  ----------------------------------------------------------------------------------------------------------------------
 EOF
 # Replacing the required parameters in the litmus experiment.
@@ -105,4 +105,3 @@ if [ "$1" == "node" ];then
 else
   pod
 fi
-

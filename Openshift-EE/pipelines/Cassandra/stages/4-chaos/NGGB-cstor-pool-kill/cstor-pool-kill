@@ -59,7 +59,7 @@ EOF
 
 sed -i -e 's/value: app-percona-ns/value: app-cass-ns/g' \
        -e 's/name=percona/app=cassandra/g' \
-       -e 's/percona-mysql-claim/openebs-cassandra-0/g' \
+       -e 's/percona-mysql-claim/openebs-cassandra/g' \
        -e 's/"enable/"disable"/g' pool_kill.yml
 
 cat pool_kill.yml
@@ -95,4 +95,3 @@ if [ "$1" == "node" ];then
 else
   pod
 fi
-

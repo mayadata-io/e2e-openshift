@@ -30,16 +30,11 @@ current_time=$(eval $time)
 present_dir=$(pwd)
 echo $present_dir
 
-
 #Creating e2e custom resource result for the test.
-bash Openshift-EE/utils/e2e-cr jobname:deploy-cassandra jobphase:Waiting
-bash Openshift-EE/utils/e2e-cr jobname:deploy-cassandra jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:deploy-cassandra-cstor jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:deploy-cassandra-cstor jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 bash Openshift-EE/utils/e2e-cr jobname:cassandra-loadgen jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:cassandra-scaleup jobphase:Waiting
-
-################
-# LitmusBook 1 #
-################
 
 #### Deploying Cassandra application
 
@@ -57,13 +52,13 @@ cp apps/cassandra/deployers/run_litmus_test.yml deploy_cassandra.yml
   ------------------------------------------------------------------------------------------------------------------- |
  | appLabel          | env    | app=cassandra                       | app=cassandra                                   |
  | pvcName           | env    | openebs-cassandra                   | openebs-cassandra                               | 
- | storage clas      | env    | openebs-standalone                  | openebs-cstor-sparse                            |
+ | storage clas      | env    | openebs-standalone                  | openebs-cstor-disk                            |
  | appNamespace      | env    | app-cass-ns                         | app-cass-ns                                     |
   ---------------------------------------------------------------------------------------------------------------------
 EOF
 # Replacing the storage class in the deployer
 
-sed -i -e 's/value: openebs-standalone/value: openebs-cstor-sparse/g' deploy_cassandra.yml
+sed -i -e 's/value: openebs-standalone/value: openebs-cstor-disk/g' deploy_cassandra.yml
 
 cat deploy_cassandra.yml
 
@@ -102,4 +97,3 @@ if [ "$1" == "node" ];then
 else
   pod
 fi
-
