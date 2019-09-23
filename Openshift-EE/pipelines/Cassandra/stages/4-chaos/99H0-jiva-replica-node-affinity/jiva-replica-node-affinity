@@ -51,7 +51,7 @@ cp experiments/chaos/replica_node_affinity/run_litmus_test.yml run_rep_node_affi
  | specAttribute     | kind   |         default value               | test specifc value                               |
   ---------------------------------------------------------------------------------------------------------------------|
  | appLabel          | env    | app=pgset                           | app=cassandra-jiva                               | 
- | appPVC            | env    | value: pgdata-claim                 | value: openebs-cassandra-jiva                    |
+ | appPVC            | env    | value: pgdata-claim                 | value: openebs-cassandra-jiva-cassandra-0                    |
  | appNamespace      | env    | app-pgres-ns                        | app-cass-ns-jiva                                 | 
   ----------------------------------------------------------------------------------------------------------------------
 EOF
@@ -59,7 +59,7 @@ EOF
 sed -i -e 's/value: '\''app=pgset'\''/value: '\''app=cassandra-jiva'\''/g' \
 -e 's/value: '\''app-pgres-ns'\''/value: '\''app-cass-ns-jiva'\''/g' \
 -e 's/app: node-affinity/app: node-affinity-jiva/g' \
--e 's/value: '\''pgdata-claim'\''/value: '\''openebs-cassandra-jiva'\''/g' run_rep_node_affinity_jiva.yml
+-e 's/value: '\''pgdata-claim'\''/value: '\''openebs-cassandra-jiva-cassandra-0'\''/g' run_rep_node_affinity_jiva.yml
 
 sed -i '/command:/i \
           - name: RUN_ID\

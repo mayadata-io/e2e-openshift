@@ -45,7 +45,7 @@ echo $test_name
 cd litmus
 
 # copy the content of chaos `run_litmus_test.yml` litmusbook into a different file to update the test specific parameters.
-cp experiments/chaos/openebs_target_network_loss/run_litmus_test.yml run_targetloss_test.yml
+cp experiments/chaos/openebs_target_network_loss/run_litmus_test.yml run_target_network_loss_test.yml
 
 # Update the environmental variables in litmus job spec.
 : << EOF
@@ -53,21 +53,21 @@ cp experiments/chaos/openebs_target_network_loss/run_litmus_test.yml run_targetl
  | specAttribute     | kind   | default value                      | test specifc value                       |
   ------------------------------------------------------------------------------------------------------------|
  | appLabel          | env    | value: name=percona                | value: app=cassandra                     |
- | pvcName           | env    | value: percona-mysql-claim         | value: openebs-cassandra                 | 
+ | pvcName           | env    | value: percona-mysql-claim         | value: openebs-cassandra-cassandra-0                 | 
  | appNamespace      | env    | value: app-percona-ns              | value: app-cass-ns                       |
   ------------------------------------------------------------------------------------------------------------
 EOF
 # Replacing the namespace, label in the litmus book
 
-sed -i -e 's/value: percona-mysql-claim/value: openebs-cassandra/g' \
+sed -i -e 's/value: percona-mysql-claim/value: openebs-cassandra-cassandra-0/g' \
 -e 's/value: '\''name=percona'\''/value: '\''app=cassandra'\''/g' \
 -e 's/value: app-percona-ns/value: app-cass-ns/g'
--e 's/value: '\''enable'\''/value: '\'""\''/g' run_targetloss_test.yml
+-e 's/value: '\''enable'\''/value: '\'""\''/g' run_target_network_loss_test.yml
 
-cat run_targetloss_test.yml
+cat run_target_network_loss_test.yml
 
 # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
-bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-target-network-loss' job=run_targetloss_test.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-target-network-loss' job=run_target_network_loss_test.yml
 cd ..
 
 # Print the cluster state once the litmus job is completed.

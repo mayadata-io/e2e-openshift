@@ -53,7 +53,7 @@ cp experiments/chaos/openebs_target_failure/run_litmus_test.yml run_cstor_volume
   ---------------------------------------------------------------------------------------------------------------------
  | specAttribute     | kind   |         default value                 | test specifc value                             |
   ---------------------------------------------------------------------------------------------------------------------|
- | pvcName           | env    | value: percona-mysql-claim            | value: openebs-cassandra                       | 
+ | pvcName           | env    | value: percona-mysql-claim            | value: openebs-cassandra-cassandra-0                       | 
  | Litmus Job name   | name   | generateName: openebs-target-failure  | generateName: cstor-volume-mgmt-kill           |
  | Litmus job label  | label  | name: openebs-target-failure          | name: cstor-volume-mgmt-kill                         |
  | appLabel          | env    | value: name=percona                   | value: app=cassandra                           |
@@ -61,7 +61,7 @@ cp experiments/chaos/openebs_target_failure/run_litmus_test.yml run_cstor_volume
   ---------------------------------------------------------------------------------------------------------------------
 EOF
 
-sed -i -e 's/value: percona-mysql-claim/value: openebs-cassandra/g' \
+sed -i -e 's/value: percona-mysql-claim/value: openebs-cassandra-cassandra-0/g' \
 -e 's/generateName: openebs-target-failure/generateName: cstor-volume-mgmt-kill/g' \
 -e 's/name: openebs-target-failure/name: cstor-volume-mgmt-kill/g' \
 -e 's/value: '\''name=percona'\''/value: '\''app=cassandra'\''/g' \

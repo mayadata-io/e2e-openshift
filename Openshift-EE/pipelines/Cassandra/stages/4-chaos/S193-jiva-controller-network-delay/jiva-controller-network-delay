@@ -43,7 +43,7 @@ echo $test_name
 
 cd litmus
 # copy the content of application pod failure chaos `run_litmus_test.yml` into a different file to update the test specific parameters.
-cp experiments/chaos/openebs_target_network_delay/run_litmus_test.yml run_target_delay_test.yml
+cp experiments/chaos/openebs_target_network_delay/run_litmus_test.yml run_target_network_delay_test.yml
 
 # Update the environmental variables in litmus job spec.
 : << EOF
@@ -51,7 +51,7 @@ cp experiments/chaos/openebs_target_network_delay/run_litmus_test.yml run_target
  | specAttribute     | kind   | default value                               | test specifc value                       |
   ------------------------------------------------------------------------------------------------------------|
  | appLabel          | env    | value: name=percona                         | value: app=cassandra-jiva                |
- | pvcName           | env    | value: percona-mysql-claim                  | value: openebs-cassandra-jiva            | 
+ | pvcName           | env    | value: percona-mysql-claim                  | value: openebs-cassandra-jiva-cassandra-0            | 
  | appNamespace      | env    | value: app-percona-ns                       | value: app-cass-ns-jiva                  |
  | Litmus Job name   | name   | generateName: openebs-target-network-delay- | generateName: openebs-controller-network-delay       |
  | Litmus job label  | label  | name: openebs-target-network-delay          | controller-network-delay                              |
@@ -59,21 +59,21 @@ cp experiments/chaos/openebs_target_network_delay/run_litmus_test.yml run_target
 EOF
 # Replacing the namespace, label in the litmus book
 
-sed -i -e 's/value: percona-mysql-claim/value: openebs-cassandra-jiva/g' \
+sed -i -e 's/value: percona-mysql-claim/value: openebs-cassandra-jiva-cassandra-0/g' \
 -e 's/value: '\''name=percona'\''/value: '\''app=cassandra-jiva'\''/g' \
 -e 's/generateName: openebs-target-network-delay-/generateName: openebs-controller-network-delay/g' \
 -e 's/name: openebs-target-network-delay/name: controller-network-delay/g' \
--e 's/value: app-percona-ns/value: app-cass-ns-jiva/g' run_target_delay_test.yml
+-e 's/value: app-percona-ns/value: app-cass-ns-jiva/g' run_target_network_delay_test.yml
 
 sed -i '/command:/i \
           - name: RUN_ID\
             value: '"$run_id"'\
-' run_target_delay_test.yml
+' run_target_network_delay_test.yml
 
-cat run_target_delay_test.yml
+cat run_target_network_delay_test.yml
 
 # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
-bash ../Openshift-EE/utils/litmus_job_runner label='name:controller-network-delay' job=run_target_delay_test.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='name:controller-network-delay' job=run_target_network_delay_test.yml
 cd ..
 
 # Print the cluster state once the litmus job is completed.

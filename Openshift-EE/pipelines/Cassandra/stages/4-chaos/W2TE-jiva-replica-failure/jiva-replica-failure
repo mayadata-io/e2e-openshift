@@ -50,7 +50,7 @@ cp experiments/chaos/openebs_volume_replica_failure/run_litmus_test.yml run_rep_
  | specAttribute     | kind   |         default value                        | test specifc value                       |
   --------------------------------------------------------------------------------------------------------------------- |
  | appLabel          | env    | name=percona                                 | app=cassandra-jiva                       | 
- | appPVC            | env    | value: percona-mysql-claim                   | value: openebs-cassandra-jiva            |
+ | appPVC            | env    | value: percona-mysql-claim                   | value: openebs-cassandra-jiva-cassandra-0            |
  | Litmus Job name   | name   | generateName: openebs-volume-replica-failure | generateName: replica-failure-jiva       |
  | Litmus job label  | label  | name: openebs-volume-replica-failure         | name: replica-failure-jiva               |
  | appNamespace      | env    | app-percona-ns                               | app-cass-ns-jiva                         | 
@@ -61,7 +61,7 @@ sed -i -e 's/value: '\''name=percona'\''/value: '\''app=cassandra-jiva'\''/g' \
 -e 's/value: app-percona-ns/value: app-cass-ns-jiva/g' \
 -e 's/generateName: openebs-volume-replica-failure/generateName: replica-failure-jiva/g' \
 -e 's/name: openebs-volume-replica-failure/name: replica-failure-jiva/g' \
--e 's/value: percona-mysql-claim/value: openebs-cassandra-jiva/g' run_rep_fail_test_jiva.yml
+-e 's/value: percona-mysql-claim/value: openebs-cassandra-jiva-cassandra-0/g' run_rep_fail_test_jiva.yml
 
 sed -i '/command:/i \
           - name: RUN_ID\

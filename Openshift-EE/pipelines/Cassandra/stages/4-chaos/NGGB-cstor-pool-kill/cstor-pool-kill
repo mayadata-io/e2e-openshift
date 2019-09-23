@@ -51,7 +51,7 @@ cp experiments/chaos/openebs_pool_failure/run_litmus_test.yml pool_kill.yml
  | specAttribute     | kind   |         default value               | test specifc value                              |
   ------------------------------------------------------------------------------------------------------------------- |
  | appLabel          | env    | app=cassandra                       | app=cassandra                                   |
- | pvcName           | env    | openebs-cassandra                   | openebs-cassandra                               | 
+ | pvcName           | env    | openebs-cassandra                   | openebs-cassandra-cassandra-0                               | 
  | appNamespace      | env    | app-cass-ns                         | app-cass-ns                                     |
   ---------------------------------------------------------------------------------------------------------------------
 EOF
@@ -59,7 +59,7 @@ EOF
 
 sed -i -e 's/value: app-percona-ns/value: app-cass-ns/g' \
        -e 's/name=percona/app=cassandra/g' \
-       -e 's/percona-mysql-claim/openebs-cassandra/g' \
+       -e 's/percona-mysql-claim/openebs-cassandra-cassandra-0/g' \
        -e 's/"enable/"disable"/g' pool_kill.yml
 
 cat pool_kill.yml

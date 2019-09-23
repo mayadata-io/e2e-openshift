@@ -42,7 +42,7 @@ bash Openshift-EE/utils/e2e-cr jobname:cassandra-loadgen jobphase:Running init_t
 
 #### Generating load on cassandra application
 
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase=cassandra_loadgen metadata="")
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=cassandra-loadgen metadata="")
 echo $test_name
 
 cd litmus
