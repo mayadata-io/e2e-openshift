@@ -65,6 +65,11 @@ sed -i -e 's/value: percona-mysql-claim/value: openebs-cassandra-jiva/g' \
 -e 's/name: openebs-target-network-delay/name: controller-network-delay/g' \
 -e 's/value: app-percona-ns/value: app-cass-ns-jiva/g' run_target_delay_test.yml
 
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' run_target_delay_test.yml
+
 cat run_target_delay_test.yml
 
 # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
