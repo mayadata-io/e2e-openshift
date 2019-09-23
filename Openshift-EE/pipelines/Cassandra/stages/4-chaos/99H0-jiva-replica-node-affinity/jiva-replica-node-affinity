@@ -56,9 +56,9 @@ cp experiments/chaos/replica_node_affinity/run_litmus_test.yml run_rep_node_affi
   ----------------------------------------------------------------------------------------------------------------------
 EOF
 
--e 's/value: '\''app=pgset'\''/value: '\''app=cassandra-jiva'\''/g' \
+sed -i -e 's/value: '\''app=pgset'\''/value: '\''app=cassandra-jiva'\''/g' \
 -e 's/value: '\''app-pgres-ns'\''/value: '\''app-cass-ns-jiva'\''/g' \
--e 's/value: '\''app:node-affinity'\''/value: '\''app:node-affinity-jiva'\''/g' \
+-e 's/app: node-affinity/app: node-affinity-jiva/g' \
 -e 's/value: '\''pgdata-claim'\''/value: '\''openebs-cassandra-jiva'\''/g' run_rep_node_affinity_jiva.yml
 
 sed -i '/command:/i \
@@ -88,7 +88,7 @@ current_time=$(eval $time)
 # Update the e2e cr once the job is completed
 bash Openshift-EE/utils/e2e-cr jobname:jiva-replica-node-affinity jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:$testResult
 
-python3 Openshift-EE/utils/result/result_update.py $job_id $case_id $gitlab_stage 'Jiva replica node affinity' $testResult $pipeline_id "$current_time" $commit_id $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id $case_id 4-chaos 'Jiva replica node affinity' $testResult $pipeline_id "$current_time" $commit_id $gitToken
 
 if [ "$rc_val" != "0" ]; then
 exit 1;
@@ -100,4 +100,3 @@ if [ "$1" == "node" ];then
 else
   pod
 fi
-

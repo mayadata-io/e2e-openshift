@@ -56,7 +56,7 @@ cp experiments/chaos/openebs_replica_network_delay/run_litmus_test.yml run_rep_n
   ----------------------------------------------------------------------------------------------------------------------------
 EOF
 
--e 's/value: '\''name=percona'\''/value: '\''app=cassandra-jiva'\''/g' \
+sed -i -e 's/value: '\''name=percona'\''/value: '\''app=cassandra-jiva'\''/g' \
 -e 's/value: app-percona-ns/value: app-cass-ns-jiva/g' \
 -e 's/generateName: openebs-replica-network-delay/generateName: openebs-replica-network-delay-jiva/g' \
 -e 's/name: openebs-replica-network/name: openebs-replica-network-jiva/g' \
@@ -87,7 +87,7 @@ testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-column
 # Update the e2e cr once the job is completed
 bash Openshift-EE/utils/e2e-cr jobname:jiva-replica-network-delay jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:$testResult
 
-python3 Openshift-EE/utils/result/result_update.py $job_id $case_id 4-chaos "Inject network delay in jiva replica & verify successful recovery" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id $case_id 4-chaos "Inject network delay in jiva replica & verify successful recovery" $testResult $pipeline_id "$current_time" $commit_id $gitToken
 
 if [ "$rc_val" != "0" ]; then
 exit 1;

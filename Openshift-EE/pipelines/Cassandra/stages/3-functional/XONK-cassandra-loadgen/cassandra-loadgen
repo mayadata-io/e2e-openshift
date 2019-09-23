@@ -31,7 +31,7 @@ present_dir=$(pwd)
 echo $present_dir
 
 #pooling over previous job to complete
-bash Openshift-EE/utils/pooling jobname:deploy-cassandra
+bash Openshift-EE/utils/pooling jobname:deploy-cassandra-cstor
 
 #Creating e2e custom resource result for the test.
 bash Openshift-EE/utils/e2e-cr jobname:cassandra-loadgen jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
@@ -89,4 +89,3 @@ if [ "$1" == "node" ];then
 else
   pod
 fi
-

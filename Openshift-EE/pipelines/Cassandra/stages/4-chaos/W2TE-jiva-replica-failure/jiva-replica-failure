@@ -57,7 +57,7 @@ cp experiments/chaos/openebs_volume_replica_failure/run_litmus_test.yml run_rep_
   ----------------------------------------------------------------------------------------------------------------------
 EOF
 
--e 's/value: '\''name=percona'\''/value: '\''app=cassandra-jiva'\''/g' \
+sed -i -e 's/value: '\''name=percona'\''/value: '\''app=cassandra-jiva'\''/g' \
 -e 's/value: app-percona-ns/value: app-cass-ns-jiva/g' \
 -e 's/generateName: openebs-volume-replica-failure/generateName: replica-failure-jiva/g' \
 -e 's/name: openebs-volume-replica-failure/name: replica-failure-jiva/g' \
@@ -91,7 +91,7 @@ current_time=$(eval $time)
 # Update the e2e cr once the job is completed
 bash Openshift-EE/utils/e2e-cr jobname:jiva-replica-failure jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:$testResult
 
-python3 Openshift-EE/utils/result/result_update.py $job_id $case_id 4-chaos "Fails Jiva Replica and verify successful recovery" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id $case_id 4-chaos "Fails Jiva Replica and verify successful recovery" $testResult $pipeline_id "$current_time" $commit_id $gitToken
 
 if [ "$rc_val" != "0" ]; then
 exit 1;

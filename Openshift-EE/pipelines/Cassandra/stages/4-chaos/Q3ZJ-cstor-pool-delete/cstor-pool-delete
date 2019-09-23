@@ -61,7 +61,7 @@ sed -i -e 's/app-percona-ns/app-cass-ns/g' \
        -e 's/'name=percona'/'app=cassandra'/g' \
        -e 's/openebs-pool-failure/openebs-pool-delete/g' \
        -e 's/"pool-kill"/"pool-delete"/g' \
-       -e 's/percona-mysql-claim/openebs-cassandra-0/g' pool_delete.yml
+       -e 's/percona-mysql-claim/openebs-cassandra/g' pool_delete.yml
 
 sed -i '/command:/i \
           - name: RUN_ID\
@@ -101,4 +101,3 @@ if [ "$1" == "node" ];then
 else
   pod
 fi
-

@@ -65,6 +65,11 @@ sed -i -e 's/value: percona-mysql-claim/value: openebs-cassandra-jiva/g' \
 -e 's/name: openebs-target-network-delay/name: controller-network-delay/g' \
 -e 's/value: app-percona-ns/value: app-cass-ns-jiva/g' run_target_delay_test.yml
 
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' run_target_delay_test.yml
+
 cat run_target_delay_test.yml
 
 # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
@@ -87,7 +92,7 @@ current_time=$(eval $time)
 # Update the e2e cr once the job is completed
 bash Openshift-EE/utils/e2e-cr jobname:jiva-controller-network-delay jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:$testResult
 
-python3 Openshift-EE/utils/result/result_update.py $job_id $case_id $gitlab_stage 'Induce delay in cstor target pod network and verify if the application is not impacted' $testResult $pipeline_id "$current_time" $commit_id $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id $case_id $gitlab_stage 'Induce delay in jiva controller pod network and verify if the application is not impacted' $testResult $pipeline_id "$current_time" $commit_id $gitToken
 
 if [ "$rc_val" != "0" ]; then
 exit 1;
@@ -99,4 +104,3 @@ if [ "$1" == "node" ];then
 else
   pod
 fi
-

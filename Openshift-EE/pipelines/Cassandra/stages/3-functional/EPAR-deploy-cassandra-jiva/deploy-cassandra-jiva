@@ -34,11 +34,6 @@ echo $present_dir
 bash Openshift-EE/utils/e2e-cr jobname:deploy-cassandra-jiva jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:deploy-cassandra-jiva jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
-
-################
-# LitmusBook 1 #
-################
-
 #### Deploying Cassandra application with jiva storage class
 
 run_id="jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=cassandra-deployment metadata=${run_id})
@@ -62,11 +57,11 @@ cp apps/cassandra/deployers/run_litmus_test.yml deploy_cassandra_jiva.yml
 EOF
 # Replacing the storage class in the deployer
 
-sed -i -e 's/value: app=cassandra/vlaue: app=cassandra-jiva/g'\
--e 's/value: openebs-cassandra/value: openebs-cassandra-jiva/g'\
--e 's/app:cassandra-deployment-litmus/app:deploy-cassandra-jiva/g'\
--e 's/value: app-cass-ns/value: app-cass-ns-jiva/g'\
--e 's/value: openebs-standalone/value: openebs-jiva-deafult/g' deploy_cassandra_jiva.yml
+sed -i -e 's/value: '\''app=cassandra'\''/value: '\''app=cassandra-jiva'\''/g' \
+-e 's/value: openebs-cassandra/value: openebs-cassandra-jiva/g' \
+-e 's/app: cassandra-deployment-litmus/app: deploy-cassandra-jiva/g' \
+-e 's/value: app-cass-ns/value: app-cass-ns-jiva/g' \
+-e 's/value: openebs-standalone/value: openebs-jiva-default/g' deploy_cassandra_jiva.yml
 
 
 sed -i '/command:/i \
@@ -113,4 +108,3 @@ node $2 $3 $4
 else
 pod
 fi
-
