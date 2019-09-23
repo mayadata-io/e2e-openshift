@@ -33,8 +33,8 @@ echo $present_dir
 #Creating e2e custom resource result for all the tests running in this stage.
 #In Gitlab, all the jobs in a stage runs parallely. Inorder to run this serially, each job in the stage waits for the other to get completed.
 
-bash Openshift-EE/utils/pooling jobname:cstore-target-network-delay
-bash Openshift-EE/utils/e2e-cr jobname:cstore-target-network-loss jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/pooling jobname:cstor-target-network-delay
+bash Openshift-EE/utils/e2e-cr jobname:cstor-target-network-loss jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 echo "*******Performing Network loss on target**********"
 ## testcase name is defined in test_vars of LitmusBook.
