@@ -51,9 +51,9 @@ cp experiments/chaos/openebs_target_failure/run_litmus_test.yml target_kill.yml
   --------------------------------------------------------------------------------------------------------------------     
  | specAttribute     | kind   |         default value               | test specifc value                              |
   ------------------------------------------------------------------------------------------------------------------- |
- | appLabel          | env    | app=cassandra                       | app=cassandra                                   |
- | pvcName           | env    | openebs-cassandra                   | openebs-cassandra-cassandra-0                               | 
- | appNamespace      | env    | app-cass-ns                         | app-cass-ns                                     |
+ | appLabel          | env    | name=percona                        | app=cassandra                                   |
+ | pvcName           | env    | percona-mysql-claim                 | openebs-cassandra-cassandra-0                               | 
+ | appNamespace      | env    | app-percona-ns                      | app-cass-ns                                     |
   ---------------------------------------------------------------------------------------------------------------------
 EOF
 # Replacing the namespace, label and mode of deployment in the litmus book
