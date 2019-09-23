@@ -53,7 +53,7 @@ cp experiments/chaos/openebs_target_network_loss/run_litmus_test.yml run_target_
  | specAttribute     | kind   | default value                      | test specifc value                       |
   ------------------------------------------------------------------------------------------------------------|
  | appLabel          | env    | value: name=percona                | value: app=cassandra                     |
- | pvcName           | env    | value: percona-mysql-claim         | value: openebs-cassandra-cassandra-0                 | 
+ | pvcName           | env    | value: percona-mysql-claim         | value: openebs-cassandra-cassandra-0     | 
  | appNamespace      | env    | value: app-percona-ns              | value: app-cass-ns                       |
   ------------------------------------------------------------------------------------------------------------
 EOF
@@ -61,7 +61,7 @@ EOF
 
 sed -i -e 's/value: percona-mysql-claim/value: openebs-cassandra-cassandra-0/g' \
 -e 's/value: '\''name=percona'\''/value: '\''app=cassandra'\''/g' \
--e 's/value: app-percona-ns/value: app-cass-ns/g'
+-e 's/value: app-percona-ns/value: app-cass-ns/g' \
 -e 's/value: '\''enable'\''/value: '\'""\''/g' run_target_network_loss_test.yml
 
 cat run_target_network_loss_test.yml
