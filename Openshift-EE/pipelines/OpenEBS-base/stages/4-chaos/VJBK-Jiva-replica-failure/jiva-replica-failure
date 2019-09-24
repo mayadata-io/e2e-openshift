@@ -154,8 +154,8 @@ sed -i '/name: DATA_PERSISTENCE/{n;s/.*/            value: busybox/}' run_rep_fa
 
 ## Insert the set of variables for busybox data consistency util into configmap spec.
 sed -i '/parameters.yml: |/a \
-    blocksize: 4k\
-    blockcount: 1024\
+    blocksize: 4k \
+    blockcount: 1024 \
     testfile: repfailtest
 ' run_rep_fail_test_jiva.yml
 

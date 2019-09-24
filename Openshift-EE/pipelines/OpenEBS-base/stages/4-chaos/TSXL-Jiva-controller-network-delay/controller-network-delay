@@ -161,8 +161,8 @@ sed -i '/name: DATA_PERSISTENCE/{n;s/.*/            value: busybox/}' run_contro
 
 ## Insert the set of variables for busybox data consistency util into configmap spec.
 sed -i '/parameters.yml: |/a \
-    blocksize: 4k\
-    blockcount: 1024\
+    blocksize: 4k \
+    blockcount: 1024 \
     testfile: ctrlnwdelaytest
 ' run_controller_delay_test_jiva.yml
 

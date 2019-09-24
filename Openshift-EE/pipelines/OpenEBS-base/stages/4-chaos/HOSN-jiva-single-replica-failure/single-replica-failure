@@ -173,8 +173,8 @@ sed -i '/name: DATA_PERSISTENCE/{n;s/.*/            value: busybox/}' run_single
 
 ## Insert the set of variables for busybox data consistency util into configmap spec.
 sed -i '/parameters.yml: |/a \
-    blocksize: 4k\
-    blockcount: 1024\
+    blocksize: 4k \
+    blockcount: 1024 \
     testfile: ctrlkilltest
 ' run_single_rep_failure.yml
 
