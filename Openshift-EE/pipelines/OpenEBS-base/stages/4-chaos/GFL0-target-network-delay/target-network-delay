@@ -124,8 +124,8 @@ sed -i '/name: DATA_PERSISTENCE/{n;s/.*/            value: busybox/}' run_target
 
 ## Insert the set of variables for busybox data consistency util into configmap spec.
 sed -i '/parameters.yml: |/a \
-    blocksize: 4k\
-    blockcount: 1024\
+    blocksize: 4k \
+    blockcount: 1024 \
     testfile: targetnwdelaytest
 ' run_target_delay_test.yml
 
