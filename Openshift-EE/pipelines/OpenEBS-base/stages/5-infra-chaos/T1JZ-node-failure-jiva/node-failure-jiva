@@ -130,6 +130,7 @@ cd litmus
 cp experiments/chaos/node_failure/run_litmus_test.yml run_node_failure_jiva.yml
 
 sed -i -e 's/value: app-percona-ns/value: node-failure-jiva/g' \
+-e 's/name: node-failure/name: node-failure-jiva/g' \
 -e 's/password:/password: YzEwdWRieXQzQDE2NTg=/g' \
 -e 's/name=percona/app=node-failure-jiva/g' run_node_failure_jiva.yml
 
