@@ -287,7 +287,7 @@ Y4ET-Jiva-snapshot-clone:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/Y4ET-Jiva-snapshot-clone/jiva-snapshot-clone
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/Y4ET-Jiva-snapshot-clone/jiva-snapshot-clone
 
-8QQP-Jiva-snapshot-delete:
+8QQP-Jiva-delete-autogen-snapshot:
   extends: .func_test_template
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/8QQP-Jiva-Snapshot-Delete/jiva-snapshot-delete
