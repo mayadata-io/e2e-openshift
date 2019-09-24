@@ -106,8 +106,8 @@ OI4T-cstor-target-network-delay:
 IVQO-target-network-loss:
   extends: .chaos_test_template
   script: 
-    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/IVQO-target-network-loss/target-network-loss
-    - ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/IVQO-target-network-loss/target-network-loss
+    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/IVQO-cstor-target-network-loss/cstor-target-network-loss
+    - ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/IVQO-cstor-target-network-loss/cstor-target-network-loss
 
 ADXV-cstor-volume-mgmt-kill:
   extends: .chaos_test_template
@@ -148,8 +148,8 @@ W831-jiva-replica-network-delay:
 S193-jiva-controller-network-delay:
   extends: .chaos_test_template
   script: 
-    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/NPAT-jiva-controller-network-delay/jiva-controller-network-delay
-    - ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/NPAT-jiva-controller-network-delay/jiva-controller-network-delay
+    - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/S193-jiva-controller-network-delay/jiva-controller-network-delay
+    - ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/S193-jiva-controller-network-delay/jiva-controller-network-delay
 
 99H0-jiva-replica-node-affinity:
   extends: .chaos_test_template

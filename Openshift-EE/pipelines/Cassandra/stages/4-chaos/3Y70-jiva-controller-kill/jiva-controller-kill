@@ -52,7 +52,7 @@ cp experiments/chaos/openebs_target_failure/run_litmus_test.yml run_ctrl_kill_te
   ---------------------------------------------------------------------------------------------------------------------
  | specAttribute     | kind   |         default value                 | test specifc value                             |
   ---------------------------------------------------------------------------------------------------------------------|
- | pvcName           | env    | value: percona-mysql-claim            | value: openebs-cassandra-jiva                  | 
+ | pvcName           | env    | value: percona-mysql-claim            | value: openebs-cassandra-jiva-cassandra-0                  | 
  | Litmus Job name   | name   | generateName: openebs-target-failure  | generateName: openebs-controller-failure       |
  | Litmus job label  | label  | openebs-target-failure                | openebs-controller-failure                     |
  | appLabel          | env    | value: name=percona                   | value: app=cassandra-jiva                      |
@@ -62,7 +62,7 @@ EOF
 
 # Replacing the namespace, label and mode of deployment in the litmus book
 
-sed -i -e 's/value: percona-mysql-claim/value: openebs-cassandra-jiva/g' \
+sed -i -e 's/value: percona-mysql-claim/value: openebs-cassandra-jiva-cassandra-0/g' \
 -e 's/generateName: openebs-target-failure/generateName: openebs-controller-failure/g' \
 -e 's/name: openebs-target-failure/name: openebs-controller-failure/g' \
 -e 's/value: '\''name=percona'\''/value: '\''app=cassandra-jiva'\''/g' \
