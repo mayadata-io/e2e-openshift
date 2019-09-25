@@ -23,7 +23,7 @@ bash Openshift-EE/utils/e2e-cr jobname:delete-cluster jobphase:Running init_time
 node() {
 job_id=$(echo $1)
 
-git clone https://github.com/litmuschaos/litmus.git
+git clone https://github.com/mayadata-io/litmus.git
 cd litmus
 
 # Replace the VM IP In csv file
