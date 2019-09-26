@@ -167,7 +167,7 @@ ZK9B-cStor-Create-Clone:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/6RQL-Clone-different-capacity/clone-different-capacity
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/6RQL-Clone-different-capacity/clone-different-capacity
 
-8QQP-Jiva-Snapshot-Delete:
+8QQP-Jiva-Delete-Autogen-Snapshot:
   extends: .func_test_template
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/8QQP-Jiva-Snapshot-Delete/jiva-snapshot-delete

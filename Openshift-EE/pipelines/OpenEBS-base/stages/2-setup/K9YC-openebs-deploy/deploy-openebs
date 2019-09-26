@@ -88,7 +88,7 @@ echo $test_name
 
 ## Clone the litmus repo, navigate to litmus root 
 
-git clone https://github.com/litmuschaos/litmus.git
+git clone https://github.com/mayadata-io/litmus.git
 cd litmus
 
 wget https://raw.githubusercontent.com/openebs/e2e-infrastructure/master/env-update/env.py # script to update openebs_setup.yaml
