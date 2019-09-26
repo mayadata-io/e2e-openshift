@@ -24,3 +24,7 @@ This test fails a node by shutting it down and checks if the application is resc
 
 #### Test Result
 
+
+| Job ID |   Test Description         | Execution Time |Test Result   |
+ |---------|---------------------------| --------------|--------|
+ |    <a href="https://gitlab.openebs.ci/openebs/e2e-openshift/-/jobs/89706">89706</a>   |  Fail the node where the application is running and check the behaviour           |  Thu Sep 26 19:23:24 IST 2019     |<a href="https://e2e-logs.openebs100.io/app/kibana#/discover?_g=(refreshInterval:(pause:!t,value:0),time:(from:now-7d,mode:quick,to:now))&_a=(columns:!(_source),filters:!(('$state':(store:appState),meta:(alias:!n,disabled:!f,index:cluster-logs,key:commit_id,negate:!f,params:(query:'4d9704a87a0a9f0b1b8947f5825957948dba35de',type:phrase),type:phrase,value:'4d9704a87a0a9f0b1b8947f5825957948dba35de'),query:(match:(commit_id:(query:'4d9704a87a0a9f0b1b8947f5825957948dba35de',type:phrase)))),('$state':(store:appState),meta:(alias:!n,disabled:!f,index:cluster-logs,key:pipeline_id,negate:!f,params:(query:'3355',type:phrase),type:phrase,value:'3355'),query:(match:(pipeline_id:(query:'3355',type:phrase))))),index:cluster-logs,interval:auto,query:(language:lucene,query:''),sort:!('@timestamp',desc))">Fail</a>  |
