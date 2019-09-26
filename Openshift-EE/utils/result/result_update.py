@@ -3,12 +3,22 @@ import re
 import sys
 
 #command line arguments
-test_id = sys.argv[1]
+job_id = sys.argv[1]
 job_dir_name = sys.argv[2].lower()
 stage = sys.argv[3] 
 test_desc = sys.argv[4]
 test_result = sys.argv[5]
-token = sys.argv[6]
+pipeline_id = sys.argv[6]
+time_stamp = sys.argv[7]
+commit_sha = sys.argv[8]
+token = sys.argv[9]
+
+#url
+job_url = "<a href=\"https://gitlab.openebs.ci/openebs/e2e-openshift/-/jobs/{0}\">{0}</a>".format(job_id)
+
+efk_link = "\"https://e2e-logs.openebs100.io/app/kibana#/discover?_g=(refreshInterval:(pause:!t,value:0),time:(from:now-7d,mode:quick,to:now))&_a=(columns:!(_source),filters:!(('$state':(store:appState),meta:(alias:!n,disabled:!f,index:cluster-logs,key:commit_id,negate:!f,params:(query:{0},type:phrase),type:phrase,value:{0}),query:(match:(commit_id:(query:{0},type:phrase)))),('$state':(store:appState),meta:(alias:!n,disabled:!f,index:cluster-logs,key:pipeline_id,negate:!f,params:(query:{1},type:phrase),type:phrase,value:{1}),query:(match:(pipeline_id:(query:{1},type:phrase))))),index:cluster-logs,interval:auto,query:(language:lucene,query:''),sort:!('@timestamp',desc))\"".format(commit_sha,pipeline_id)
+
+efk_url = "<a href={0}>{1}</a>".format(efk_link,test_result)
 
 #github user-specific token authentication
 git_auth = github.Github(token)

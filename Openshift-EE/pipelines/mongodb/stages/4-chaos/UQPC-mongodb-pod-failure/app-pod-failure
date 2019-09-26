@@ -1,0 +1,100 @@
+#!/bin/bash
+set -x
+
+pod() {
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/mongodb/stages/4-chaos/UQPC-mongodb-pod-failure/app-pod-failure node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+}
+
+node() {
+
+#Gitlab job id obtain from the gitlab env ($CI_JOB_ID).
+job_id=$1
+
+# Gitlab pipeline id obtained from gitlab env ($CI_PIPELINE_ID).
+pipeline_id=$2 
+
+#Gitlab commit id Obtained fron gilab env ($CI_COMMIT_SHA).
+commit_id=$3 
+
+#test case ID.
+case_id=UQPC
+
+#github token to push the test result into github mayadata-io/e2e-openshift repository.
+#This token is set as an env in ~/.profile file in the test cluster.
+source ~/.profile
+gitToken=$github_token
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+#Creating e2e custom resource result for all the tests running in this stage.
+#In Gitlab, all the jobs in a stage runs parallely. Inorder to run this serially, each job in the stage waits for the other to get completed.
+
+bash Openshift-EE/utils/e2e-cr jobname:mongodb-pod-failure jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:mongodb-pod-failure jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:cstor-target-kill jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:cstor-pool-kill jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:cstor-pool-delete jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:cstor-target-network-delay jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:cstor-target-network-loss jobphase:Waiting
+
+#### Generating test name using test case name
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=application-pod-failure metadata="")
+echo $test_name
+
+cd litmus
+# copy the content of application pod failure chaos `run_litmus_test.yml` into a different file to update the test specific parameters.
+cp experiments/chaos/app_pod_failure/run_litmus_test.yml mongodb_failure.yml
+
+# Update the environmental variables in litmus job spec.
+: << EOF
+  --------------------------------------------------------------------------------------------------------------------     
+ | specAttribute     | kind   |         default value               | test specifc value                              |
+  ------------------------------------------------------------------------------------------------------------------- |
+ | appLabel          | env    | app=jenkins-app                     | app=mongo                                       |
+ | pvcName           | env    | openebs-mongo                       | openebs-mongo-mongo-0                           | 
+ | appNamespace      | env    | app-jenkins-ns                      | app-mongo-ns-cstor                              |
+  ---------------------------------------------------------------------------------------------------------------------
+EOF
+# Replacing the namespace, label and mode of deployment in the litmus book
+
+sed -i -e 's/value: app-jenkins-ns/value: app-mongo-ns-cstor/g' \
+       -e 's/'app=jenkins-app'/'app=mongo'/g' \
+       -e 's/value: deployment/value: statefulset/g' mongodb_failure.yml
+
+cat mongodb_failure.yml
+
+# Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
+bash ../Openshift-EE/utils/litmus_job_runner label='name:application-pod-failure' job=mongodb_failure.yml
+cd ..
+
+# Get the cluster state Once the litmus jobs completed.
+bash Openshift-EE/utils/dump_cluster_state;
+
+# Update the e2e event for the job.
+bash Openshift-EE/utils/event_updater jobname:mongodb-pod-failure $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+
+# Obtain the status of the test using litmusresult(lr) 
+testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+
+# Update the e2e cr once the job is completed
+bash Openshift-EE/utils/e2e-cr jobname:mongodb-pod-failure jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:$testResult
+
+python3 Openshift-EE/utils/result/result_update.py $job_id $case_id 4-chaos "Induce mongodb pod failure and check if it can be recovered successfully." $testResult $pipeline_id "$current_time" $commit_id $gitToken
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4
+else
+  pod
+fi

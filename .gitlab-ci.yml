@@ -14,7 +14,7 @@ stages:
     - chmod 755 ./Openshift-EE/pipelines/mongodb/stages/1-cluster-setup/3OLN-cluster-state/cluster-state
     - ./Openshift-EE/pipelines/mongodb/stages/1-cluster-setup/3OLN-cluster-state/cluster-state
 
-Y5YL-OpenEBS-v0.8.1:
+Y5YL-OpenEBS:
   image: openebs/openshift-ci:latest
   stage: OPENEBS-SETUP
   script:
@@ -40,36 +40,114 @@ AWVX-OpenEBS-POLICIES:
   stage: FUNCTIONAL
   when: always
   dependencies:
-    - Y5YL-OpenEBS-v0.8.1
+    - Y5YL-OpenEBS
      
-ZPRM-mongodb-Provision:
+ZPRM-mongodb-Provision-cStor:
   extends: .func_test_template
   script: 
-    - chmod 775 ./Openshift-EE/pipelines/mongodb/stages/3-functional/ZPRM-deploy-mongodb/deploy-mongodb
-    - ./Openshift-EE/pipelines/mongodb/stages/3-functional/ZPRM-deploy-mongodb/deploy-mongodb
+    - chmod 775 ./Openshift-EE/pipelines/mongodb/stages/3-functional/ZPRM-deploy-mongodb-cstor/mongodb-deploy-cstor
+    - ./Openshift-EE/pipelines/mongodb/stages/3-functional/ZPRM-deploy-mongodb-cstor/mongodb-deploy-cstor
+
+MI15-mongodb-Provision-jiva:
+  extends: .func_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/mongodb/stages/3-functional/MI15-deploy-mongodb-jiva/deploy-mongodb-jiva
+    - ./Openshift-EE/pipelines/mongodb/stages/3-functional/MI15-deploy-mongodb-jiva/deploy-mongodb-jiva
 
 .chaos_test_template:
   image: openebs/openshift-ci:latest
   stage: CHAOS
   when: always
   dependencies:
-    - Y5YL-OpenEBS-v0.8.1
+    - Y5YL-OpenEBS
 
-62F1-App-pod-kill:
+UQPC-App-pod-kill:
   extends: .chaos_test_template
   script: 
-    - chmod 775 ./Openshift-EE/pipelines/mongodb/stages/4-chaos/62F1-mongodb-pod-failure/app-pod-kill
-    - ./Openshift-EE/pipelines/mongodb/stages/4-chaos/62F1-mongodb-pod-failure/app-pod-kill
+    - chmod 775 ./Openshift-EE/pipelines/mongodb/stages/4-chaos/UQPC-mongodb-pod-failure/app-pod-failure
+    - ./Openshift-EE/pipelines/mongodb/stages/4-chaos/UQPC-mongodb-pod-failure/app-pod-failure
 
-NUTL-openebs-Uninstall:
+CX2A-cstor-target-kill:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/mongodb/stages/4-chaos/CX2A-cstor-target-kill/cstor-target-kill
+    - ./Openshift-EE/pipelines/mongodb/stages/4-chaos/CX2A-cstor-target-kill/cstor-target-kill
+
+2XFL-cstor-pool-kill:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/mongodb/stages/4-chaos/2XFL-cstor-pool-kill/cstor-pool-kill
+    - ./Openshift-EE/pipelines/mongodb/stages/4-chaos/2XFL-cstor-pool-kill/cstor-pool-kill
+
+K9ME-cstor-pool-delete:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/mongodb/stages/4-chaos/K9ME-cstor-pool-delete/cstor-pool-delete
+    - ./Openshift-EE/pipelines/mongodb/stages/4-chaos/K9ME-cstor-pool-delete/cstor-pool-delete
+
+W2HY-cstor-target-network-delay:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/mongodb/stages/4-chaos/W2HY-cstor-target-network-delay/cstor-target-network-delay
+    - ./Openshift-EE/pipelines/mongodb/stages/4-chaos/W2HY-cstor-target-network-delay/cstor-target-network-delay
+
+ZFIG-cstor-target-network-loss:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/mongodb/stages/4-chaos/ZFIG-cstor-target-network-loss/cstor-target-network-loss
+    - ./Openshift-EE/pipelines/mongodb/stages/4-chaos/ZFIG-cstor-target-network-loss/cstor-target-network-loss
+
+62F1-jiva-app-kill:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/mongodb/stages/4-chaos/62F1-jiva-app-kill/jiva-app-kill
+    - ./Openshift-EE/pipelines/mongodb/stages/4-chaos/62F1-jiva-app-kill/jiva-app-kill
+
+1ODW-jiva-replica-failure:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/mongodb/stages/4-chaos/1ODW-jiva-replica-failure/jiva-replica-failure
+    - ./Openshift-EE/pipelines/mongodb/stages/4-chaos/1ODW-jiva-replica-failure/jiva-replica-failure
+
+NPAT-jiva-replica-network-delay:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/mongodb/stages/4-chaos/NPAT-jiva-replica-network-delay/jiva-replica-network-delay
+    - ./Openshift-EE/pipelines/mongodb/stages/4-chaos/NPAT-jiva-replica-network-delay/jiva-replica-network-delay
+
+GAFY-jiva-controller-kill:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/mongodb/stages/4-chaos/GAFY-jiva-controller-kill/jiva-controller-kill
+    - ./Openshift-EE/pipelines/mongodb/stages/4-chaos/GAFY-jiva-controller-kill/jiva-controller-kill
+
+CAJ9-jiva-controller-network-delay:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/mongodb/stages/4-chaos/CAJ9-jiva-controller-network-delay/jiva-controller-network-delay
+    - ./Openshift-EE/pipelines/mongodb/stages/4-chaos/CAJ9-jiva-controller-network-delay/jiva-controller-network-delay
+
+XJWF-jiva-replica-node-affinity:
+  extends: .chaos_test_template
+  script: 
+    - chmod 775 ./Openshift-EE/pipelines/mongodb/stages/4-chaos/XJWF-jiva-replica-node-affinity/jiva-replica-node-affinity
+    - ./Openshift-EE/pipelines/mongodb/stages/4-chaos/XJWF-jiva-replica-node-affinity/jiva-replica-node-affinity
+
+NUTL-deprovision-mongodb-cstor:
   image: openebs/openshift-ci:latest
   stage: CLEANUP
   when: always
-  dependencies:
-    - Y5YL-OpenEBS-v0.8.1
   script:
-    - chmod 775 ./Openshift-EE/pipelines/mongodb/stages/5-cleanup/NUTL-openebs-cleanup/openebs-cleanup
-    - ./Openshift-EE/pipelines/mongodb/stages/5-cleanup/NUTL-openebs-cleanup/openebs-cleanup
+    - chmod 775 ./Openshift-EE/pipelines/mongodb/stages/5-cleanup/NUTL-mongodb-cstor-cleanup/delete-mongodb-cstor
+    - ./Openshift-EE/pipelines/mongodb/stages/5-cleanup/NUTL-mongodb-cstor-cleanup/delete-mongodb-cstor
+ 
+RH0D-deprovision-mongodb-jiva:
+  image: openebs/openshift-ci:latest
+  stage: CLEANUP
+  when: always
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/mongodb/stages/5-cleanup/RH0D-mongodb-jiva-cleanup/delete-mongodb-jiva
+    - ./Openshift-EE/pipelines/mongodb/stages/5-cleanup/RH0D-mongodb-jiva-cleanup/delete-mongodb-jiva
   
 L1ZC-cluster-Delete:
   image: openebs/openshift-ci:latest
