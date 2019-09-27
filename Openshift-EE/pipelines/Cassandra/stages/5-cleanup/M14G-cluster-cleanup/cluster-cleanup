@@ -38,14 +38,14 @@ sed -i '/10.23.1.13/a \
 ' k8s/on-prem/openshift-installer/ip.csv
 
 #Replace the Vm names in csv file
-sed -i -e 's/auto1/AutoCluster-M/g' \
--e 's/auto2/AutoCluster-N1/g' \
--e 's/auto3/AutoCluster-N2/g' \
--e 's/auto4/AutoCluster-N3/g' k8s/on-prem/openshift-installer/vm_name.csv
+sed -i -e 's/auto1/gitlab-master.mayalabs.io/g' \
+-e 's/auto2/gitlab-node1.mayalabs.io/g' \
+-e 's/auto3/gitlab-node2.mayalabs.io/g' \
+-e 's/auto4/gitlab-node3.mayalabs.io/g' k8s/on-prem/openshift-installer/vm_name.csv
 
-sed -i '/AutoCluster-N3/a \
-AutoCluster-N4 \
-AutoCluster-N5
+sed -i '/gitlab-node3.mayalabs.io/a \
+gitlab-node4.mayalabs.io \
+gitlab-node5.mayalabs.io
 ' k8s/on-prem/openshift-installer/vm_name.csv
 
 #Replace the snapshot name and exp ip in vars
