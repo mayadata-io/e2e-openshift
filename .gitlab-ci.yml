@@ -517,6 +517,12 @@ VD8F-cstor-app-node-failure:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/5-infra-chaos/VD8F-node-failure-cstor/node-failure-cstor
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/5-infra-chaos/VD8F-node-failure-cstor/node-failure-cstor
 
+T1JZ-jiva-app-node-failure:
+  extends: .infra_chaos_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/5-infra-chaos/T1JZ-node-failure-jiva/node-failure-jiva
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/5-infra-chaos/T1JZ-node-failure-jiva/node-failure-jiva
+
 .cleanup_test_template:
   image: openebs/openshift-ci:latest
   stage:  OPENEBS-CLEANUP
