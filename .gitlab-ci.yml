@@ -287,7 +287,7 @@ Y4ET-Jiva-snapshot-clone:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/Y4ET-Jiva-snapshot-clone/jiva-snapshot-clone
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/Y4ET-Jiva-snapshot-clone/jiva-snapshot-clone
 
-8QQP-Jiva-snapshot-delete:
+8QQP-Jiva-delete-autogen-snapshot:
   extends: .func_test_template
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/8QQP-Jiva-Snapshot-Delete/jiva-snapshot-delete
@@ -516,6 +516,12 @@ VD8F-cstor-app-node-failure:
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/5-infra-chaos/VD8F-node-failure-cstor/node-failure-cstor
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/5-infra-chaos/VD8F-node-failure-cstor/node-failure-cstor
+
+T1JZ-jiva-app-node-failure:
+  extends: .infra_chaos_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/5-infra-chaos/T1JZ-node-failure-jiva/node-failure-jiva
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/5-infra-chaos/T1JZ-node-failure-jiva/node-failure-jiva
 
 .cleanup_test_template:
   image: openebs/openshift-ci:latest
