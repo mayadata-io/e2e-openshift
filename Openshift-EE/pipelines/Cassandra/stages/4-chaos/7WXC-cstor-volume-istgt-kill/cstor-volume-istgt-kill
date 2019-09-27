@@ -63,6 +63,7 @@ sed -i -e 's/value: percona-mysql-claim/value: openebs-cassandra-cassandra-0/g' 
 -e 's/generateName: openebs-target-failure/generateName: openebs-target-istgt-kill/g' \
 -e 's/name: openebs-target-failure/name: openebs-target-istgt-kill/g' \
 -e 's/name: target-failure/name: cstor-istgt-kill/g' \
+-e 's/value: deployment/value: statefulset/g' \
 -e 's/"target-zrepl-kill"/"target-kill"/g' \
 -e 's/"cstor-volume-mgmt"/"cstor-istgt"/g' \
 -e 's/value: '\''name=percona'\''/value: '\''app=cassandra'\''/g' \

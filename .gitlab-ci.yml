@@ -171,7 +171,7 @@ WWDM-deprovision-cassandra-cstor:
   when: always
   script:
     - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/5-cleanup/5N53-cassandra-jiva-cleanup/delete-cassandra-jiva
-    - ./Openshift-EE/pipelines/Cassandra/stages/5-cleanup/WWDM-cassandra-jiva-cleanup/delete-cassandra-jiva
+    - ./Openshift-EE/pipelines/Cassandra/stages/5-cleanup/5N53-cassandra-jiva-cleanup/delete-cassandra-jiva
   
 M14G-cluster-Delete:
   image: openebs/openshift-ci:latest

@@ -60,6 +60,7 @@ EOF
 
 sed -i -e 's/value: app-percona-ns/value: app-cass-ns/g' \
        -e 's/'name=percona'/'app=cassandra'/g' \
+       -e 's/value: deployment/value: statefulset/g' \
        -e 's/percona-mysql-claim/openebs-cassandra-cassandra-0/g' target_kill.yml
 
 cat target_kill.yml
