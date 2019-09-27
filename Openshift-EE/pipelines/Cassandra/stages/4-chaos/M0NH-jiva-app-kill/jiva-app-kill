@@ -65,7 +65,6 @@ EOF
 sed -i -e 's/value: '\''app=jenkins-app'\''/value: '\''app=cassandra-jiva'\''/g' \
 -e 's/generateName: application-pod-failure/generateName: application-pod-failure-jiva/g' \
 -e 's/name: application-pod-failure/name: application-pod-failure-jiva/g' \
--e 's/value: deployment/value: statefulset/g' \
 -e 's/value: app-jenkins-ns/value: app-cass-ns-jiva/g' jiva_app_kill.yml
 
 sed -i '/command:/i \
