@@ -63,6 +63,7 @@ EOF
 
 sed -i -e 's/value: percona-mysql-claim/value: openebs-cassandra-cassandra-0/g' \
 -e 's/generateName: openebs-target-failure/generateName: cstor-volume-mgmt-kill/g' \
+-e 's/name: target-failure/name: cstor-mgmt-kill/g' \
 -e 's/name: openebs-target-failure/name: cstor-volume-mgmt-kill/g' \
 -e 's/value: '\''name=percona'\''/value: '\''app=cassandra'\''/g' \
 -e 's/value: app-percona-ns/value: app-cass-ns/g' run_cstor_volume_mgmt_kill_test.yml

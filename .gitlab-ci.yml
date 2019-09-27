@@ -103,7 +103,7 @@ OI4T-cstor-target-network-delay:
     - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/OI4T-cstor-target-network-delay/cstor-target-network-delay
     - ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/OI4T-cstor-target-network-delay/cstor-target-network-delay
 
-IVQO-target-network-loss:
+IVQO-cstor-target-network-loss:
   extends: .chaos_test_template
   script: 
     - chmod 775 ./Openshift-EE/pipelines/Cassandra/stages/4-chaos/IVQO-cstor-target-network-loss/cstor-target-network-loss

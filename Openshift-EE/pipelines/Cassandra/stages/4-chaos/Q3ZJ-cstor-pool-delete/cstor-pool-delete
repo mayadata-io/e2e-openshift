@@ -59,6 +59,7 @@ EOF
 
 sed -i -e 's/app-percona-ns/app-cass-ns/g' \
        -e 's/'name=percona'/'app=cassandra'/g' \
+       -e 's/name: pool-failure/name: pool-delete/g' \
        -e 's/openebs-pool-failure/openebs-pool-delete/g' \
        -e 's/"pool-kill"/"pool-delete"/g' \
        -e 's/percona-mysql-claim/openebs-cassandra-cassandra-0/g' pool_delete.yml

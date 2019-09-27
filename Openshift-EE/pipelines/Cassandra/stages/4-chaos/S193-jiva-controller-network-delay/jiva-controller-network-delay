@@ -61,7 +61,8 @@ EOF
 
 sed -i -e 's/value: percona-mysql-claim/value: openebs-cassandra-jiva-cassandra-0/g' \
 -e 's/value: '\''name=percona'\''/value: '\''app=cassandra-jiva'\''/g' \
--e 's/generateName: openebs-target-network-delay-/generateName: openebs-controller-network-delay/g' \
+-e 's/generateName: openebs-target-network-delay-/generateName: openebs-controller-network-delay-/g' \
+-e 's/name: target-network-delay/name: controller-network-delay/g' \
 -e 's/name: openebs-target-network-delay/name: controller-network-delay/g' \
 -e 's/value: app-percona-ns/value: app-cass-ns-jiva/g' run_target_network_delay_test.yml
 

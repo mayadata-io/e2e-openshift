@@ -33,7 +33,7 @@ echo $present_dir
 #Creating e2e custom resource result for all the tests running in this stage.
 #In Gitlab, all the jobs in a stage runs parallely. Inorder to run this serially, each job in the stage waits for the other to get completed.
 
-bsah Openshift-EE/utils/pooling jobname:jiva-app-kill jobphase:Waiting
+bash Openshift-EE/utils/pooling jobname:jiva-app-kill jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:jiva-app-kill jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 bash Openshift-EE/utils/e2e-cr jobname:jiva-replica-failure jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:jiva-replica-network-delay jobphase:Waiting
