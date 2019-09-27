@@ -20,6 +20,7 @@ efk_link = "\"https://e2e-logs.openebs100.io/app/kibana#/discover?_g=(refreshInt
 
 efk_url = "<a href={0}>{1}</a>".format(efk_link,test_result)
 
+
 #github user-specific token authentication
 git_auth = github.Github(token)
 
@@ -27,7 +28,7 @@ git_auth = github.Github(token)
 username = "openebs"
 repos = "e2e-openshift"
 repo = git_auth.get_repo("{owner}/{repo_name}".format(owner=username, repo_name=repos))
-path = 'Openshift-EE/pipelines/OpenEBS-base/stages/{}'.format(stage)
+path = 'Openshift-EE/pipelines/mongodb/stages/{}'.format(stage)
 job_folder = "" 
 dir = repo.get_dir_contents(path)
 for i in dir:
@@ -37,27 +38,29 @@ for i in dir:
         
 
 
-updated_path = "Openshift-EE/pipelines/OpenEBS-base/stages/{}/{}/README.md".format(stage,job_folder)
+updated_path = "Openshift-EE/pipelines/mongodb/stages/{}/{}/README.md".format(stage,job_folder)
+print("https://github.com/"+username+'/'+repos+'/'+"tree/master/"+updated_path)
 file = repo.get_file_contents(updated_path)
 file_content=str(file.decoded_content)
-file_content = re.sub(r'\\n','\\n',file_content)		
-file_content = file_content.strip("b\'\'")
+file_content=str(file.decoded_content, 'utf-8')
 
 
 content_list = file_content.split('\n')
+#print(content_list)
+
 # updating result's table if it is already there
 if file_content.find('|')>0:
-    new_job = '|     {}                    |  {}           | {}  |'.format(test_id,test_desc,test_result)
-    index = content_list.index(' | Test ID |   Test Description               | Test Result   |')
+    new_job = '|     {}           |  {}           | {}  | {} |'.format(job_url,test_desc,time_stamp ,efk_url)
+    index = content_list.index('| Job ID |   Test Description         | Execution Time |Test Result   |')
     content_list.insert(index+2,new_job)
     string = ('\n').join(content_list)
     
 # creating result's table for first entry 
 else:
-    string =           ' | Test ID |   Test Description               | Test Result   |\n'
-    string = string + (' |---------|---------------------------| --------------|\n')
-    string = string + (' |    {}   |  {}           |  {}     |\n'.format(test_id,test_desc,test_result))
-    index = len(content_list)-1
+    string =           '| Job ID |   Test Description         | Execution Time |Test Result   |\n'
+    string = string + (' |---------|---------------------------| --------------|--------|\n')
+    string = string + (' |    {}   |  {}           |  {}     |{}  |\n'.format(job_url,test_desc,time_stamp, efk_url))
+    index = len(content_list)
     content_list.insert(index,string)
     string = ('\n').join(content_list)
 
