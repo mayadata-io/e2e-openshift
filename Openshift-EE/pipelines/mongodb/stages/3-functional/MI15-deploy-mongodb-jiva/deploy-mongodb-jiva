@@ -2,6 +2,7 @@
 set -x
 
 pod() {
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'oc adm policy add-scc-to-user anyuid system:serviceaccount:app-mongo-ns-jiva:default' 
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/mongodb/stages/3-functional/MI15-deploy-mongodb-jiva/deploy-mongodb-jiva node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
 }
 

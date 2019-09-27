@@ -97,10 +97,6 @@ echo "Applying rbac.yml and creating Litmus result CR***************************
 kubectl apply -f ./hack/rbac.yaml
 kubectl apply -f ./hack/crds.yaml
 
-echo "Copying kube config for litmus"
-cp ~/.kube/config admin.conf
-kubectl create configmap kubeconfig --from-file=admin.conf -n litmus
-
 echo "Running litmus test for deploying openebs.."
 
 run_test=providers/openebs/installers/operator/master/litmusbook/run_litmus_test.yaml

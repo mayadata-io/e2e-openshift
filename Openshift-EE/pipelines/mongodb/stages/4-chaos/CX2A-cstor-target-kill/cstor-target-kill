@@ -58,7 +58,8 @@ cp experiments/chaos/openebs_target_failure/run_litmus_test.yml target_kill.yml
 EOF
 # Replacing the namespace, label and mode of deployment in the litmus book
 
-sed -i -e 's/value: app-percona-ns/value: app-mongo-ns-cstor/g' \
+sed -i -e 's/value: deployment/value: statefulset/g' \
+       -e 's/value: app-percona-ns/value: app-mongo-ns-cstor/g' \
        -e 's/'name=percona'/'app=mongo'/g' \
        -e 's/percona-mysql-claim/openebs-mongo-mongo-0/g' target_kill.yml
 

@@ -14,4 +14,4 @@ spec:
     build_id: <openebs-id>
     job_id: <job-id>
     pipeline_id: <pipeline-id>
-    event:
+    event:   
