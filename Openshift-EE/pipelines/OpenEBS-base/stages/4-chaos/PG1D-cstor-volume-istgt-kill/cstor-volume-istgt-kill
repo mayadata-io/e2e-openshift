@@ -203,6 +203,7 @@ cp apps/busybox/deployers/run_litmus_test.yml deprovision_target_istgt_kill.yml
 
 sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovision-istgt-kill/g' \
 -e 's/app: busybox-litmus/app: busybox-deprovision-istgt-kill/g' \
+-e 's/name: target-failure/name: target-istgt-kill/g' \
 -e 's/app=busybox-sts/app=istgt-kill/g' \
 -e 's/value: statefulset/value: deployment/g' \
 -e 's/value: openebs-cstor-sparse/value: openebs-cstor-disk/g' \
