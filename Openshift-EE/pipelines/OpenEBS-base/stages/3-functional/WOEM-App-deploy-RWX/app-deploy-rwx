@@ -26,6 +26,9 @@ cd litmus
 echo "Running the litmus test.."
 cp apps/wordpress/deployers/run_litmus_test.yml deploy_app.yml
 
+# Replace the storage class name
+sed -i -e 's/value: openebs-nfs/value: openebs-nfs4/g' deploy_app.yml
+
 cat deploy_app.yml
 
 bash ../Openshift-EE/utils/litmus_job_runner label='app:wordpress-litmus' job=deploy_app.yml
