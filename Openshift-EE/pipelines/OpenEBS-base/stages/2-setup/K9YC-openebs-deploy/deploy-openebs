@@ -80,6 +80,8 @@ export OPENEBS_IO_CSTOR_POOL_IMAGE=openebs/cstor-pool:$releaseTag
 export OPENEBS_IO_CSTOR_TARGET_IMAGE=openebs/cstor-istgt:$releaseTag
 
 export OPENEBS_IO_CSTOR_POOL_EXPORTER_IMAGE=openebs/m-exporter:$releaseTag
+
+export CSPC_OPERATOR_IMAGE=openebs/cspc-operator:$releaseTag
 ######################################################
 export NODE_DISK_MANAGER_IMAGE=$ndmTag
 
