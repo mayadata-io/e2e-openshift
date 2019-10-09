@@ -127,6 +127,16 @@ sed -i '/command:/i \
             value: '"$run_id"'\
 ' run_targetistgt_kill_test.yml
 
+## Replace the value of DATA_PERSISTENCE with application name in litmus experiment. 
+sed -i '/name: DATA_PERSISTENCE/{n;s/.*/            value: busybox/}' run_targetistgt_kill_test.yml
+
+## Insert the set of variables for busybox data consistency util into configmap spec.
+sed -i '/parameters.yml: |/a \
+    blocksize: 4k\
+    blockcount: 1024\
+    testfile: targetistgtkilltest
+' run_targetistgt_kill_test.yml
+
 echo "Running the litmus test for Busybox Deployment Scaleup.."
 cat run_targetistgt_kill_test.yml
 
