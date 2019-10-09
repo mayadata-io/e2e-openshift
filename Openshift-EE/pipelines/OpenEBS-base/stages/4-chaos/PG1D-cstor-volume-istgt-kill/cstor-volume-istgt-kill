@@ -114,6 +114,7 @@ cd litmus
 cp experiments/chaos/openebs_target_failure/run_litmus_test.yml run_targetistgt_kill_test.yml
 
 sed -i -e 's/value: percona-mysql-claim/value: openebs-bb-istgt-targetkill/g' \
+-e 's/name: target-failure/name: target-istgt-kill/g' \
 -e 's/name: openebs-target-failure/name: openebs-target-istgt-failure/g' \
 -e 's/target-zrepl-kill/target-kill/g' \
 -e 's/cstor-volume-mgmt/cstor-istgt/g' \
@@ -124,6 +125,16 @@ sed -i -e 's/value: percona-mysql-claim/value: openebs-bb-istgt-targetkill/g' \
 sed -i '/command:/i \
           - name: RUN_ID\
             value: '"$run_id"'\
+' run_targetistgt_kill_test.yml
+
+## Replace the value of DATA_PERSISTENCE with application name in litmus experiment. 
+sed -i '/name: DATA_PERSISTENCE/{n;s/.*/            value: busybox/}' run_targetistgt_kill_test.yml
+
+## Insert the set of variables for busybox data consistency util into configmap spec.
+sed -i '/parameters.yml: |/a \
+    blocksize: 4k\
+    blockcount: 1024\
+    testfile: targetistgtkilltest
 ' run_targetistgt_kill_test.yml
 
 echo "Running the litmus test for Busybox Deployment Scaleup.."
@@ -203,7 +214,6 @@ cp apps/busybox/deployers/run_litmus_test.yml deprovision_target_istgt_kill.yml
 
 sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovision-istgt-kill/g' \
 -e 's/app: busybox-litmus/app: busybox-deprovision-istgt-kill/g' \
--e 's/name: target-failure/name: target-istgt-kill/g' \
 -e 's/app=busybox-sts/app=istgt-kill/g' \
 -e 's/value: statefulset/value: deployment/g' \
 -e 's/value: openebs-cstor-sparse/value: openebs-cstor-disk/g' \
