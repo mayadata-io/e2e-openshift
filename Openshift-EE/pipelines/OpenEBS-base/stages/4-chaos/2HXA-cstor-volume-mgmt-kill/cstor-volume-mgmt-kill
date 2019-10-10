@@ -70,7 +70,7 @@ bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:target-mgmt-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 if [ "$?" != "0" ]; then
-python3 Openshift-EE/utils/result/result_update.py $job_id 2HXA 4-chaos "Induce failure on cstor-pool-mgmt container in cstor-pool pod and check if it doesn't affect the application availability" Fail $pipeline_id "$current_time" $commit_id $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id 2HXA 4-chaos "Induce failure on cstor-volume-mgmt container in cstor-pool pod and check if it doesn't affect the application availability" Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 
@@ -116,7 +116,7 @@ bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:target-mgmt-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 if [ "$?" != "0" ]; then
-python3 Openshift-EE/utils/result/result_update.py $job_id 2HXA 4-chaos "Induce failure on cstor-pool-mgmt container in cstor-pool pod and check if it doesn't affect the application availability" Fail $pipeline_id "$current_time" $commit_id $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id 2HXA 4-chaos "Induce failure on cstor-volume-mgmt container in cstor-pool pod and check if it doesn't affect the application availability" Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 
@@ -124,7 +124,7 @@ fi
 # LitmusBook 3 #
 ################
 
-# Performing Cstor pool Management kill
+# Performing Cstor volume Management kill
 
 run_id="mgmt";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-target-failure metadata=${run_id})
 echo $test_name
@@ -152,7 +152,7 @@ bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:target-mgmt-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 if [ "$?" != "0" ]; then
-python3 Openshift-EE/utils/result/result_update.py $job_id 2HXA 4-chaos "Induce failure on cstor-pool-mgmt container in cstor-pool pod and check if it doesn't affect the application availability" Fail $pipeline_id "$current_time" $commit_id $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id 2HXA 4-chaos "Induce failure on cstor-volume-mgmt container in cstor-pool pod and check if it doesn't affect the application availability" Fail $pipeline_id "$current_time" $commit_id $gittoken
 
 exit 1;
 fi
@@ -204,7 +204,7 @@ rc_val=$(echo $?)
 
 # Update result of the test case in github mayadata-io/e2e-openshift repository.
 if [ "$rc_val" != "0" ]; then
-python3 Openshift-EE/utils/result/result_update.py $job_id 2HXA 4-chaos "Induce failure on cstor-pool-mgmt container in cstor-pool pod and check if it doesn't affect the application availability" Fail $pipeline_id "$current_time" $commit_id $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id 2HXA 4-chaos "Induce failure on cstor-volume-mgmt container in cstor-pool pod and check if it doesn't affect the application availability" Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 
@@ -260,13 +260,13 @@ rc_val=$(echo $?)
 # Update result of the test case in github mayadata-io/e2e-openshift repository
 
 if [ "$rc_val" != "0" ]; then
-python3 Openshift-EE/utils/result/result_update.py $job_id 2HXA 4-chaos "Induce failure on cstor-pool-mgmt container in cstor-pool pod and check if it doesn't affect the application availability" Fail $pipeline_id "$current_time" $commit_id $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id 2HXA 4-chaos "Induce failure on cstor-volume-mgmt container in cstor-pool pod and check if it doesn't affect the application availability" Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 
 current_time=$(eval $time)
 bash Openshift-EE/utils/e2e-cr jobname:target-mgmt-kill jobphase:Completed end_time:"$current_time" test_result:Pass jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
-python3 Openshift-EE/utils/result/result_update.py $job_id 2HXA 4-chaos "Induce failure on cstor-pool-mgmt container in cstor-pool pod and check if it doesn't affect the application availability" Pass $pipeline_id "$current_time" $commit_id $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id 2HXA 4-chaos "Induce failure on cstor-volume-mgmt container in cstor-pool pod and check if it doesn't affect the application availability" Pass $pipeline_id "$current_time" $commit_id $gittoken
 
 if [ "$rc_val" != "0" ]; then
 exit 1;
