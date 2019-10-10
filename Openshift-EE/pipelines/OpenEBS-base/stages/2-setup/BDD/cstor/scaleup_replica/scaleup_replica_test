@@ -21,6 +21,8 @@ gittoken=$(echo "$github_token")
 time="date"
 current_time=$(eval $time)
 
+#pooling over previous job to complete	
+bash Openshift-EE/utils/pooling jobname:s2-j1-openebs-deploy
 bash Openshift-EE/utils/e2e-cr jobname:bdd-cstor-scaleup-replica jobphase:Running init_time:"$current_time" init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 cd /home/devuser/go/src/github.com/openebs
