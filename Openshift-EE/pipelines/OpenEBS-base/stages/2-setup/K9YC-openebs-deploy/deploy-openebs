@@ -81,6 +81,16 @@ export OPENEBS_IO_CSTOR_TARGET_IMAGE=openebs/cstor-istgt:$releaseTag
 
 export OPENEBS_IO_CSTOR_POOL_EXPORTER_IMAGE=openebs/m-exporter:$releaseTag
 
+export OPENEBS_LOCALPV_PROVISIONER_IMAGE=openebs/provisioner-localpv:$releaseTag
+
+export OPENEBS_ADMISSION_SERVER_IMAGE=openebs/admission-server:$releaseTag
+
+export OPENEBS_SNAPSHOT_OPERATOR_IMAGE=openebs/snapshot-controller:$releaseTag
+
+export OPENEBS_PROVISIONER_IMAGE=openebs/openebs-k8s-provisioner:$releaseTag
+
+export SNAPSHOT_PROVISIONER_IMAGE=openebs/snapshot-provisioner:$releaseTag
+
 export CSPC_OPERATOR_IMAGE=openebs/cspc-operator:$releaseTag
 ######################################################
 export NODE_DISK_MANAGER_IMAGE=$ndmTag
