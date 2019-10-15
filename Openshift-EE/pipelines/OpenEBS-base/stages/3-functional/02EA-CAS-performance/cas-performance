@@ -2,13 +2,14 @@
 set -x
 
 pod() {
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/02EA-CAS-performance/cas-performance node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/02EA-CAS-performance/cas-performance node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"' '"'$RELEASE_TAG'"'
 }
 
 node() {
 job_id=$1 #Gitlab job id obtain from the gitlab env ($CI_JOB_ID).
 pipeline_id=$2 # Gitlab pipeline id obtained from gitlab env ($CI_PIPELINE_ID).
 commit_id=$3 #Gitlab commit id Obtained fron gilab env ($CI_COMMIT_SHA).
+releaseTag=$(echo $4)
 case_id=02EA  #test case ID.
 gitlab_stage=3-functional # Gitlab stage where this test case is running.
 
@@ -26,7 +27,7 @@ echo $present_dir
 #Creating e2e custom resource result for the test.
 
 bash Openshift-EE/utils/e2e-cr jobname:cas-performance jobphase:Waiting
-bash Openshift-EE/utils/e2e-cr jobname:cas-performance jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:cas-performance jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
 ################
 # LitmusBook 1 #
@@ -258,7 +259,7 @@ exit 1;
 fi
 
 # Update the e2e cr once the job is completed
-bash Openshift-EE/utils/e2e-cr jobname:cas-performance jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:$testResult
+bash Openshift-EE/utils/e2e-cr jobname:cas-performance jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:$testResult
 
 python3 Openshift-EE/utils/result/result_update.py $job_id $case_id 3-functional "Check if the application is successfully deployed using CAS performance tuning parameters" $testResult $pipeline_id "$current_time" $commit_id $gitToken
 
@@ -269,7 +270,7 @@ fi
 }
 
 if [ "$1" == "node" ];then
-  node $2 $3 $4
+  node $2 $3 $4 $5
 else
   pod
 fi

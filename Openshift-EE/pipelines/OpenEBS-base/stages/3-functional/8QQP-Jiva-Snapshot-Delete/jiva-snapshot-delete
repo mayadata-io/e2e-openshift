@@ -3,13 +3,14 @@ set -x
 
 pod() {
 # sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/openebs/e2e-openshift.git'
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/8QQP-Jiva-Snapshot-Delete/jiva-snapshot-delete node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/8QQP-Jiva-Snapshot-Delete/jiva-snapshot-delete node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
 }
 
 node() {
 job_id=$(echo $1)
 pipeline_id=$(echo $2)
 commit_id=$(echo $3)
+releaseTag=$(echo $4)
 case_id=8QQP
 
 source ~/.profile
@@ -22,7 +23,7 @@ present_dir=$(pwd)
 echo $present_dir
 
 bash Openshift-EE/utils/e2e-cr jobname:jiva-internal-snapshot-deletion jobphase:Waiting
-bash Openshift-EE/utils/e2e-cr jobname:jiva-internal-snapshot-deletion jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:jiva-internal-snapshot-deletion jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
 ################
 # LitmusBook 1 #
@@ -63,7 +64,7 @@ fi
 }
 
 if [ "$1" == "node" ];then
-  node $2 $3 $4
+  node $2 $3 $4 $5
 else
   pod
 fi

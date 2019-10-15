@@ -6,7 +6,7 @@ echo $CI_JOB_ID
 ###clone e2e-openshift-repo
 echo "cloning e2e-openshift repo*************"
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/openebs/e2e-openshift.git'
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UH9A-Jiva-Data-Integrity/data-integrity node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/UH9A-Jiva-Data-Integrity/data-integrity node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
 }
 
 node() {
@@ -15,6 +15,7 @@ gittoken=$(echo "$github_token")
 job_id=$(echo $1)
 pipeline_id=$(echo $2)
 commit_id=$(echo $3)
+releaseTag=$(echo $4)
 case_id=UH9A
 
 time="date"
@@ -23,7 +24,7 @@ current_time=$(eval $time)
 present_dir=$(pwd)
 echo $present_dir
 
-bash Openshift-EE/utils/e2e-cr jobname:data-integrity-jiva jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:data-integrity-jiva jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 bash Openshift-EE/utils/e2e-cr jobname:data-integrity-jiva jobphase:Running
 
 ################
@@ -73,7 +74,7 @@ python3 Openshift-EE/utils/result/result_update.py $job_id UH9A 3-functional "En
 fi
 
 current_time=$(eval $time)
-bash Openshift-EE/utils/e2e-cr jobname:data-integrity-jiva jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:$testResult
+bash Openshift-EE/utils/e2e-cr jobname:data-integrity-jiva jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:$testResult
 
 python3 Openshift-EE/utils/result/result_update.py $job_id UH9A 3-functional "Ensure the data integrity in openebs volume using fio" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 
@@ -83,7 +84,7 @@ fi
 }
 
 if [ "$1" == "node" ];then
-  node $2 $3 $4
+  node $2 $3 $4 $5
 else
   pod
 fi

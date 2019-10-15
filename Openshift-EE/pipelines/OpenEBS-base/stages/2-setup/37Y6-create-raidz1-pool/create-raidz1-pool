@@ -1,7 +1,7 @@
 #!/bin/bash
 set -x
 pod() {
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/37Y6-create-raidz1-pool/create-raidz1-pool node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/37Y6-create-raidz1-pool/create-raidz1-pool node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
 
 }
 
@@ -11,6 +11,7 @@ job_id=$(echo $1)
 pipeline_id=$(echo $2)
 case_id=37Y6
 commit_id=$(echo $3)
+releaseTag=$(echo $4)
 source ~/.profile
 gittoken=$(echo "$github_token")
 
@@ -20,7 +21,7 @@ current_time=$(eval $time)
 #pooling over previous job to complete
 echo "*******Creating cstor-pool**************"
 bash Openshift-EE/utils/pooling jobname:s2-j3-cstor-mirrored-pool
-bash Openshift-EE/utils/e2e-cr jobname:s2-j4-cstor-raidz1-pool jobphase:Running init_time:"$current_time"
+bash Openshift-EE/utils/e2e-cr jobname:s2-j4-cstor-raidz1-pool jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
 run_id="raidz1";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=cstor-block-device-pool-provision metadata=${run_id})
 echo $test_name

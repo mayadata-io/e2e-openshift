@@ -2,13 +2,14 @@
 set -x
 
 pod() {
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/SN3A-Jiva-Memory-Consumption/memory-consumption node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/SN3A-Jiva-Memory-Consumption/memory-consumption node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
 }
 
 node() {
 job_id=$(echo $1)
 pipeline_id=$(echo $2)
 commit_id=$(echo $3)
+releaseTag=$(echo $4)
 case_id=SN3A
 
 source ~/.profile
@@ -20,7 +21,7 @@ current_time=$(eval $time)
 present_dir=$(pwd)
 echo $present_dir
 
-bash Openshift-EE/utils/e2e-cr jobname:memory-consumption-jiva jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:memory-consumption-jiva jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 bash Openshift-EE/utils/e2e-cr jobname:memory-consumption-jiva jobphase:Running init_time:"$current_time"
 
 ################
@@ -61,7 +62,7 @@ exit 1;
 fi
 
 current_time=$(eval $time)
-bash Openshift-EE/utils/e2e-cr jobname:memory-consumption-jiva jobphase:Completed end_time:"$current_time" test_result:$testResult jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:memory-consumption-jiva jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:$testResult
 python3 Openshift-EE/utils/result/result_update.py $job_id SN3A 3-functional "Check if the memory consumption doesn't cross the desired threshold for known workload" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 
 if [ "$rc_val" != "0" ]; then
@@ -70,7 +71,7 @@ fi
 }
 
 if [ "$1" == "node" ];then
-  node $2 $3 $4
+  node $2 $3 $4 $5
 else
   pod
 fi
