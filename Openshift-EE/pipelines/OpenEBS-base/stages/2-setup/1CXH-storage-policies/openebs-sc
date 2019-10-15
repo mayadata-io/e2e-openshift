@@ -1,7 +1,7 @@
 #!/bin/bash
 set -x
 pod() {
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/1CXH-storage-policies/openebs-sc node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/1CXH-storage-policies/openebs-sc node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
 }
 
 node() {
@@ -11,6 +11,7 @@ current_time=$(eval $time)
 job_id=$(echo $1)
 pipeline_id=$(echo $2)
 commit_id=$(echo $3)
+releaseTag=$(echo $4)
 case_id=1CXH
 source ~/.profile
 gittoken=$(echo "$github_token")
@@ -21,7 +22,7 @@ echo $present_dir
 #pooling over previous job to complete
 echo "***********Applying openebs-storage-clas********"
 bash Openshift-EE/utils/pooling jobname:cstor-cspc-striped-pool
-bash Openshift-EE/utils/e2e-cr jobname:s2-j6-policies jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:s2-j6-policies jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=cstor-storage-policies metadata="")
 echo $test_name
@@ -53,7 +54,7 @@ testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-column
 #python3 Openshift-EE/utils/result/result_update.py $job_id 1CXH 2-setup "Create K8s storage classes adhering the policies supported by OpenEBS" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 
 current_time=$(eval $time)
-bash Openshift-EE/utils/e2e-cr jobname:s2-j6-policies jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass 
+bash Openshift-EE/utils/e2e-cr jobname:s2-j6-policies jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass 
 
 python3 Openshift-EE/utils/result/result_update.py $job_id 1CXH 2-setup "Create K8s storage classes adhering the policies supported by OpenEBS" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 
@@ -63,7 +64,7 @@ fi
 }
 
 if [ "$1" == "node" ];then
-  node $2 $3 $4
+  node $2 $3 $4 $5
 else
   pod
 fi

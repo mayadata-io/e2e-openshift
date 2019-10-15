@@ -2,7 +2,7 @@
 set -x
 
 pod() {
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/WOEM-App-deploy-RWX/app-deploy-rwx node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/WOEM-App-deploy-RWX/app-deploy-rwx node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
 }
 
 node() {
@@ -13,10 +13,11 @@ time="date"
 source ~/.profile
 gittoken=$(echo "$github_token")
 commit_id=$(echo $3)
+releaseTag=$(echo $4)
 current_time=$(eval $time)
 
 bash Openshift-EE/utils/e2e-cr jobname:app-deploy-rwx jobphase:Waiting
-bash Openshift-EE/utils/e2e-cr jobname:app-deploy-rwx jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:app-deploy-rwx jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=wordpress-deployment metadata="")
 echo $test_name
@@ -55,7 +56,7 @@ testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-column
 
 ## Check the test status & result from the litmus result custom resource
 current_time=$(eval $time)
-bash Openshift-EE/utils/e2e-cr jobname:app-deploy-rwx jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
+bash Openshift-EE/utils/e2e-cr jobname:app-deploy-rwx jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
 
 python3 Openshift-EE/utils/result/result_update.py $job_id WOEM 3-functional "Deploy the application using nfs-provisioner accessmode as a readwritemany" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 
@@ -66,7 +67,7 @@ fi
 }
 
 if [ "$1" == "node" ];then
-  node $2 $3 $4
+  node $2 $3 $4 $5
 else
   pod
 fi

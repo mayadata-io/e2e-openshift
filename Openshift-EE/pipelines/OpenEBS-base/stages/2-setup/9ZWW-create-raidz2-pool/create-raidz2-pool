@@ -1,7 +1,7 @@
 #!/bin/bash
 set -x
 pod() {
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/9ZWW-create-raidz2-pool/create-raidz2-pool node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/9ZWW-create-raidz2-pool/create-raidz2-pool node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
 
 }
 
@@ -11,6 +11,7 @@ job_id=$(echo $1)
 pipeline_id=$(echo $2)
 case_id=9ZWW
 commit_id=$(echo $3)
+releaseTag=$(echo $4)
 source ~/.profile
 gittoken=$(echo "$github_token")
 
@@ -20,7 +21,7 @@ current_time=$(eval $time)
 #pooling over previous job to complete
 echo "*******Creating cstor-pool**************"
 bash Openshift-EE/utils/pooling jobname:s2-j4-cstor-raidz1-pool
-bash Openshift-EE/utils/e2e-cr jobname:s2-j5-cstor-raidz2-pool jobphase:Running init_time:"$current_time"
+bash Openshift-EE/utils/e2e-cr jobname:s2-j5-cstor-raidz2-pool jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
 run_id="raidz2";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=cstor-block-device-pool-provision metadata=${run_id})
 echo $test_name
@@ -78,7 +79,7 @@ testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-column
 #python3 Openshift-EE/utils/result/result_update.py $job_id 9ZWW 2-setup "Create cStor based RAIDZ2 storage pool on disks and corresponding storage class" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 
 current_time=$(eval $time)
-bash Openshift-EE/utils/e2e-cr jobname:s2-j5-cstor-raidz2-pool jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
+bash Openshift-EE/utils/e2e-cr jobname:s2-j5-cstor-raidz2-pool jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
 
 python3 Openshift-EE/utils/result/result_update.py $job_id 9ZWW 2-setup "Create cStor based RAIDZ2 storage pool on disks and corresponding storage class" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 if [ "$rc_val" != "0" ]; then
@@ -87,7 +88,7 @@ fi
 }
 
 if [ "$1" == "node" ];then
-  node $2 $3 $4
+  node $2 $3 $4 $5
 else
   pod
 fi
