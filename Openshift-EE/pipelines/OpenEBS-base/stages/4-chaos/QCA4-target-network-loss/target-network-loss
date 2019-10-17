@@ -171,6 +171,7 @@ EOF
 sed -i -e 's/value: app-busybox-ns/value: target-loss/g' \
 -e 's/app=busybox-sts/app=target-loss/g' \
 -e 's/value: provision/value: deprovision/g' \
+-e 's/generateName: litmus-busybox-liveness/generateName: busybox-liveness-dep-target-loss/g' \
 -e 's/liveness: litmus-busybox-liveness/liveness: busybox-liveness-deprovision-target-loss/g' busybox_loadgen_deprovision_target_loss.yml
 
 sed -i '/command:/i \

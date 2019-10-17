@@ -178,6 +178,7 @@ EOF
 sed -i -e 's/value: app-busybox-ns/value: istgt-kill/g' \
 -e 's/app=busybox-sts/app=istgt-kill/g' \
 -e 's/value: provision/value: deprovision/g' \
+-e 's/generateName: litmus-busybox-liveness/generateName: busybox-liveness-dep-istgt-kill/g' \
 -e 's/liveness: litmus-busybox-liveness/liveness: busybox-liveness-deprovision-istgt-kill/g' busybox_loadgen_deprovision_istgt_kill.yml
 
 sed -i '/command:/i \
