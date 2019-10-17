@@ -182,6 +182,7 @@ EOF
 sed -i -e 's/value: app-busybox-ns/value: mem-check/g' \
 -e 's/value: provision/value: deprovision/g' \
 -e 's/app=busybox-sts/app=busybox-mem/g' \
+-e 's/generateName: litmus-busybox-liveness/generateName: busybox-liveness-dep-mem-consumption/g' \
 -e 's/liveness: litmus-busybox-liveness/liveness: liveness-deprovision-mem-consumption/g'  deprovision_loadgen_mem_consumption.yml
 
 sed -i '/command:/i \

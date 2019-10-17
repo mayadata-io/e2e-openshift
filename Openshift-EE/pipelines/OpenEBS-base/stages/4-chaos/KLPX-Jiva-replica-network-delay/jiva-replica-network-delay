@@ -192,6 +192,7 @@ EOF
 sed -i -e 's/value: app-busybox-ns/value: rep-network-delay-jiva/g' \
 -e 's/app=busybox-sts/app=busybox-rep-network-jiva/g' \
 -e 's/value: provision/value: deprovision/g' \
+-e 's/generateName: litmus-busybox-liveness/generateName: busybox-liveness-dep-rep-network-delay-jiva/g' \
 -e 's/liveness: litmus-busybox-liveness/liveness: busybox-liveness-deprovision-jiva-rep-network-delay/g' busybox_loadgen_deprovision_jiva_rep_network_delay.yml
 
 sed -i '/command:/i \
