@@ -113,6 +113,7 @@ cp apps/percona/deployers/run_litmus_test.yml deprovision_run_test_percona.yml
 EOF
 sed -i -e 's/value: openebs-standard/value: openebs-cstor-disk/g' \
 -e 's/app: percona-deployment/app: percona-deployment-deprovision/g' \
+-e 's/generateName: litmus-percona/generateName: percona-deprovision/g' \
 -e 's/value: provision/value: deprovision/g' deprovision_run_test_percona.yml
 
 sed -i '/command:/i \

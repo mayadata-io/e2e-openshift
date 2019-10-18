@@ -187,6 +187,7 @@ EOF
 sed -i -e 's/value: app-busybox-ns/value: replica-fail-jiva/g' \
 -e 's/app=busybox-sts/app=busybox-rep-fail-jiva/g' \
 -e 's/value: provision/value: deprovision/g' \
+-e 's/generateName: litmus-busybox-liveness/generateName: busybox-liveness-dep-jiva-replica-failure/g' \
 -e 's/liveness: litmus-busybox-liveness/liveness: busybox-liveness-deprovision-jiva-replica-failure/g' busybox_loadgen_deprovision_jiva_replica_failure.yml
 
 sed -i '/command:/i \
