@@ -28,7 +28,7 @@ bash Openshift-EE/utils/e2e-cr jobname:bdd-cstor-scaleup-replica jobphase:Runnin
 cd /home/devuser/go/src/github.com/openebs
 
 # Running BDD test for cstor-scaleup-replica
-cd maya/tests/cstor/volume/sclaeup_replica && ginkgo -v -- -kubeconfig=$HOME/.kube/config -cstor-maxpools=3
+cd maya/tests/cstor/volume/scaleup_replica && ginkgo -v -- -kubeconfig=$HOME/.kube/config -cstor-maxpools=3
 
 #Evaluating result based on the return count
 
