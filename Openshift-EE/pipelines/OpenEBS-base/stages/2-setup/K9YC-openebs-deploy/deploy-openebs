@@ -2,7 +2,7 @@
 set -x
 pod() {
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/mayadata-io/e2e-openshift.git'
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/K9YC-openebs-deploy/deploy-openebs node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$NDM_TAG'"' '"'$RELEASE_BRANCH'"' '"'$E_USER'"' '"'$E_PASSWORD'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/K9YC-openebs-deploy/deploy-openebs node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"' '"'$RELEASE_BRANCH'"' '"'$NDM_TAG'"' '"'$E_USER'"' '"'$E_PASSWORD'"'
 }
 
 node() {
@@ -10,10 +10,11 @@ job_id=$(echo $1)
 pipeline_id=$(echo $2)
 commit_id=$(echo $3)
 case_id=K9YC
+releaseTag=$(echo $4)
 releaseBranch=$(echo $5)
-ndmTag=$(echo $4)
-elastic_user=$(echo $6)
-elastic_password=$(echo $7)
+ndmTag=$(echo $6)
+elastic_user=$(echo $7)
+elastic_password=$(echo $8)
 
 time="date"
 current_time=$(eval $time)
@@ -34,7 +35,7 @@ kubectl apply -f Openshift-EE/utils/e2e-crd.yml
 
 echo "*****Deploying openebs*******"
 bash Openshift-EE/utils/e2e-cr jobname:s2-j1-openebs-deploy jobphase:Waiting
-bash Openshift-EE/utils/e2e-cr jobname:s2-j1-openebs-deploy jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:s2-j1-openebs-deploy jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 bash Openshift-EE/utils/e2e-cr jobname:cstor-integration-test jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-volume jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:bdd-cstor-negative-invalid-storage-pool-claim jobphase:Waiting
@@ -136,7 +137,7 @@ testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-column
 #python3 Openshift-EE/utils/result/result_update.py $job_id K9YC 2-setup "Deploy OpenEBS in OpenShift-EE-3.10 Cluster" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 
 current_time=$(eval $time)
-bash Openshift-EE/utils/e2e-cr jobname:s2-j1-openebs-deploy jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
+bash Openshift-EE/utils/e2e-cr jobname:s2-j1-openebs-deploy jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
 
 python3 Openshift-EE/utils/result/result_update.py $job_id K9YC 2-setup "Deploy OpenEBS in OpenShift-EE-3.10 Cluster" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 
@@ -147,7 +148,7 @@ fi
 }
 
 if [ "$1" == "node" ];then
-  node $2 $3 $4 $5 $6
+  node $2 $3 $4 $5 $6 $7 $8 $9
 else
   pod
 fi
