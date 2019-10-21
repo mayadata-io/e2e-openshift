@@ -2,13 +2,14 @@
 set -x
 
 pod() {
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/KBM1-cstor-pool-kill/cstor-pool-kill node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/KBM1-cstor-pool-kill/cstor-pool-kill node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
 }
 
 node() {
 job_id=$(echo $1)
 pipeline_id=$(echo $2)
 commit_id=$(echo $3)
+releaseTag=$(echo $4)
 
 source ~/.profile
 gittoken=$(echo "$github_token")
@@ -20,7 +21,7 @@ current_time=$(eval $time)
 present_dir=$(pwd)
 echo $present_dir
 bash Openshift-EE/utils/pooling jobname:pool-delete
-bash Openshift-EE/utils/e2e-cr jobname:pool-kill jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:pool-kill jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
 ################
 # LitmusBook 1 #
@@ -226,7 +227,7 @@ exit 1;
 fi
 
 current_time=$(eval $time)
-bash Openshift-EE/utils/e2e-cr jobname:pool-kill jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
+bash Openshift-EE/utils/e2e-cr jobname:pool-kill jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
 python3 Openshift-EE/utils/result/result_update.py $job_id KBM1 4-chaos "Induce failure on cStor pool container(cstor-pool) and check if it is recovered successfully and verify that the application is not impacted" Pass $pipeline_id "$current_time" $commit_id $gittoken
 
 if [ "$rc_val" != "0" ]; then
@@ -235,7 +236,7 @@ fi
 }
 
 if [ "$1" == "node" ];then
-  node $2 $3 $4
+  node $2 $3 $4 $5
 else
   pod
 fi

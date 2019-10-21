@@ -8,7 +8,7 @@ echo "******* Drain node for maintainence ********"
 node_name=$(sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port kubectl get nodes | grep compute | awk 'FNR==1 {print $1}')
 
 echo $node_name
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/5-infra-chaos/VD8F-node-failure-cstor/node-failure-cstor node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$node_name'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/5-infra-chaos/VD8F-node-failure-cstor/node-failure-cstor node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$node_name'"' '"'$RELEASE_TAG'"'
 }
 
 node() {
@@ -19,6 +19,8 @@ source ~/.profile
 gittoken=$(echo "$github_token")
 case_id=VD8F
 observer_node=$4
+releaseTag=$(echo $5)
+
 
 time="date"
 current_time=$(eval $time)
@@ -26,7 +28,7 @@ current_time=$(eval $time)
 present_dir=$(pwd)
 echo $present_dir
 bash Openshift-EE/utils/pooling jobname:fill-node-capacity
-bash Openshift-EE/utils/e2e-cr jobname:node-failure-cstor jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:node-failure-cstor jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
 ################
 # LitmusBook 1 #
@@ -259,7 +261,7 @@ exit 1;
 fi
 
 current_time=$(eval $time)
-bash Openshift-EE/utils/e2e-cr jobname:node-failure-cstor jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
+bash Openshift-EE/utils/e2e-cr jobname:node-failure-cstor jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
 python3 Openshift-EE/utils/result/result_update.py $job_id VD8F 5-infra-chaos "Fail the node where the application is running and check the behaviour" Pass $pipeline_id "$current_time" $commit_id $gittoken
 
 if [ "$rc_val" != "0" ]; then
@@ -268,7 +270,7 @@ fi
 }
 
 if [ "$1" == "node" ];then
-  node $2 $3 $4 $5
+  node $2 $3 $4 $5 $6
 else
   pod
 fi

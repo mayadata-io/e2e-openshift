@@ -1,7 +1,7 @@
 #!/bin/bash
 set -x
 pod() {
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/GP95-openebs-cleanup/openebs-cleanup node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/GP95-openebs-cleanup/openebs-cleanup node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
 }
 
 node() {
@@ -17,7 +17,7 @@ present_dir=$(pwd)
 echo $present_dir
 
 bash Openshift-EE/utils/pooling jobname:cleanup-cspc-striped-pool
-bash Openshift-EE/utils/e2e-cr jobname:openebs-cleanup jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/e2e-cr jobname:openebs-cleanup jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-deprovision metadata="")
 echo $test_name
@@ -33,11 +33,6 @@ cp providers/openebs/installers/operator/master/litmusbook/run_litmus_test.yaml 
 sed -i -e 's/name: litmus-openebs-runner/name: litmus-openebs-deprovision/g' \
 -e 's/provider: openebs-runner/provider: openebs-deprovision/g' \
 -e 's/value: provision/value: deprovision/g' cleanup_openebs.yml
-
-sed -i '/command:/i \
-          - name: OPENEBS_VERSION\
-            value: master\
-' cleanup_openebs.yml
 
 cat cleanup_openebs.yml
 
@@ -57,7 +52,7 @@ gittoken=$(echo "$github_token")
 testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
 
 current_time=$(eval $time)
-bash Openshift-EE/utils/e2e-cr jobname:openebs-cleanup jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
+bash Openshift-EE/utils/e2e-cr jobname:openebs-cleanup jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
 
 python3 Openshift-EE/utils/result/result_update.py $job_id GP95 2-setup "Cleanup OpenEBS related components" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 if [ "$rc_val" != "0" ]; then
@@ -66,7 +61,7 @@ fi
 }
 
 if [ "$1" == "node" ];then
-  node $2 $3 $4
+  node $2 $3 $4 $5
 else
   pod
 fi
