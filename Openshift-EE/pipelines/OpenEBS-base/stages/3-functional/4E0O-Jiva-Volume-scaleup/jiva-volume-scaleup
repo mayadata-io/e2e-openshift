@@ -241,13 +241,14 @@ cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:jiva-replica-scaleup $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 return_count=$?
+current_time=$(eval $time)
 
 if [ "$return_count" != "0" ]; then
+bash Openshift-EE/utils/e2e-cr jobname:jiva-replica-scaleup jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Fail
 python3 Openshift-EE/utils/result/result_update.py $job_id 4E0O 3-functional "Verify if the Jiva replicas can be scaled up" Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 
-current_time=$(eval $time)
 bash Openshift-EE/utils/e2e-cr jobname:jiva-replica-scaleup jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
 python3 Openshift-EE/utils/result/result_update.py $job_id 4E0O 3-functional "Verify if the Jiva replicas can be scaled up" Pass $pipeline_id "$current_time" $commit_id $gittoken
 
