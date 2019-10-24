@@ -252,15 +252,16 @@ bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:node-failure-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 rc_val=$(echo $?)
+current_time=$(eval $time)
 
 # testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
 
 if [ "$rc_val" != "0" ]; then
+bash Openshift-EE/utils/e2e-cr jobname:node-failure-jiva jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Fail
 python3 Openshift-EE/utils/result/result_update.py $job_id T1JZ 5-infra-chaos "Fail the node where the application on jiva volume is running and check the behaviour" Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 
-current_time=$(eval $time)
 bash Openshift-EE/utils/e2e-cr jobname:node-failure-jiva jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
 python3 Openshift-EE/utils/result/result_update.py $job_id T1JZ 5-infra-chaos "Fail the node where the application on jiva volume is running and check the behaviour" Pass $pipeline_id "$current_time" $commit_id $gittoken
 

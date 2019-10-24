@@ -56,8 +56,19 @@ cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:jiva-internal-snapshot-deletion $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
-if [ "$?" != "0" ]; then
+rc_val=$(echo $?)
+current_time=$(eval $time)
+
+if [ "$rc_val" != "0" ]; then
+bash Openshift-EE/utils/e2e-cr jobname:jiva-internal-snapshot-deletion jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Fail
 python3 Openshift-EE/utils/result/result_update.py $job_id 8QQP 3-functional "Verify if the snapshot is getting Deleted Automatically" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+bash Openshift-EE/utils/e2e-cr jobname:jiva-internal-snapshot-deletion jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
+python3 Openshift-EE/utils/result/result_update.py $job_id 8QQP 3-functional "Verify if the snapshot is getting Deleted Automatically" Pass $pipeline_id "$current_time" $commit_id $gittoken
+
+if [ "$rc_val" != "0" ]; then
 exit 1;
 fi
 
