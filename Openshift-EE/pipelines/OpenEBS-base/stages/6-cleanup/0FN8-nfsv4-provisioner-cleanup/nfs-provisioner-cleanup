@@ -70,10 +70,18 @@ source ~/.profile
 gittoken=$(echo "$github_token")
 testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
 
+rc_val=$(echo $?)
 current_time=$(eval $time)
-bash Openshift-EE/utils/e2e-cr jobname:nfsv4-deprovision jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
 
+if [ "$rc_val" != "0" ]; then
+bash Openshift-EE/utils/e2e-cr jobname:nfsv4-deprovision jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Fail
 python3 Openshift-EE/utils/result/result_update.py $job_id 0FN8 2-setup "Cleanup NFS provisioner and corresponding storage class" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+bash Openshift-EE/utils/e2e-cr jobname:nfsv4-deprovision jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
+python3 Openshift-EE/utils/result/result_update.py $job_id 0FN8 2-setup "Cleanup NFS provisioner and corresponding storage class" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+
 if [ "$rc_val" != "0" ]; then
 exit 1;
 fi

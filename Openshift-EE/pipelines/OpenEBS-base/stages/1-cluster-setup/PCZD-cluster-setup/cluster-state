@@ -1,8 +1,4 @@
 #!/bin/bash
-set -x
-
-#time="date"
-#current_time=$(eval $time)
 
 time="$(TZ=IST date)"
 current_time=$time

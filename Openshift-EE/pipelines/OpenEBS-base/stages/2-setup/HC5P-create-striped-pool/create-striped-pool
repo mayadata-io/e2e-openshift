@@ -75,7 +75,7 @@ testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-column
 #python3 Openshift-EE/utils/result/result_update.py $job_id HC5P 2-setup "Create cStor based Striped storage pool on disks and corresponding storage class" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 
 current_time=$(eval $time)
-bash Openshift-EE/utils/e2e-cr jobname:s2-j2-cstor-striped-pool jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
+bash Openshift-EE/utils/e2e-cr jobname:s2-j2-cstor-striped-pool jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:$testResult
 
 python3 Openshift-EE/utils/result/result_update.py $job_id HC5P 2-setup "Create cStor based Striped storage pool on disks and corresponding storage class" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 if [ "$rc_val" != "0" ]; then

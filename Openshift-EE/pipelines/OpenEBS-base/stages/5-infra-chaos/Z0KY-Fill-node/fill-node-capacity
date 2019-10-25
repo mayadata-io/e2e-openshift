@@ -58,13 +58,14 @@ bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:fill-node-capacity $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 rc_val=$(echo $?)
+current_time=$(eval $time)
 
 if [ "$rc_val" != "0" ]; then
+bash Openshift-EE/utils/e2e-cr jobname:fill-node-capacity jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Fail
 python3 Openshift-EE/utils/result/result_update.py $job_id Z0KY 5-infra-chaos "Fill the node capacity and check the openebs pool pod behavior" Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 
-current_time=$(eval $time)
 bash Openshift-EE/utils/e2e-cr jobname:fill-node-capacity jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
 python3 Openshift-EE/utils/result/result_update.py $job_id Z0KY 5-infra-chaos "Fill the node capacity and check the openebs pool pod behavior" Pass $pipeline_id "$current_time" $commit_id $gittoken
 
