@@ -343,7 +343,7 @@ KBM1-cStor-Pool-Kill:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/72WM-cstor-pool-delete/cstor-pool-delete
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/72WM-cstor-pool-delete/cstor-pool-delete
 
-VZPY-cStor-target-kill:
+VZPY-cStor-target-failure:
   extends: .chaos_test_template
   script: 
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/VZPY-target-kill/target-kill
