@@ -135,7 +135,18 @@ cd litmus
 cp experiments/chaos/app_pod_failure/run_litmus_test.yml appkill.yml
 
 sed -i -e 's/app=jenkins-app/app=app-kill/g' \
+-e 's/name: app-failure/name: app-kill/g' \
 -e 's/value: app-jenkins-ns/value: app-kill/g' appkill.yml
+
+## Replace the value of DATA_PERSISTENCE with application name in litmus experiment. 
+sed -i '/name: DATA_PERSISTENCE/{n;s/.*/            value: busybox/}' appkill.yml
+
+## Insert the set of variables for busybox data consistency util into configmap spec.
+sed -i '/parameters.yml: |/a \
+    blocksize: 4k\
+    blockcount: 1024\
+    testfile: appkill
+' appkill.yml
 
 echo "Running the litmus test for Busybox Deployment application pod kill.."
 cat appkill.yml

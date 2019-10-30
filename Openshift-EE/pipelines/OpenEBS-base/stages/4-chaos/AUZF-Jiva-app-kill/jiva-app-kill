@@ -142,11 +142,22 @@ EOF
 sed -i -e 's/value: '\''app=jenkins-app'\''/value: '\''app=bb-app-kill-jiva'\''/g' \
 -e 's/generateName: application-pod-failure/generateName: application-pod-failure-jiva/g' \
 -e 's/name: application-pod-failure/name: application-pod-failure-jiva/g' \
+-e 's/name: app-failure/name: jiva-app-failure/g' \
 -e 's/value: app-jenkins-ns/value: app-kill-jiva/g' app_kill_jiva.yml
 
 sed -i '/command:/i \
           - name: RUN_ID\
             value: '"$run_id"'\
+' app_kill_jiva.yml
+
+## Replace the value of DATA_PERSISTENCE with application name in litmus experiment. 
+sed -i '/name: DATA_PERSISTENCE/{n;s/.*/            value: busybox/}' app_kill_jiva.yml
+
+## Insert the set of variables for busybox data consistency util into configmap spec.
+sed -i '/parameters.yml: |/a \
+    blocksize: 4k\
+    blockcount: 1024\
+    testfile: jivaappkill
 ' app_kill_jiva.yml
 
 cat app_kill_jiva.yml
