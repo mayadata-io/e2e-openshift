@@ -138,11 +138,12 @@ cp apps/busybox/cvr_scaleup/run_litmus_test.yml busybox_volume_scaleup.yml
 
 sed -i -e 's/app=busybox/app=busybox-cvr-scaleup/g' \
 -e 's/value: openebs-busybox/value: busybox-cvr-scaleup/g' \
+-e 's/app: busybox-litmus/app: busybox-cvr-scaleup/g' \
 -e 's/value: app-busybox-cvr-scale/value: cvr-scaleup/g' busybox_volume_scaleup.yml
 
 cat  busybox_volume_scaleup.yml
  # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
-bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-litmus' job=busybox_volume_scaleup.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-cvr-scaleup' job=busybox_volume_scaleup.yml
 cd ..
 # Get the cluster state Once the litmus jobs completed.
 bash Openshift-EE/utils/dump_cluster_state;
