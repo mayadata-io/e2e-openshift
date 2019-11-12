@@ -97,11 +97,11 @@ def fetch_file_content():
     file_content=str(file.decoded_content, 'utf-8')
     content_list = file_content.split('\n')
     content_list_nospace = file_content.split('\r\n')
-    content_list_nospace = list(filter(lambda x: x != '', content_list))
+    content_list_nospace = list(filter(lambda x: x != '', content_list_nospace))
     last_line = content_list_nospace[-1].lower()
     
     # creating result's table for first job result entry by checking if the last line of the Readme.md has `Test Result` or not
-    if 'test result' in last_line:
+    if 'job id' in last_line:
         updated_file_content =  '| Job ID |   Test Description         | Execution Time |Test Result   |\n'
         updated_file_content = updated_file_content + (' |---------|---------------------------| --------------|--------|\n')
         updated_file_content = updated_file_content + (' |    {}   |  {}           |  {}     |{}  |\n'.format(job_url, test_desc, time_stamp, efk_link))
