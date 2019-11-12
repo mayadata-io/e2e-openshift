@@ -49,7 +49,7 @@ bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:backup-restore $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 if [ "$?" != "0" ]; then
-python3 Openshift-EE/utils/result/result_update.py $job_id 3PZ0 3-functional "Create backup and restore and verify if the application is not impacted" Fail $pipeline_id "$current_time" $commit_id $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id 3PZ0 3-functional "Create backup using velero and verify if it can be successfully restored" Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 
@@ -57,7 +57,7 @@ fi
 # LitmusBook 2 #
 ################
 
-echo "*******Performing Backup and Restore on Target**********"
+echo "*******Performing Backup and Restore on percona Application**********"
 
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=velero-backup-restore metadata="")
 echo $test_name
@@ -80,12 +80,12 @@ current_time=$(eval $time)
 
 if [ "$rc_val" != "0" ]; then
 bash Openshift-EE/utils/e2e-cr jobname:backup-restore jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Fail
-python3 Openshift-EE/utils/result/result_update.py $job_id 3PZ0 3-functional "Create backup and restore and verify if the application is not impacted" Fail $pipeline_id "$current_time" $commit_id $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id 3PZ0 3-functional "Create backup using velero and verify if it can be successfully restored" Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 
 bash Openshift-EE/utils/e2e-cr jobname:backup-restore jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
-python3 Openshift-EE/utils/result/result_update.py $job_id 3PZ0 3-functional "Create backup and restore and verify if the application is not impacted" Pass $pipeline_id "$current_time" $commit_id $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id 3PZ0 3-functional "Create backup using velero and verify if it can be successfully restored" Pass $pipeline_id "$current_time" $commit_id $gittoken
 
 if [ "$rc_val" != "0" ]; then
 exit 1;
