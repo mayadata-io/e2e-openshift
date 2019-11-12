@@ -312,6 +312,24 @@ WOEM-RWX-APP-DEPLOY:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/WOEM-App-deploy-RWX/app-deploy-rwx
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/WOEM-App-deploy-RWX/app-deploy-rwx
 
+VTPW-CVR-migration:
+  extends: .func_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/VTPW-cvr-migration/cvr-migration
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/VTPW-cvr-migration/cvr-migration
+
+IFBV-CVR-Scaleup:
+  extends: .func_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/IFBV-cvr-scaleup/cvr-scaleup
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/IFBV-cvr-scaleup/cvr-scaleup
+
+3PZ0-Backup-Restore:
+  extends: .func_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/3PZ0-Backup-Restore/backup-restore
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/3PZ0-Backup-Restore/backup-restore
+
 .chaos_test_template:
   image: openebs/openshift-ci:latest
   stage: CHAOS
