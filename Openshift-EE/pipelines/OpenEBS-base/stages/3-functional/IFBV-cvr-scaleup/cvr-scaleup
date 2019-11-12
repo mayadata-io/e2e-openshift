@@ -132,7 +132,7 @@ echo $test_name
 
 cd litmus
 # copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
-cp apps/busybox/cstor-volume-scaleup/cvr_scaleup/run_litmus_test.yml busybox_volume_scaleup.yml
+cp apps/busybox/cvr_scaleup/run_litmus_test.yml busybox_volume_scaleup.yml
 
  # Update the environmental variables in litmus job spec.
 
