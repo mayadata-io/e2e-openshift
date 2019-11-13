@@ -24,7 +24,6 @@ echo $present_dir
 bash Openshift-EE/utils/e2e-cr jobname:cvr-scaleup jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:cvr-scaleup jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
-
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-cvr-scaleup metadata="")
 echo $test_name
 
@@ -37,6 +36,7 @@ cp apps/busybox/cvr_scaleup/run_litmus_test.yml busybox_volume_scaleup.yml
 sed -i -e 's/app=busybox/app=busybox-cvr-scaleup/g' \
 -e 's/value: openebs-busybox/value: busybox-cvr-scaleup/g' \
 -e 's/app: busybox-litmus/app: busybox-cvr-scaleup/g' \
+-e 's/cstor-sparse-pool/cstor-block-disk-pool-stripe/g' \
 -e 's/1.3.0/1.4.0/g' \
 -e 's/value: app-busybox-cvr-scale/value: cvr-scaleup/g' busybox_volume_scaleup.yml
 
