@@ -22,6 +22,7 @@ present_dir=$(pwd)
 echo $present_dir
 
 bash Openshift-EE/utils/e2e-cr jobname:cvr-migration jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:cvr-scaleup jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:cvr-migration jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
 ###########Deploying Busybox Application

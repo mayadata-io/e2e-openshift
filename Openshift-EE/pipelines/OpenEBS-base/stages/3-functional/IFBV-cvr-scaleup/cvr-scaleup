@@ -20,8 +20,7 @@ current_time=$(eval $time)
 
 present_dir=$(pwd)
 echo $present_dir
-
-bash Openshift-EE/utils/e2e-cr jobname:cvr-scaleup jobphase:Waiting
+bash Openshift-EE/utils/pooling jobname:cvr-migration
 bash Openshift-EE/utils/e2e-cr jobname:cvr-scaleup jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-cvr-scaleup metadata="")
