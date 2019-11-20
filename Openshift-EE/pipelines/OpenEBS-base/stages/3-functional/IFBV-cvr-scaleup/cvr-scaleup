@@ -39,7 +39,7 @@ sed -i -e 's/app: busybox-litmus/app: deploy-busybox-cvr-scaleup/g' \
 -e 's/generateName: litmus-busybox-deploy-/generateName: litmus-busybox-deploy-cvr-scaleup-/g' \
 -e 's/app=busybox-sts/app=bb-cvr-scaleup/g' \
 -e 's/value: statefulset/value: deployment/g' \
--e 's/value: openebs-cstor-sparse/value: openebs-cstor-disk/g' \
+-e 's/value: openebs-cstor-sparse/value: openebs-cstor-cvr-scale/g' \
 -e 's/value: openebs-busybox/value: openebs-bb-cvr-scaleup/g' \
 -e 's/value: app-busybox-ns/value: cvr-scaleup-ns/g' busybox_cvr_scaleup.yml
 
@@ -72,7 +72,7 @@ cp experiments/functional/cvr-scaleup/run_litmus_test.yml cvr_scaleup.yml
 
  # Update the environmental variables in litmus job spec.
 
-sed -i -e '/name: SPC_NAME/{n;s/.*/            value: cstor-block-disk-pool/}' \
+sed -i -e '/name: SPC_NAME/{n;s/.*/            value: cstor-block-disk-pool-stripe/}' \
 -e '/name: OPENEBS_VERSION/{n;s/.*/            value: '"'$releaseTag'"'/}' \
 -e '/name: APP_PVC/{n;s/.*/            value: openebs-bb-cvr-scaleup/}' \
 -e '/name: APP_LABEL/{n;s/.*/            value: 'app=bb-cvr-scaleup'/}' \
