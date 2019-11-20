@@ -75,6 +75,7 @@ cp experiments/functional/cvr-scaleup/run_litmus_test.yml cvr_scaleup.yml
 sed -i -e '/name: SPC_NAME/{n;s/.*/            value: cstor-block-disk-pool-stripe/}' \
 -e '/name: OPENEBS_VERSION/{n;s/.*/            value: '"'$releaseTag'"'/}' \
 -e '/name: APP_PVC/{n;s/.*/            value: openebs-bb-cvr-scaleup/}' \
+-e '/name: OPERATOR_NAMESPACE/{n;s/.*/            value: openebs/}' \
 -e '/name: APP_LABEL/{n;s/.*/            value: 'app=bb-cvr-scaleup'/}' \
 -e '/name: APP_NAMESPACE/{n;s/.*/            value: cvr-scaleup-ns/}' \
 -e '/name: DATA_PERSISTENCE/{n;s/.*/            value: busybox/}' \
