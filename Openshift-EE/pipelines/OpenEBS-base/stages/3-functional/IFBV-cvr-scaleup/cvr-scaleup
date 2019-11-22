@@ -63,6 +63,38 @@ fi
 # LitmusBook 2 #
 ################
 
+run_id="cvr-scaleup";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+echo $test_name
+
+cd litmus
+# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_cvr_scaleup.yml
+
+sed -i -e 's/value: app-busybox-ns/value: cvr-scaleup-ns/g' \
+-e 's/app=busybox-sts/app=bb-cvr-scaleup/g' \
+-e 's/liveness: litmus-busybox-liveness/liveness: bb-liveness-cvr-scaleup/g' busybox_loadgen_cvr_scaleup.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' busybox_loadgen_cvr_scaleup.yml
+
+cat busybox_loadgen_cvr_scaleup.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='liveness:bb-liveness-cvr-scaleup' job=busybox_loadgen_cvr_scaleup.yml
+
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:cvr-scaleup $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id IFBV 3-functional "Verify the CVR scaled up successfully from one pool to another pool and check the volume status is healthy" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# LitmusBook 3 #
+################
+
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-cvr-scaleup metadata="")
 echo $test_name
 
@@ -89,23 +121,98 @@ cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:cvr-scaleup $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
-return_count=$?
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id IFBV 3-functional "Verify the CVR scaled up successfully from one pool to another pool and check the volume status is healthy" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
 
+################
+# LitmusBook 4 #
+################
+
+run_id="deprovision-cvr-scaleup";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+echo $test_name
+
+cd litmus
+# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_deprovision_cvr_scaleup.yml
+
+sed -i -e 's/value: app-busybox-ns/value: cvr-scaleup-ns/g' \
+-e 's/app=busybox-sts/app=bb-cvr-scaleup/g' \
+-e 's/value: provision/value: deprovision/g' \
+-e 's/liveness: litmus-busybox-liveness/liveness: bb-liveness-deprovision-cvr-scaleup/g' busybox_loadgen_deprovision_cvr_scaleup.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' busybox_loadgen_deprovision_cvr_scaleup.yml
+
+cat busybox_loadgen_deprovision_cvr_scaleup.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='liveness:bb-liveness-deprovision-cvr-scaleup' job=busybox_loadgen_deprovision_cvr_scaleup.yml
+
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:cvr-scaleup $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id IFBV 3-functional "Verify the CVR scaled up successfully from one pool to another pool and check the volume status is healthy" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# LitmusBook 5 #
+################
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-cvr-scaleup-ns metadata="")
+echo $test_name
+
+cd litmus
+echo "Running the litmus test for Busybox deprovision.."
+# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/deployers/run_litmus_test.yml busybox_deprovision_cvr_scaleup.yml
+
+sed -i -e 's/app: busybox-litmus/app: deprovision-busybox-cvr-scaleup/g' \
+-e 's/generateName: litmus-busybox-deploy-/generateName: litmus-busybox-deprovision-cvr-scaleup-/g' \
+-e 's/app=busybox-sts/app=bb-cvr-scaleup/g' \
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/value: provision/value: deprovision/g' \
+-e 's/value: openebs-cstor-sparse/value: openebs-cstor-cvr-scale/g' \
+-e 's/value: openebs-busybox/value: openebs-bb-cvr-scaleup/g' \
+-e 's/value: app-busybox-ns/value: cvr-scaleup-ns/g' busybox_deprovision_cvr_scaleup.yml
+
+cat busybox_deprovision_cvr_scaleup.yml
+
+# Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:deprovision-busybox-cvr-scaleup' job=busybox_deprovision_cvr_scaleup.yml
+cd ..
+# Get the cluster state Once the litmus jobs completed.
+bash Openshift-EE/utils/dump_cluster_state;
+# Update the e2e event for the job.
+bash Openshift-EE/utils/event_updater jobname:cvr-scaleup $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+
+# Obtain the status of the test using litmusresult(lr) 
 testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
 current_time=$(eval $time)
 
-if [ "$return_count" != "0" ]; then
+# Update the result of the test case in github mayadata-io/e2e-openshift repository.
+if [ "$rc_val" != "0" ]; then
 bash Openshift-EE/utils/e2e-cr jobname:cvr-scaleup jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:$testResult
 python3 Openshift-EE/utils/result/result_update.py $job_id IFBV 3-functional "Verify the CVR scaled up successfully from one pool to another pool and check the volume status is healthy" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 
+# Update the e2e cr once the job is completed
 bash Openshift-EE/utils/e2e-cr jobname:cvr-scaleup jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:$testResult
+
 python3 Openshift-EE/utils/result/result_update.py $job_id IFBV 3-functional "Verify the CVR scaled up successfully from one pool to another pool and check the volume status is healthy" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 
-if [ "$return_count" != "0" ]; then
+if [ "$rc_val" != "0" ]; then
 exit 1;
 fi
+
 
 }
 
