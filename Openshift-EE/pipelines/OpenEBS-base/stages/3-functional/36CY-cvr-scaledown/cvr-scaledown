@@ -1,0 +1,219 @@
+#!/bin/bash
+set -x
+
+pod() {
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/36CY-cvr-scaledown/cvr-scaledown node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
+}
+
+node() {
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+releaseTag=$(echo $4)
+case_id=36CY
+
+source ~/.profile
+gittoken=$(echo "$github_token")
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+bash Openshift-EE/utils/e2e-cr jobname:cvr-scaledown jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:cvr-scaledown jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
+
+################
+# LitmusBook 1 #
+################
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-cvr-scaledown-ns metadata="")
+echo $test_name
+
+cd litmus
+echo "Running the litmus test for Busybox Deployment.."
+# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/deployers/run_litmus_test.yml busybox_cvr_scaledown.yml
+
+sed -i -e 's/app: busybox-litmus/app: deploy-busybox-cvr-scaledown/g' \
+-e 's/generateName: litmus-busybox-deploy-/generateName: litmus-busybox-deploy-cvr-scaledown-/g' \
+-e 's/app=busybox-sts/app=bb-cvr-scaledown/g' \
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/value: openebs-cstor-sparse/value: openebs-cstor-disk/g' \
+-e 's/value: openebs-busybox/value: openebs-bb-cvr-scaledown/g' \
+-e 's/value: app-busybox-ns/value: cvr-scaledown-ns/g' busybox_cvr_scaledown.yml
+
+cat busybox_cvr_scaledown.yml
+
+# Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:deploy-busybox-cvr-scaledown' job=busybox_cvr_scaledown.yml
+cd ..
+# Get the cluster state Once the litmus jobs completed.
+bash Openshift-EE/utils/dump_cluster_state;
+# Update the e2e event for the job.
+bash Openshift-EE/utils/event_updater jobname:cvr-scaledown $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id 36CY 3-functional "Verify the CVR scaled down successfully check the volume status is healthy" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# LitmusBook 2 #
+################
+
+run_id="cvr-scaledown";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+echo $test_name
+
+cd litmus
+# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_cvr_scaledown.yml
+
+sed -i -e 's/value: app-busybox-ns/value: cvr-scaledown-ns/g' \
+-e 's/app=busybox-sts/app=bb-cvr-scaledown/g' \
+-e 's/liveness: litmus-busybox-liveness/liveness: bb-liveness-cvr-scaledown/g' busybox_loadgen_cvr_scaledown.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' busybox_loadgen_cvr_scaledown.yml
+
+cat busybox_loadgen_cvr_scaledown.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='liveness:bb-liveness-cvr-scaledown' job=busybox_loadgen_cvr_scaledown.yml
+
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:cvr-scaledown $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id 36CY 3-functional "Verify the CVR scaled down successfully check the volume status is healthy" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# LitmusBook 3 #
+################
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=cstor-volume-replica-scaledown metadata="")
+echo $test_name
+
+cd litmus
+# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
+cp experiments/functional/cstor-volume-replica-scaledown/run_litmus_test.yml cvr_scaledown.yml
+
+sed -i -e '/name: PVC_NAME/{n;s/.*/            value: openebs-bb-cvr-scaledown/}' \
+-e '/name: OPERATOR_NS/{n;s/.*/            value: openebs/}' \
+-e '/name: APP_LABEL/{n;s/.*/            value: 'app=bb-cvr-scaledown'/}' \
+-e '/name: APP_NAMESPACE/{n;s/.*/            value: cvr-scaledown-ns/}' \
+-e '/name: DATA_PERSISTENCE/{n;s/.*/            value: busybox/}' \
+-e 's/name: cvr-scaledown/name: cvr-scaledown-configmap/g'
+
+cat  cvr_scaledown.yml
+ # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
+bash ../Openshift-EE/utils/litmus_job_runner label='app:cvr-scaledown' job=cvr_scaledown.yml
+cd ..
+# Get the cluster state Once the litmus jobs completed.
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:cvr-scaledown $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id 36CY 3-functional "Verify the CVR scaled down successfully and check the volume status is healthy" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# LitmusBook 4 #
+################
+
+run_id="-deprovision-cvr-scaledown";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+echo $test_name
+
+cd litmus
+# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_deprovision_cvr_scaledown.yml
+
+sed -i -e 's/value: app-busybox-ns/value: cvr-scaledown-ns/g' \
+-e 's/app=busybox-sts/app=bb-cvr-scaledown/g' \
+-e 's/value: provision/value: deprovision/g' \
+-e 's/liveness: litmus-busybox-liveness/liveness: bb-liveness-deprovision-cvr-scaledown/g' busybox_loadgen_deprovision_cvr_scaledown.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' busybox_loadgen_deprovision_cvr_scaledown.yml.yml
+
+cat busybox_loadgen_deprovision_cvr_scaledown.yml.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='liveness:bb-liveness-deprovision-cvr-scaledown' job=busybox_loadgen_deprovision_cvr_scaledown.yml
+
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:cvr-scaledown $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id 36CY 3-functional "Verify the CVR scaled down successfully and check the volume status is healthy" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# LitmusBook 5 #
+################
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-cvr-scaledown-ns metadata="")
+echo $test_name
+
+cd litmus
+echo "Running the litmus test for Busybox deprovision.."
+# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/deployers/run_litmus_test.yml busybox_deprovision_cvr_scaledown.yml
+
+sed -i -e 's/app: busybox-litmus/app: deprovision-busybox-cvr-scaledown/g' \
+-e 's/generateName: litmus-busybox-deploy-/generateName: litmus-busybox-deprovision-cvr-scaledown-/g' \
+-e 's/app=busybox-sts/app=bb-cvr-scaledown/g' \
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/value: provision/value: deprovision/g' \
+-e 's/value: openebs-cstor-sparse/value: openebs-cstor-disk/g' \
+-e 's/value: openebs-busybox/value: openebs-bb-cvr-scaledown/g' \
+-e 's/value: app-busybox-ns/value: cvr-scaledown-ns/g' busybox_deprovision_cvr_scaledown.yml
+
+cat busybox_deprovision_cvr_scaledown.yml
+
+# Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:deprovision-busybox-cvr-scaledown' job=busybox_deprovision_cvr_scaledown.yml
+cd ..
+# Get the cluster state Once the litmus jobs completed.
+bash Openshift-EE/utils/dump_cluster_state;
+# Update the e2e event for the job.
+bash Openshift-EE/utils/event_updater jobname:cvr-scaledown $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+
+# Obtain the status of the test using litmusresult(lr) 
+testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+current_time=$(eval $time)
+
+# Update the result of the test case in github mayadata-io/e2e-openshift repository.
+if [ "$rc_val" != "0" ]; then
+bash Openshift-EE/utils/e2e-cr jobname:cvr-scaledown jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:$testResult
+python3 Openshift-EE/utils/result/result_update.py $job_id 36CY 3-functional "Verify the CVR scaled down successfully and check the volume status is healthy" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+# Update the e2e cr once the job is completed
+bash Openshift-EE/utils/e2e-cr jobname:cvr-scaledown jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:$testResult
+
+python3 Openshift-EE/utils/result/result_update.py $job_id 36CY 3-functional "Verify the CVR scaled down successfully and check the volume status is healthy" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4 $5
+else
+  pod
+fi
