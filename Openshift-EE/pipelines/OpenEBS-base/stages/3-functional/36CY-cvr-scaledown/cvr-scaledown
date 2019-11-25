@@ -108,7 +108,7 @@ sed -i -e '/name: PVC_NAME/{n;s/.*/            value: openebs-bb-cvr-scaledown/}
 -e '/name: APP_LABEL/{n;s/.*/            value: 'app=bb-cvr-scaledown'/}' \
 -e '/name: APP_NAMESPACE/{n;s/.*/            value: cvr-scaledown-ns/}' \
 -e '/name: DATA_PERSISTENCE/{n;s/.*/            value: busybox/}' \
--e 's/name: cvr-scaledown/name: cvr-scaledown-configmap/g'
+-e 's/name: cvr-scaledown/name: cvr-scaledown-configmap/g' cvr_scaledown.yml
 
 cat  cvr_scaledown.yml
  # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
