@@ -68,7 +68,6 @@ run_id="cvr-scaledown";test_name=$(bash Openshift-EE/utils/generate_test_name te
 echo $test_name
 
 cd litmus
-# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
 cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_cvr_scaledown.yml
 
 sed -i -e 's/value: app-busybox-ns/value: cvr-scaledown-ns/g' \
@@ -100,7 +99,6 @@ test_name=$(bash Openshift-EE/utils/generate_test_name testcase=cstor-volume-rep
 echo $test_name
 
 cd litmus
-# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
 cp experiments/functional/cstor-volume-replica-scaledown/run_litmus_test.yml cvr_scaledown.yml
 
 sed -i -e '/name: PVC_NAME/{n;s/.*/            value: openebs-bb-cvr-scaledown/}' \
@@ -131,7 +129,6 @@ run_id="-deprovision-cvr-scaledown";test_name=$(bash Openshift-EE/utils/generate
 echo $test_name
 
 cd litmus
-# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
 cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_deprovision_cvr_scaledown.yml
 
 sed -i -e 's/value: app-busybox-ns/value: cvr-scaledown-ns/g' \
@@ -165,7 +162,6 @@ echo $test_name
 
 cd litmus
 echo "Running the litmus test for Busybox deprovision.."
-# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
 cp apps/busybox/deployers/run_litmus_test.yml busybox_deprovision_cvr_scaledown.yml
 
 sed -i -e 's/app: busybox-litmus/app: deprovision-busybox-cvr-scaledown/g' \
