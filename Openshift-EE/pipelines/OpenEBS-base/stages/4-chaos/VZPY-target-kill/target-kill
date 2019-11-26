@@ -2,7 +2,6 @@
 set -x
 
 pod() {
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port ssh root@10.23.1.10 'oc adm policy add-scc-to-user anyuid system:serviceaccount:target-kill:default'
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/VZPY-target-kill/target-kill node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
 }
 
@@ -21,7 +20,7 @@ current_time=$(eval $time)
 
 present_dir=$(pwd)
 echo $present_dir
-
+oc adm policy add-scc-to-user anyuid system:serviceaccount:target-kill:default
 bash Openshift-EE/utils/e2e-cr jobname:target-kill jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 bash Openshift-EE/utils/e2e-cr jobname:target-kill jobphase:Running init_time:"$current_time"
 
