@@ -2,7 +2,6 @@
 set -x
 
 pod() {
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port ssh root@10.23.1.10 'oc adm policy add-scc-to-user anyuid system:serviceaccount:percona-backup:default'
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/3PZ0-Backup-Restore/backup-restore node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
 }
 
@@ -22,6 +21,7 @@ current_time=$(eval $time)
 present_dir=$(pwd)
 echo $present_dir
 
+oc adm policy add-scc-to-user anyuid system:serviceaccount:percona-backup:default
 bash Openshift-EE/utils/e2e-cr jobname:backup-restore jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:backup-restore jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
@@ -64,7 +64,7 @@ test_name=$(bash Openshift-EE/utils/generate_test_name testcase=velero-backup-re
 echo $test_name
 
 cd litmus
-cp apps/percona/functional/backup_and_restore/run_litmus_test.yml run_backuprestore_test.yml
+cp experiments/functional/backup_and_restore/run_litmus_test.yml run_backuprestore_test.yml
 
 sed -i 's/value: app-percona-ns/value: percona-backup/g' run_backuprestore_test.yml
 

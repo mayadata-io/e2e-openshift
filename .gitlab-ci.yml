@@ -330,6 +330,18 @@ IFBV-CVR-Scaleup:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/3PZ0-Backup-Restore/backup-restore
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/3PZ0-Backup-Restore/backup-restore
 
+NWQB-Backup-Restore-Jiva:
+  extends: .func_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/NWQB-Backup-Restore-Jiva/backup-restore-jiva
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/NWQB-Backup-Restore-Jiva/backup-restore-jiva
+
+5EA0-Backup-Restore-Jiva:
+  extends: .func_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/5EA0-Backup-Restore-LocalPV/backup-restore-localPV
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/5EA0-Backup-Restore-LocalPV/backup-restore-localPV
+
 .chaos_test_template:
   image: openebs/openshift-ci:latest
   stage: CHAOS
