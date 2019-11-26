@@ -324,6 +324,12 @@ IFBV-CVR-Scaleup:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/IFBV-cvr-scaleup/cvr-scaleup
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/IFBV-cvr-scaleup/cvr-scaleup
 
+36CY-CVR-Scaledown:
+  extends: .func_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/36CY-cvr-scaledown/cvr-scaledown
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/36CY-cvr-scaledown/cvr-scaledown
+
 3PZ0-Backup-Restore:
   extends: .func_test_template
   script:

@@ -20,9 +20,7 @@ current_time=$(eval $time)
 
 present_dir=$(pwd)
 echo $present_dir
-
 oc adm policy add-scc-to-user anyuid system:serviceaccount:target-loss:default
-
 bash Openshift-EE/utils/e2e-cr jobname:target-loss jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:target-loss jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
