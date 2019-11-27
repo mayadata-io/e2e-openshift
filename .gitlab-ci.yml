@@ -342,11 +342,11 @@ NWQB-Backup-Restore-Jiva:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/NWQB-Backup-Restore-Jiva/backup-restore-jiva
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/NWQB-Backup-Restore-Jiva/backup-restore-jiva
 
-5EA0-Backup-Restore-Jiva:
+5EA0-Backup-Restore-LocalPV:
   extends: .func_test_template
   script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/5EA0-Backup-Restore-LocalPV/backup-restore-localPV
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/5EA0-Backup-Restore-LocalPV/backup-restore-localPV
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/5EA0-Backup-Restore-LocalPV/backup-restore-localpv
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/5EA0-Backup-Restore-LocalPV/backup-restore-localpv
 
 .chaos_test_template:
   image: openebs/openshift-ci:latest
