@@ -82,7 +82,7 @@ sed -i '/command:/i \
 cat busybox_loadgen_cvr_scaledown.yml
 
 bash ../Openshift-EE/utils/litmus_job_runner label='liveness:bb-liveness-cvr-scaledown' job=busybox_loadgen_cvr_scaledown.yml
-
+cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:cvr-scaledown $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
@@ -144,7 +144,7 @@ sed -i '/command:/i \
 cat busybox_loadgen_deprovision_cvr_scaledown.yml.yml
 
 bash ../Openshift-EE/utils/litmus_job_runner label='liveness:bb-liveness-deprovision-cvr-scaledown' job=busybox_loadgen_deprovision_cvr_scaledown.yml
-
+cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:cvr-scaledown $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
