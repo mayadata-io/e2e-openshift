@@ -148,6 +148,7 @@ sed -i -e 's/value: percona-mysql-claim/value: openebs-bb-controller-delay/g' \
 -e 's/name: openebs-target-network-delay/name: openebs-controller-network-delay/g' \
 -e 's/name: target-network-delay/name: controller-network-delay/g' \
 -e 's/app=busybox-sts/app=busybox-controller-delay-jiva/g' \
+-e 's/value: docker/value: cri-o/g' \
 -e 's/value: '\''name=percona'\''/value: '\''app=busybox-controller-delay-jiva'\''/g' \
 -e 's/value: app-percona-ns/value: controller-delay-jiva/g' run_controller_delay_test_jiva.yml
 

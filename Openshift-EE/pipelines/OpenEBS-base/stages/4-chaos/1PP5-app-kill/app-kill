@@ -136,6 +136,7 @@ cp experiments/chaos/app_pod_failure/run_litmus_test.yml appkill.yml
 
 sed -i -e 's/app=jenkins-app/app=app-kill/g' \
 -e 's/name: app-failure/name: app-kill/g' \
+-e 's/value: docker/value: cri-o/g' \
 -e 's/value: app-jenkins-ns/value: app-kill/g' appkill.yml
 
 ## Replace the value of DATA_PERSISTENCE with application name in litmus experiment. 

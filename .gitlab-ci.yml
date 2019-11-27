@@ -142,12 +142,12 @@ AP1O-NFSv4-PROVISION:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/AP1O-nfsv4-provision/nfsv4-provision
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/AP1O-nfsv4-provision/nfsv4-provision
 
-Q2JG-NFSv3-PROVISION:
-  image: openebs/openshift-ci:latest
-  stage: OPENEBS-SETUP
-  script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/Q2JG-nfsv3-provision/nfsv3-provision
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/Q2JG-nfsv3-provision/nfsv3-provision    
+# Q2JG-NFSv3-PROVISION:
+#   image: openebs/openshift-ci:latest
+#   stage: OPENEBS-SETUP
+#   script:
+#     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/Q2JG-nfsv3-provision/nfsv3-provision
+#     - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/Q2JG-nfsv3-provision/nfsv3-provision    
 
 .func_test_template:
   image: openebs/openshift-ci:latest
@@ -579,11 +579,11 @@ PC78-Drain-app-Node:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/0FN8-nfsv4-provisioner-cleanup/nfs-provisioner-cleanup
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/0FN8-nfsv4-provisioner-cleanup/nfs-provisioner-cleanup    
 
-MCDE-nfsv3-provisioner-cleanup:
-  extends: .cleanup_test_template
-  script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/MCDE-nfsv3-provisioner-cleanup/nfsv3-deprovision
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/MCDE-nfsv3-provisioner-cleanup/nfsv3-deprovision
+# MCDE-nfsv3-provisioner-cleanup:
+#   extends: .cleanup_test_template
+#   script:
+#     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/MCDE-nfsv3-provisioner-cleanup/nfsv3-deprovision
+#     - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/MCDE-nfsv3-provisioner-cleanup/nfsv3-deprovision
 
 0NQ0-cleanup-spc-striped-pool:
   extends: .cleanup_test_template

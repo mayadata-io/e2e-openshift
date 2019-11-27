@@ -118,6 +118,7 @@ cp experiments/chaos/openebs_target_network_loss/run_litmus_test.yml run_target_
 sed -i -e 's/value: percona-mysql-claim/value: openebs-bb-targetloss/g' \
 -e 's/value: '\''name=percona'\''/value: '\''app=target-loss'\''/g' \
 -e 's/value: '\''enable'\''/value: '\'""\''/g' \
+-e 's/value: docker/value: cri-o/g' \
 -e 's/value: app-percona-ns/value: target-loss/g' run_target_loss_test.yml
 
 ## Replace the value of DATA_PERSISTENCE with application name in litmus experiment.

@@ -2,7 +2,7 @@
 set -x
 
 pod() {
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/NWQB-Backup-Restore-Jiva/backup-restore node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/NWQB-Backup-Restore-Jiva/backup-restore-jiva node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
 }
 
 node() {
@@ -30,7 +30,7 @@ bash Openshift-EE/utils/e2e-cr jobname:backup-restore-jiva jobphase:Running init
 
 echo "*******Deploying Percona Application****"
 
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase=percona-deployment metadata="")
+run_id="jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=percona-deployment metadata=${run_id})
 echo $test_name
 
 cd litmus
@@ -41,6 +41,12 @@ cp apps/percona/deployers/run_litmus_test.yml percona_backup_restore_jiva.yml
 sed -i -e 's/app: percona-deployment/app: deploy-percona-backup-restore-jiva/g' \
 -e 's/value: openebs-standard/value: openebs-jiva-default/g' \
 -e 's/value: app-percona-ns/value: percona-backup-jiva/g' percona_backup_restore_jiva.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' percona_backup_restore_jiva.yml
+
 cat percona_backup_restore_jiva.yml
 
 bash ../Openshift-EE/utils/litmus_job_runner label='app:deploy-percona-backup-restore-jiva' job=percona_backup_restore_jiva.yml
@@ -59,7 +65,7 @@ fi
 
 echo "*******Performing Backup and Restore on percona Application**********"
 
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase=velero-backup-restore metadata="")
+run_id="jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=velero-backup-restore metadata=${run_id})
 echo $test_name
 
 cd litmus
@@ -67,7 +73,7 @@ cp experiments/functional/backup_and_restore/run_litmus_test.yml run_backupresto
 
 sed -i -e 's/value: app-percona-ns/value: percona-backup-jiva/g' \
 -e 's/app: velero-backup-restore/app: velero-backup-restore-jiva/g' \
--e 's/value: "cstor"/value: "jiva"/g' run_backuprestore_test.yml
+-e 's/value: "cstor"/value: "jiva"/g' run_backuprestore_jiva_test.yml
 
 echo "Running the litmus test for Percona Backup Restore.."
 cat run_backuprestore_jiva_test.yml

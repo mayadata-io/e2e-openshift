@@ -2,7 +2,7 @@
 set -x
 
 pod() {
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/5EA0-Backup-Restore-Jiva/backup-restore node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/5EA0-Backup-Restore-LocalPV/backup-restore-localpv node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
 }
 
 node() {
@@ -21,8 +21,8 @@ current_time=$(eval $time)
 present_dir=$(pwd)
 echo $present_dir
 oc adm policy add-scc-to-user anyuid system:serviceaccount:percona-backup-localpv:default
-bash Openshift-EE/utils/e2e-cr jobname:backup-restore-jiva jobphase:Waiting
-bash Openshift-EE/utils/e2e-cr jobname:backup-restore-jiva jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
+bash Openshift-EE/utils/e2e-cr jobname:backup-restore-localpv jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:backup-restore-localpv jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
 ################
 # LitmusBook 1 #
@@ -30,7 +30,7 @@ bash Openshift-EE/utils/e2e-cr jobname:backup-restore-jiva jobphase:Running init
 
 echo "*******Deploying Percona Application****"
 
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase=percona-deployment metadata="")
+run_id="localpv";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=percona-deployment metadata=${run_id})
 echo $test_name
 
 cd litmus
@@ -40,7 +40,13 @@ cp apps/percona/deployers/run_litmus_test.yml percona_backup_restore_localpv.yml
 
 sed -i -e 's/app: percona-deployment/app: deploy-percona-backup-restore-localpv/g' \
 -e 's/value: openebs-standard/value: openebs-hostpath/g' \
--e 's/value: app-percona-ns/value: percona-backup-localpv/g' percona_backup_restore.yml
+-e 's/value: app-percona-ns/value: percona-backup-localpv/g' percona_backup_restore_localpv.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' percona_backup_restore_localpv.yml
+
 cat percona_backup_restore_localpv.yml
 
 bash ../Openshift-EE/utils/litmus_job_runner label='app:deploy-percona-backup-restore-localpv' job=percona_backup_restore_localpv.yml
@@ -59,7 +65,7 @@ fi
 
 echo "*******Performing Backup and Restore on percona Application**********"
 
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase=velero-backup-restore metadata="")
+run_id="localpv";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=velero-backup-restore metadata=${run_id})
 echo $test_name
 
 cd litmus
@@ -67,7 +73,12 @@ cp experiments/functional/backup_and_restore/run_litmus_test.yml run_backupresto
 
 sed -i -e 's/value: app-percona-ns/value: percona-backup-localpv/g' \
 -e 's/app: velero-backup-restore/app: velero-backup-restore-localpv/g' \
--e 's/value: "cstor"/value: "localpv"/g' run_backuprestore_test.yml
+-e 's/value: "cstor"/value: "localpv"/g' run_backuprestore_localpv_test.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' run_backuprestore_localpv_test.yml
 
 echo "Running the litmus test for Percona Backup Restore.."
 cat run_backuprestore_localpv_test.yml
