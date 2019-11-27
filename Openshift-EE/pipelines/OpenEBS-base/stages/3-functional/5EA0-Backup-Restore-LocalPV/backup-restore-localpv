@@ -22,6 +22,7 @@ present_dir=$(pwd)
 echo $present_dir
 oc adm policy add-scc-to-user anyuid system:serviceaccount:percona-backup-localpv:default
 bash Openshift-EE/utils/e2e-cr jobname:backup-restore-localpv jobphase:Waiting
+bash Openshift-EE/utils/pooling jobname:backup-restore-jiva
 bash Openshift-EE/utils/e2e-cr jobname:backup-restore-localpv jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
 ################
@@ -40,7 +41,7 @@ cp apps/percona/deployers/run_litmus_test.yml percona_backup_restore_localpv.yml
 
 sed -i -e 's/app: percona-deployment/app: deploy-percona-backup-restore-localpv/g' \
 -e 's/value: openebs-standard/value: openebs-hostpath/g' \
--e 's/value: app-percona-ns/value: percona-backup-localpv/g' percona_backup_restore_localpv.yml
+-e 's/value: app-percona-ns/value: backup-percona-localpv/g' percona_backup_restore_localpv.yml
 
 sed -i '/command:/i \
           - name: RUN_ID\
@@ -71,9 +72,10 @@ echo $test_name
 cd litmus
 cp experiments/functional/backup_and_restore/run_litmus_test.yml run_backuprestore_localpv_test.yml
 
-sed -i -e 's/value: app-percona-ns/value: percona-backup-localpv/g' \
+sed -i -e 's/value: app-percona-ns/value: backup-percona-localpv/g' \
 -e 's/app: velero-backup-restore/app: velero-backup-restore-localpv/g' \
--e 's/value: "cstor"/value: "localpv"/g' run_backuprestore_localpv_test.yml
+-e 's/value: "cstor"/value: "localpv"/g' \
+-e 's/value: percona-backup/value: percona-backup-localpv/g' run_backuprestore_localpv_test.yml
 
 sed -i '/command:/i \
           - name: RUN_ID\
