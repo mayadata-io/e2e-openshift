@@ -108,6 +108,13 @@ sed -i -e '/name: PVC_NAME/{n;s/.*/            value: openebs-bb-cvr-scaledown/}
 -e '/name: DATA_PERSISTENCE/{n;s/.*/            value: busybox/}' \
 -e 's/name: cvr-scaledown/name: cvr-scaledown-configmap/g' cvr_scaledown.yml
 
+## Insert the set of variables for busybox data consistency util into configmap spec.
+sed -i '/parameters.yml: |/a \
+    blocksize: 4k \
+    blockcount: 1024 \
+    testfile: cvrscaledown
+' cvr_scaledown.yml
+
 cat  cvr_scaledown.yml
  # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
 bash ../Openshift-EE/utils/litmus_job_runner label='app:cvr-scaledown' job=cvr_scaledown.yml
