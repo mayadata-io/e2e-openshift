@@ -5,7 +5,7 @@ pod() {
 ### Drain the node to run infra chaos test scripts
 echo "******* Drain node for maintainence ********"
 
-node_name=$(sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port kubectl get nodes | grep compute | awk 'FNR==1 {print $1}')
+node_name=$(sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port kubectl get nodes | grep work | awk 'FNR==1 {print $1}')
 
 echo $node_name
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/5-infra-chaos/PC78-drain-node/drain-node node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$node_name'"' '"'$RELEASE_TAG'"'

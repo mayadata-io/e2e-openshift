@@ -136,6 +136,7 @@ cp experiments/chaos/openebs_target_failure/run_litmus_test.yml run_target_mgmt_
 sed -i -e 's/value: percona-mysql-claim/value: openebs-bb-mgmt-targetkill/g' \
 -e 's/name: target-failure/name: target-mgmt-kill/g' \
 -e 's/name: openebs-target-failure/name: openebs-target-mgmt-failure/g' \
+-e 's/value: docker/value: cri-o/g' \
 -e 's/value: '\''name=percona'\''/value: '\''app=target-mgmt-kill'\''/g' \
 -e 's/value: app-percona-ns/value: mgmt-kill/g' run_target_mgmt_kill_test.yml
 

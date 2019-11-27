@@ -117,6 +117,7 @@ cp experiments/chaos/openebs_target_network_delay/run_litmus_test.yml run_target
 
 sed -i -e 's/value: percona-mysql-claim/value: openebs-bb-targetdelay/g' \
 -e 's/value: '\''name=percona'\''/value: '\''app=target-delay'\''/g' \
+-e 's/value: docker/value: cri-o/g' \
 -e 's/value: app-percona-ns/value: target-delay/g' run_target_delay_test.yml
 
 ## Replace the value of DATA_PERSISTENCE with application name in litmus experiment.
