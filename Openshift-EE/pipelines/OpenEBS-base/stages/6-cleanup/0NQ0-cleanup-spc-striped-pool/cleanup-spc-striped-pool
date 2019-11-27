@@ -22,7 +22,7 @@ current_time=$(eval $time)
 bash Openshift-EE/utils/pooling jobname:nfsv3-deprovision
 bash Openshift-EE/utils/e2e-cr jobname:spc-striped-pool-cleanup jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
-nameSpace=$(kubectl get ns --no-headers | grep -v openebs | grep -v litmus | grep -v kube-service-catalog | grep -v default | grep -v kube-system | grep -v logging | grep -v openshift-node | grep -v openshift-sdn | grep -v openshift-template-service-broker | grep -v openshift-web-console | awk {'print $1'})
+nameSpace=$(kubectl get ns --no-headers | grep -vE "openebs|litmus|kube-service-catalog|default|kube-system|logging|openshift|kube-node-lease|kube-public" | awk {'print $1'})
 kubectl delete ns $nameSpace
 kubectl get ns
 
