@@ -19,6 +19,7 @@ time="date"
 current_time=$(eval $time)
 
 #pooling over previous job to complete
+bash Openshift-EE/utils/pooling jobname:nfsv4-deprovision
 bash Openshift-EE/utils/e2e-cr jobname:spc-striped-pool-cleanup jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
 nameSpace=$(kubectl get ns --no-headers | grep -vE "openebs|litmus|kube-service-catalog|default|kube-system|logging|openshift|kube-node-lease|kube-public" | awk {'print $1'})
