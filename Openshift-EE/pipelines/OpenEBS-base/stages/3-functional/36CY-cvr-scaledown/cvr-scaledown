@@ -146,12 +146,12 @@ sed -i -e 's/value: app-busybox-ns/value: cvr-scaledown-ns/g' \
 sed -i '/command:/i \
           - name: RUN_ID\
             value: '"$run_id"'\
-' busybox_loadgen_deprovision_cvr_scaledown.yml.yml
+' busybox_loadgen_deprovision_cvr_scaledown.yml
 
-cat busybox_loadgen_deprovision_cvr_scaledown.yml.yml
+cat busybox_loadgen_deprovision_cvr_scaledown.yml
 
 bash ../Openshift-EE/utils/litmus_job_runner label='liveness:bb-liveness-deprovision-cvr-scaledown' job=busybox_loadgen_deprovision_cvr_scaledown.yml
-
+cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:cvr-scaledown $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 

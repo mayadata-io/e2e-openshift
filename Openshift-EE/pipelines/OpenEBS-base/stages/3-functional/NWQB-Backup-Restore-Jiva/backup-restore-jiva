@@ -22,6 +22,7 @@ present_dir=$(pwd)
 echo $present_dir
 oc adm policy add-scc-to-user anyuid system:serviceaccount:percona-backup-jiva:default
 bash Openshift-EE/utils/e2e-cr jobname:backup-restore-jiva jobphase:Waiting
+bash Openshift-EE/utils/pooling jobname:backup-restore-cstor
 bash Openshift-EE/utils/e2e-cr jobname:backup-restore-jiva jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
 ################
@@ -40,7 +41,7 @@ cp apps/percona/deployers/run_litmus_test.yml percona_backup_restore_jiva.yml
 
 sed -i -e 's/app: percona-deployment/app: deploy-percona-backup-restore-jiva/g' \
 -e 's/value: openebs-standard/value: openebs-jiva-default/g' \
--e 's/value: app-percona-ns/value: percona-backup-jiva/g' percona_backup_restore_jiva.yml
+-e 's/value: app-percona-ns/value: backup-percona-jiva/g' percona_backup_restore_jiva.yml
 
 sed -i '/command:/i \
           - name: RUN_ID\
@@ -71,9 +72,10 @@ echo $test_name
 cd litmus
 cp experiments/functional/backup_and_restore/run_litmus_test.yml run_backuprestore_jiva_test.yml
 
-sed -i -e 's/value: app-percona-ns/value: percona-backup-jiva/g' \
+sed -i -e 's/value: app-percona-ns/value: backup-percona-jiva/g' \
 -e 's/app: velero-backup-restore/app: velero-backup-restore-jiva/g' \
--e 's/value: "cstor"/value: "jiva"/g' run_backuprestore_jiva_test.yml
+-e 's/value: "cstor"/value: "jiva"/g' \
+-e 's/value: percona-backup/value: percona-backup-jiva/g' run_backuprestore_jiva_test.yml
 
 echo "Running the litmus test for Percona Backup Restore.."
 cat run_backuprestore_jiva_test.yml
