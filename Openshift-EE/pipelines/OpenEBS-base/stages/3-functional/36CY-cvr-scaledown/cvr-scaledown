@@ -132,7 +132,7 @@ fi
 # LitmusBook 4 #
 ################
 
-run_id="-deprovision-cvr-scaledown";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+run_id="deprovision-cvr-scaledown";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
 echo $test_name
 
 cd litmus
