@@ -20,7 +20,7 @@ current_time=$(eval $time)
 
 present_dir=$(pwd)
 echo $present_dir
-oc adm policy add-scc-to-user anyuid system:serviceaccount:percona-backup-jiva:default
+oc adm policy add-scc-to-user anyuid system:serviceaccount:backup-percona-jiva:default
 bash Openshift-EE/utils/e2e-cr jobname:backup-restore-jiva jobphase:Waiting
 bash Openshift-EE/utils/pooling jobname:backup-restore-cstor
 bash Openshift-EE/utils/e2e-cr jobname:backup-restore-jiva jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
