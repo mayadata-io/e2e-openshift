@@ -2,6 +2,8 @@
 set -x
 pod() {
 
+node_name=$(sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port kubectl get nodes | grep worker | awk 'FNR==1 {print $1}')
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port "kubectl taint nodes $node_name infra-aid:NoSchedule-"
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/0FN8-nfsv4-provisioner-cleanup/nfs-provisioner-cleanup node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
 }
 
