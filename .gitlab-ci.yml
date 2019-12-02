@@ -149,6 +149,14 @@ AP1O-NFSv4-PROVISION:
 #     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/Q2JG-nfsv3-provision/nfsv3-provision
 #     - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/Q2JG-nfsv3-provision/nfsv3-provision    
 
+PBCY-NFSv4-JIVA-PROVISION:
+  image: openebs/openshift-ci:latest
+  stage: OPENEBS-SETUP
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/PBCY-nfsv4-jiva-provision/nfsv4-jiva-provision
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/PBCY-nfsv4-jiva-provision/nfsv4-jiva-provision
+
+
 .func_test_template:
   image: openebs/openshift-ci:latest
   stage: FUNCTIONAL
@@ -608,7 +616,13 @@ XC0I-cleanup-cspc-striped-pool:
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/XC0I-cleanup-cspc-striped-pool/cleanup-cspc-striped-pool
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/XC0I-cleanup-cspc-striped-pool/cleanup-cspc-striped-pool
- 
+
+J9PT-nfsv4-jiva-provision-cleanup:
+  extends: .cleanup_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/J9PT-nfsv4-jiva-provisioner-cleanup/nfsv4-jiva-provisioner-cleanup
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/J9PT-nfsv4-jiva-provisioner-cleanup/nfsv4-jiva-provisioner-cleanup
+
 GP95-openebs-Uninstall:
   extends: .cleanup_test_template
   script:
