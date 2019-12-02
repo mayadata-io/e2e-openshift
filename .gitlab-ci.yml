@@ -445,11 +445,11 @@ QURH-Clone-Rebuild-post-snapshot-rebuild:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/2HXA-cstor-volume-mgmt-kill/cstor-volume-mgmt-kill
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/2HXA-cstor-volume-mgmt-kill/cstor-volume-mgmt-kill
 
-0ACF-nfs-cstor-app-kill:
-  extends: .chaos_test_template
-  script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/0ACF-nfs-app-kill/nfs-app-kill
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/0ACF-nfs-app-kill/nfs-app-kill    
+# 0ACF-nfs-cstor-app-kill:
+#   extends: .chaos_test_template
+#   script:
+#     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/0ACF-nfs-app-kill/nfs-app-kill
+#     - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/0ACF-nfs-app-kill/nfs-app-kill    
 
       #RTOH-Kubelet-Crash:
       #  extends: .chaos_test_template
