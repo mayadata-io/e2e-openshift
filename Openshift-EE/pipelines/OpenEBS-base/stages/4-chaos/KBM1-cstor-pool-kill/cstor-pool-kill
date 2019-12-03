@@ -117,6 +117,7 @@ cp experiments/chaos/openebs_pool_failure/run_litmus_test.yml poolkill.yml
 sed -i -e 's/value: percona-mysql-claim/value: openebs-bb-poolkill/g' \
 -e 's/value: '\''name=percona'\''/value: '\''app=pool-kill'\''/g' \
 -e 's/enable//g' \
+-e 's/value: docker/value: cri-o/g' \
 -e 's/value: app-percona-ns/value: pool-kill/g' poolkill.yml
 
 sed -i '/command:/i \
@@ -164,7 +165,7 @@ EOF
 sed -i -e 's/value: app-busybox-ns/value: pool-kill/g' \
 -e 's/app=busybox-sts/app=pool-kill/g' \
 -e 's/value: provision/value: deprovision/g' \
--e 's/generateName: litmus-busybox-liveness/generateName: busybox-liveness-dep-cstor-pool-kill/g' \
+-e 's/generateName: litmus-busybox-liveness/generateName: busybox-liveness-dep-pool-kill/g' \
 -e 's/liveness: litmus-busybox-liveness/liveness: busybox-liveness-deprovision-pool-kill/g' busybox_loadgen_deprovision_pool_kill.yml
 
 sed -i '/command:/i \

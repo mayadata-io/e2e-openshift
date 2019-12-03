@@ -167,7 +167,7 @@ EOF
 sed -i -e 's/value: app-busybox-ns/value: cas-performance/g' \
 -e 's/value: provision/value: deprovision/g' \
 -e 's/app=busybox-sts/app=busybox-cas-performance/g' \
--e 's/generateName: litmus-busybox-liveness/generateName: busybox-liveness-dep-cas-performance/g' \
+-e 's/generateName: litmus-busybox-liveness/generateName: busybox-liveness-deprovision-cas-performance/g' \
 -e 's/liveness: litmus-busybox-liveness/liveness: bb-liveness-dep-cas-perform/g' bb_loadgen_deprovision_cas_performance.yml
 
 sed -i '/command:/i \

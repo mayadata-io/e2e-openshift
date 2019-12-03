@@ -21,7 +21,6 @@ case_id=VD8F
 observer_node=$4
 releaseTag=$(echo $5)
 
-
 time="date"
 current_time=$(eval $time)
 
@@ -186,7 +185,7 @@ EOF
 sed -i -e 's/value: app-busybox-ns/value: node-failure-cstor/g' \
 -e 's/app=busybox-sts/app=node-failure-cstor/g' \
 -e 's/value: provision/value: deprovision/g' \
--e 's/generateName: litmus-busybox-liveness/generateName: busybox-liveness-dep-node-failure-cstor/g' \
+-e 's/generateName: litmus-busybox-liveness/generateName: busybox-liveness-dep-node-failure/g' \
 -e 's/liveness: litmus-busybox-liveness/liveness: busybox-liveness-deprovision-node-failure/g' busybox_loadgen_deprovision_node_failure.yml
 
 sed -i '/command:/i \

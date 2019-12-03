@@ -58,7 +58,7 @@ G45J-MIRRORED-POOL:
 #     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/9ZWW-create-raidz2-pool/create-raidz2-pool
 #     - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/9ZWW-create-raidz2-pool/create-raidz2-pool
 
-KUSG-CSPC-STRIPE-POOL:
+KUSG-CSPC_STRIPE_POOL:
   image: openebs/openshift-ci:latest
   stage: OPENEBS-SETUP
   script:
@@ -142,12 +142,20 @@ AP1O-NFSv4-PROVISION:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/AP1O-nfsv4-provision/nfsv4-provision
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/AP1O-nfsv4-provision/nfsv4-provision
 
-Q2JG-NFSv3-PROVISION:
+# Q2JG-NFSv3-PROVISION:
+#   image: openebs/openshift-ci:latest
+#   stage: OPENEBS-SETUP
+#   script:
+#     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/Q2JG-nfsv3-provision/nfsv3-provision
+#     - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/Q2JG-nfsv3-provision/nfsv3-provision    
+
+PBCY-NFSv4-JIVA-PROVISION:
   image: openebs/openshift-ci:latest
   stage: OPENEBS-SETUP
   script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/Q2JG-nfsv3-provision/nfsv3-provision
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/Q2JG-nfsv3-provision/nfsv3-provision    
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/PBCY-nfsv4-jiva-provision/nfsv4-jiva-provision
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/PBCY-nfsv4-jiva-provision/nfsv4-jiva-provision
+
 
 .func_test_template:
   image: openebs/openshift-ci:latest
@@ -156,67 +164,43 @@ Q2JG-NFSv3-PROVISION:
   dependencies:
     - K9YC-OpenEBS
      
-9AKX-cStor-Create-Snapshot:
+9AKX-Create-Snapshot:
   extends: .func_test_template
   script: 
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/9AKX-snapshot/snapshot
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/9AKX-snapshot/snapshot
 
-ZK9B-cStor-Create-Clone:
+ZK9B-Create-Clone:
   extends: .func_test_template
   script: 
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/ZK9B-snapshot-clone/snapshot-clone
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/ZK9B-snapshot-clone/snapshot-clone
 
-6RQL-cStor-Clone-different-capacity:
+6RQL-Clone-different-capacity:
   extends: .func_test_template
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/6RQL-Clone-different-capacity/clone-different-capacity
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/6RQL-Clone-different-capacity/clone-different-capacity
 
-8QQP-Jiva-Delete-Autogen-Snapshot:
-  extends: .func_test_template
-  script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/8QQP-Jiva-Snapshot-Delete/jiva-snapshot-delete
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/8QQP-Jiva-Snapshot-Delete/jiva-snapshot-delete
-
-5O5V-cStor-Parent-Volume-Delete:
+5O5V-Parent-Volume-Delete:
   extends: .func_test_template
   script: 
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/5O5V-Clone-parent-vol-delete/clone-parent-vol-delete
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/5O5V-Clone-parent-vol-delete/clone-parent-vol-delete
 
-JAIP-cStor-STS-App-Target-Affinity:
+JAIP-STS-App-Target-Affinity:
   extends: .func_test_template
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/JAIP-STS-App-Target-Affinity/sts-app-target-affinity
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/JAIP-STS-App-Target-Affinity/sts-app-target-affinity
 
-VZFL-cStor-App-Target-Affinity:
+VZFL-App-Target-Affinity:
   extends: .func_test_template
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/VZFL-App-Target-affinity/app-target-affinity
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/VZFL-App-Target-affinity/app-target-affinity
 
-36CY-cvr-scaledown:
-  extends: .func_test_template
-  script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/36CY-cvr-scaledown/cvr-scaledown
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/36CY-cvr-scaledown/cvr-scaledown
-
-IFBV-cvr-scaleup:
-  extends: .func_test_template
-  script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/IFBV-cvr-scaleup/cvr-scaleup
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/IFBV-cvr-scaleup/cvr-scaleup
-
-VTPW-cvr-migration:
-  extends: .func_test_template
-  script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/VTPW-cvr-migration/cvr-migration
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/VTPW-cvr-migration/cvr-migration
-
-02EA-cStor-CAS-Performance:
+02EA-CAS-Performance:
   extends: .func_test_template
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/02EA-CAS-performance/cas-performance
@@ -228,7 +212,7 @@ VTPW-cvr-migration:
       #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/ENBK-Application-Upgrade/application-upgrade
       #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/ENBK-Application-Upgrade/application-upgrade
 
-ZD8F-cStor-App-Scaleup:
+ZD8F-App-Scaleup:
   extends: .func_test_template
   script: 
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/ZD8F-Sts-App-replica-scaleup/app-replica-scaleup
@@ -246,25 +230,25 @@ ZD8F-cStor-App-Scaleup:
       #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/GV2D-Storage-volume-upgrade/storage-volume-upgrade
       #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/GV2D-Storage-volume-upgrade/storage-volume-upgrade
 
-WHAP-cStor-Volume-Capacity-Fill:
+WHAP-Volume-Capacity-Fill:
   extends: .func_test_template
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/WHAP-volume-capacity-fill/volume-capacity-fill
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/WHAP-volume-capacity-fill/volume-capacity-fill
       
-4ZWU-cStor-STS-Volume-Distribute:
+4ZWU-STS-Volume-Distribute:
   extends: .func_test_template
   script: 
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/4ZWU-STS-Volume-Distribution/volume-distribution
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/4ZWU-STS-Volume-Distribution/volume-distribution
 
-QDLO-cStor-Data-integrity:
+QDLO-Data-integrity:
   extends: .func_test_template
   script: 
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/QDLO-Data-Integrity/data-integrity
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/QDLO-Data-Integrity/data-integrity
 
-OBS2-cStor-Memory-Usage:
+OBS2-Memory-Usage:
   extends: .func_test_template
   script: 
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/OBS2-Memory-Consumption/memory-consumption
@@ -318,6 +302,12 @@ Y4ET-Jiva-snapshot-clone:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/Y4ET-Jiva-snapshot-clone/jiva-snapshot-clone
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/Y4ET-Jiva-snapshot-clone/jiva-snapshot-clone
 
+8QQP-Jiva-delete-autogen-snapshot:
+  extends: .func_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/8QQP-Jiva-Snapshot-Delete/jiva-snapshot-delete
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/8QQP-Jiva-Snapshot-Delete/jiva-snapshot-delete
+
 4Q90-Jiva-pods-openebs-namespace:
   extends: .func_test_template
   script:
@@ -329,6 +319,42 @@ WOEM-RWX-APP-DEPLOY:
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/WOEM-App-deploy-RWX/app-deploy-rwx
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/WOEM-App-deploy-RWX/app-deploy-rwx
+
+VTPW-CVR-migration:
+  extends: .func_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/VTPW-cvr-migration/cvr-migration
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/VTPW-cvr-migration/cvr-migration
+
+IFBV-CVR-Scaleup:
+  extends: .func_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/IFBV-cvr-scaleup/cvr-scaleup
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/IFBV-cvr-scaleup/cvr-scaleup
+
+36CY-CVR-Scaledown:
+  extends: .func_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/36CY-cvr-scaledown/cvr-scaledown
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/36CY-cvr-scaledown/cvr-scaledown
+
+3PZ0-Backup-Restore-Cstor:
+  extends: .func_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/3PZ0-Backup-Restore-Cstor/backup-restore-cstor
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/3PZ0-Backup-Restore-Cstor/backup-restore-cstor
+
+NWQB-Backup-Restore-Jiva:
+  extends: .func_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/NWQB-Backup-Restore-Jiva/backup-restore-jiva
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/NWQB-Backup-Restore-Jiva/backup-restore-jiva
+
+5EA0-Backup-Restore-LocalPV:
+  extends: .func_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/5EA0-Backup-Restore-LocalPV/backup-restore-localpv
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/5EA0-Backup-Restore-LocalPV/backup-restore-localpv
 
 .chaos_test_template:
   image: openebs/openshift-ci:latest
@@ -427,11 +453,11 @@ QURH-Clone-Rebuild-post-snapshot-rebuild:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/2HXA-cstor-volume-mgmt-kill/cstor-volume-mgmt-kill
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/2HXA-cstor-volume-mgmt-kill/cstor-volume-mgmt-kill
 
-0ACF-nfs-cstor-app-kill:
-  extends: .chaos_test_template
-  script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/0ACF-nfs-app-kill/nfs-app-kill
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/0ACF-nfs-app-kill/nfs-app-kill    
+# 0ACF-nfs-cstor-app-kill:
+#   extends: .chaos_test_template
+#   script:
+#     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/0ACF-nfs-app-kill/nfs-app-kill
+#     - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/0ACF-nfs-app-kill/nfs-app-kill    
 
       #RTOH-Kubelet-Crash:
       #  extends: .chaos_test_template
@@ -530,17 +556,23 @@ PC78-Drain-app-Node:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/5-infra-chaos/PC78-drain-node/drain-node
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/5-infra-chaos/PC78-drain-node/drain-node
 
-Z0KY-Exhaust-node-capacity:
-  extends: .infra_chaos_test_template
-  script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/5-infra-chaos/Z0KY-Fill-node/fill-node-capacity
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/5-infra-chaos/Z0KY-Fill-node/fill-node-capacity
+      #Z0KY-Exhaust-node-capacity:
+      #  extends: .infra_chaos_test_template
+      #  script:
+      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/5-infra-chaos/Z0KY-Fill-node/fill-node-capacity
+      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/5-infra-chaos/Z0KY-Fill-node/fill-node-capacity
 
-VD8F-cstor-app-node-failure:
-  extends: .infra_chaos_test_template
-  script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/5-infra-chaos/VD8F-node-failure-cstor/node-failure-cstor
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/5-infra-chaos/VD8F-node-failure-cstor/node-failure-cstor
+      #VD8F-cstor-app-node-failure:
+      #  extends: .infra_chaos_test_template
+      #  script:
+      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/5-infra-chaos/VD8F-node-failure-cstor/node-failure-cstor
+      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/5-infra-chaos/VD8F-node-failure-cstor/node-failure-cstor
+
+      #T1JZ-jiva-app-node-failure:
+      #  extends: .infra_chaos_test_template
+      #  script:
+      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/5-infra-chaos/T1JZ-node-failure-jiva/node-failure-jiva
+      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/5-infra-chaos/T1JZ-node-failure-jiva/node-failure-jiva
 
 .cleanup_test_template:
   image: openebs/openshift-ci:latest
@@ -555,11 +587,11 @@ VD8F-cstor-app-node-failure:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/0FN8-nfsv4-provisioner-cleanup/nfs-provisioner-cleanup
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/0FN8-nfsv4-provisioner-cleanup/nfs-provisioner-cleanup    
 
-MCDE-nfsv3-provisioner-cleanup:
-  extends: .cleanup_test_template
-  script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/MCDE-nfsv3-provisioner-cleanup/nfsv3-deprovision
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/MCDE-nfsv3-provisioner-cleanup/nfsv3-deprovision
+# MCDE-nfsv3-provisioner-cleanup:
+#   extends: .cleanup_test_template
+#   script:
+#     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/MCDE-nfsv3-provisioner-cleanup/nfsv3-deprovision
+#     - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/MCDE-nfsv3-provisioner-cleanup/nfsv3-deprovision
 
 0NQ0-cleanup-spc-striped-pool:
   extends: .cleanup_test_template
@@ -584,7 +616,13 @@ XC0I-cleanup-cspc-striped-pool:
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/XC0I-cleanup-cspc-striped-pool/cleanup-cspc-striped-pool
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/XC0I-cleanup-cspc-striped-pool/cleanup-cspc-striped-pool
- 
+
+J9PT-nfsv4-jiva-provision-cleanup:
+  extends: .cleanup_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/J9PT-nfsv4-jiva-provisioner-cleanup/nfsv4-jiva-provisioner-cleanup
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/J9PT-nfsv4-jiva-provisioner-cleanup/nfsv4-jiva-provisioner-cleanup
+
 GP95-openebs-Uninstall:
   extends: .cleanup_test_template
   script:

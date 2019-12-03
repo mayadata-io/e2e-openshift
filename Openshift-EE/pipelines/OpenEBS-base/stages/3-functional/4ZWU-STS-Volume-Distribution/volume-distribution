@@ -65,6 +65,8 @@ source ~/.profile
 gittoken=$(echo "$github_token")
 testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
 #python3 Openshift-EE/utils/result/result_update.py $test_case_id 4ZWU 3-functional "Check if the storage volume replicas are distributed across the storage pools in case of statefulset deployment" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+
+## Check the test status & result from the litmus result custom resource
 current_time=$(eval $time)
 
 if [ "$rc_val" != "0" ]; then
@@ -73,8 +75,8 @@ python3 Openshift-EE/utils/result/result_update.py $job_id 4ZWU 3-functional "Ch
 exit 1;
 fi
 
-## Check the test status & result from the litmus result custom resource
 bash Openshift-EE/utils/e2e-cr jobname:volume-replica-distribution jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
+
 python3 Openshift-EE/utils/result/result_update.py $job_id 4ZWU 3-functional "Check if the storage volume replicas are distributed across the storage pools in case of statefulset deployment" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 
 if [ "$rc_val" != "0" ]; then

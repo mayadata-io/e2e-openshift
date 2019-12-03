@@ -4,7 +4,7 @@ set -x
 pod() {
 ### Tainting the node to run infra chaos test scripts
 echo "******* Tainting node ********"
-node_name=$(sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port kubectl get nodes | grep compute | awk 'FNR==1 {print $1}')
+node_name=$(sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port kubectl get nodes | grep worker | awk 'FNR==1 {print $1}')
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port "kubectl taint nodes $node_name infra-aid=observer:NoSchedule"
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port "mkdir infra && echo $node_name >> infra/node_name"
 
@@ -19,7 +19,7 @@ source ~/.profile
 gittoken=$(echo "$github_token")
 case_id=BF12
 observer_node=$4
-releaseTag=$(echo $4)
+releaseTag=$(echo $5)
 
 time="date"
 current_time=$(eval $time)
@@ -181,7 +181,7 @@ EOF
 sed -i -e 's/value: app-busybox-ns/value: taint-node/g' \
 -e 's/app=busybox-sts/app=taint-node/g' \
 -e 's/value: provision/value: deprovision/g' \
--e 's/generateName: litmus-busybox-liveness/generateName: busybox-liveness-dep-taint-node/g' \
+-e 's/generateName: litmus-busybox-liveness/generateName: busybox-liveness-dep-taintnode/g' \
 -e 's/liveness: litmus-busybox-liveness/liveness: busybox-liveness-deprovision-taintnode/g' busybox_loadgen_deprovision_taint_node.yml
 
 sed -i '/command:/i \

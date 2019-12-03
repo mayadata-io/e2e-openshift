@@ -20,7 +20,6 @@ current_time=$(eval $time)
 
 present_dir=$(pwd)
 echo $present_dir
-
 bash Openshift-EE/utils/pooling jobname:clone-post-snap-rebuild
 bash Openshift-EE/utils/e2e-cr jobname:pool-delete jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
@@ -167,7 +166,7 @@ EOF
 sed -i -e 's/value: app-busybox-ns/value: pool-delete/g' \
 -e 's/app=busybox-sts/app=pool-delete/g' \
 -e 's/value: provision/value: deprovision/g' \
--e 's/generateName: litmus-busybox-liveness/generateName: busybox-liveness-dep-cstor-pool-delete/g' \
+-e 's/generateName: litmus-busybox-liveness/generateName: busybox-liveness-dep-pool-delete/g' \
 -e 's/liveness: litmus-busybox-liveness/liveness: busybox-liveness-deprovision-pool-delete/g' busybox_loadgen_deprovision_pool_delete.yml
 
 sed -i '/command:/i \
@@ -222,7 +221,6 @@ bash Openshift-EE/utils/event_updater jobname:pool-delete $test_name jobid:"$job
 
 rc_val=$(echo $?)
 current_time=$(eval $time)
-
 # testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
 
 if [ "$rc_val" != "0" ]; then

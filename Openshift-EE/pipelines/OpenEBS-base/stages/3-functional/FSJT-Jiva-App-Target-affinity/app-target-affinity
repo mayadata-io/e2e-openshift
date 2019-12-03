@@ -264,20 +264,20 @@ bash Openshift-EE/utils/event_updater jobname:app-target-affinity-jiva  $test_na
 rc_val=$(echo $?)
 current_time=$(eval $time)
 
-# testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+
 if [ "$rc_val" != "0" ]; then
-bash Openshift-EE/utils/e2e-cr jobname:app-target-affinity-jiva  jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Fail
-python3 Openshift-EE/utils/result/result_update.py $job_id FSJT 3-functional "Checking Application and target scheduled on same Node" Fail $pipeline_id "$current_time" $commit_id $gittoken
+bash Openshift-EE/utils/e2e-cr jobname:app-target-affinity-jiva  jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:$testResult
+python3 Openshift-EE/utils/result/result_update.py $job_id FSJT 3-functional "Checking Application and target scheduled on same Node" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 
-bash Openshift-EE/utils/e2e-cr jobname:app-target-affinity-jiva  jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
-python3 Openshift-EE/utils/result/result_update.py $job_id FSJT 3-functional "Checking Application and target scheduled on same Node" Pass $pipeline_id "$current_time" $commit_id $gittoken
+bash Openshift-EE/utils/e2e-cr jobname:app-target-affinity-jiva  jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:$testResult
+python3 Openshift-EE/utils/result/result_update.py $job_id FSJT 3-functional "Checking Application and target scheduled on same Node" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 
 if [ "$rc_val" != "0" ]; then
 exit 1;
 fi
-
 }
 
 if [ "$1" == "node" ];then

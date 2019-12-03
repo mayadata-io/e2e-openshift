@@ -11,6 +11,7 @@ job_id=$(echo $1)
 pipeline_id=$(echo $2)
 case_id=0NQ0
 commit_id=$(echo $3)
+releaseTag=$(echo $4)
 source ~/.profile
 gittoken=$(echo "$github_token")
 
@@ -18,10 +19,10 @@ time="date"
 current_time=$(eval $time)
 
 #pooling over previous job to complete
-bash Openshift-EE/utils/pooling jobname:nfsv3-deprovision
+bash Openshift-EE/utils/pooling jobname:nfsv4-jiva-deprovision
 bash Openshift-EE/utils/e2e-cr jobname:spc-striped-pool-cleanup jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
-nameSpace=$(kubectl get ns --no-headers | grep -v openebs | grep -v litmus | grep -v kube-service-catalog | grep -v default | grep -v kube-system | grep -v logging | grep -v openshift-node | grep -v openshift-sdn | grep -v openshift-template-service-broker | grep -v openshift-web-console | awk {'print $1'})
+nameSpace=$(kubectl get ns --no-headers | grep -vE "openebs|litmus|kube-service-catalog|default|kube-system|logging|openshift|kube-node-lease|kube-public" | awk {'print $1'})
 kubectl delete ns $nameSpace
 kubectl get ns
 
@@ -85,6 +86,7 @@ exit 1;
 fi
 
 bash Openshift-EE/utils/e2e-cr jobname:spc-striped-pool-cleanup jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
+
 python3 Openshift-EE/utils/result/result_update.py $job_id 0NQ0 2-setup "Cleanup cStor based Striped storage pool on disks and corresponding storage class" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 
 if [ "$rc_val" != "0" ]; then

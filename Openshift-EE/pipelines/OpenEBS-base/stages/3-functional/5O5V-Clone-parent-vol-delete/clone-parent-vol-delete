@@ -59,12 +59,13 @@ testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-column
 current_time=$(eval $time)
 
 if [ "$rc_val" != "0" ]; then
-bash Openshift-EE/utils/e2e-cr jobname:clone-parent-volume-delete jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Fail
+bash Openshift-EE/utils/e2e-cr jobname:clone-parent-volume-delete jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:$testResult
 python3 Openshift-EE/utils/result/result_update.py $job_id 5O5V 3-functional "Check if the clone can be created using volume snapshot" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 
-bash Openshift-EE/utils/e2e-cr jobname:clone-parent-volume-delete jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
+bash Openshift-EE/utils/e2e-cr jobname:clone-parent-volume-delete jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:$testResult
+
 python3 Openshift-EE/utils/result/result_update.py $job_id 5O5V 3-functional "Check if the clone can be created using volume snapshot" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 
 if [ "$rc_val" != "0" ]; then

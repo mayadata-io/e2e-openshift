@@ -55,6 +55,7 @@ bash ../Openshift-EE/utils/litmus_job_runner label='app:fio-di-litmus-snap-del' 
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:jiva-internal-snapshot-deletion $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
 rc_val=$(echo $?)
 current_time=$(eval $time)
 

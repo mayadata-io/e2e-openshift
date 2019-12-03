@@ -2,7 +2,6 @@
 set -x
 
 pod() {
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port ssh root@10.23.1.10 'oc adm policy add-scc-to-user anyuid system:serviceaccount:target-kill:default'	
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/VZPY-target-kill/target-kill node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
 }
 
@@ -21,7 +20,7 @@ current_time=$(eval $time)
 
 present_dir=$(pwd)
 echo $present_dir
-
+oc adm policy add-scc-to-user anyuid system:serviceaccount:target-kill:default
 bash Openshift-EE/utils/e2e-cr jobname:target-kill jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 bash Openshift-EE/utils/e2e-cr jobname:target-kill jobphase:Running init_time:"$current_time"
 
@@ -177,7 +176,7 @@ sed -i -e 's/value: app-busybox-ns/value: target-kill/g' \
 -e 's/app=busybox-sts/app=target-kill/g' \
 -e 's/value: provision/value: deprovision/g' \
 -e 's/generateName: litmus-busybox-liveness/generateName: busybox-liveness-dep-target-kill/g' \
--e 's/liveness: litmus-busybox-liveness/liveness: busybox-liveness-deprovision-target-kill/g' busybox_loadgen_deprovision_target_kill.yml
+-e 's/liveness: litmus-busybox-liveness/liveness: busybox-liveness-deprovision-targetkill/g' busybox_loadgen_deprovision_target_kill.yml
 
 sed -i '/command:/i \
           - name: RUN_ID\
@@ -186,7 +185,7 @@ sed -i '/command:/i \
 
 cat busybox_loadgen_deprovision_target_kill.yml
 # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
-bash ../Openshift-EE/utils/litmus_job_runner label='liveness:busybox-liveness-deprovision-target-kill' job=busybox_loadgen_deprovision_target_kill.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='liveness:busybox-liveness-deprovision-targetkill' job=busybox_loadgen_deprovision_target_kill.yml
 cd ..
 # Get the cluster state Once the litmus jobs completed.
 bash Openshift-EE/utils/dump_cluster_state;
@@ -246,7 +245,6 @@ python3 Openshift-EE/utils/result/result_update.py $job_id VZPY 4-chaos "Induce 
 if [ "$rc_val" != "0" ]; then
 exit 1;
 fi
-
 }
 
 if [ "$1" == "node" ];then

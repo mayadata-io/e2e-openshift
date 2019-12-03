@@ -2,7 +2,6 @@
 set -x
 
 pod() {
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 ssh root@10.23.1.10 'oc adm policy add-scc-to-user anyuid system:serviceaccount:controller-delay-jiva:default'
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/TSXL-Jiva-controller-network-delay/controller-network-delay node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
 }
 
@@ -21,7 +20,7 @@ current_time=$(eval $time)
 
 present_dir=$(pwd)
 echo $present_dir
-
+oc adm policy add-scc-to-user anyuid system:serviceaccount:controller-delay-jiva:default
 bash Openshift-EE/utils/e2e-cr jobname:controller-network-delay-jiva jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:controller-network-delay-jiva jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
@@ -135,20 +134,21 @@ cp experiments/chaos/openebs_target_network_delay/run_litmus_test.yml run_contro
   --------------------------------------------------------------------------------------------------------------------     
  | specAttribute     | kind   |         default value               | test specifc value                              |
   ------------------------------------------------------------------------------------------------------------------- |
- | appLabel          | env    | app=busybox-sts                     | app=busybox-controller-delay-jiva               |
+ | appLabel          | env    | name=percona                        | app=busybox-controller-delay-jiva               |
  | pvcName           | env    | percona-mysql-claim                 | openebs-bb-controller-delay                     | 
- | appNamespace      | env    | app-busybox-ns                      | controller-delay-jiva                           |
+ | appNamespace      | env    | app-percona-ns                      | controller-delay-jiva                           |
  | storage clas      | env    | openebs-cstor-sparse                | openebs-jiva-default                            |
- | Litmus Job name   | name   | generateName: openebs-target-network-delay- | generateName: openebs-target-network-delay-jiva|
- | Litmus job label  | label  | app: openebs-target-network-delay            | network-delay-test-jiva                              |
+ | Litmus Job name   | name   | generateName: openebs-target-network-delay- | generateName: openebs-controller-network-delay|
+ | Litmus job label  | label  | app: openebs-target-network-delay            | openebs-controller-network-delay                              |
   ---------------------------------------------------------------------------------------------------------------------
 EOF
 
 sed -i -e 's/value: percona-mysql-claim/value: openebs-bb-controller-delay/g' \
--e 's/generateName: openebs-target-network-delay-/generateName: openebs-target-network-delay-jiva/g' \
--e 's/value: percona-mysql-claim/value: openebs-bb-controller-delay/g' \
--e 's/name: openebs-target-network-delay/name: network-delay-test-jiva/g' \
+-e 's/generateName: openebs-target-network-delay-/generateName: openebs-controller-network-delay/g' \
+-e 's/name: openebs-target-network-delay/name: openebs-controller-network-delay/g' \
+-e 's/name: target-network-delay/name: controller-network-delay/g' \
 -e 's/app=busybox-sts/app=busybox-controller-delay-jiva/g' \
+-e 's/value: docker/value: cri-o/g' \
 -e 's/value: '\''name=percona'\''/value: '\''app=busybox-controller-delay-jiva'\''/g' \
 -e 's/value: app-percona-ns/value: controller-delay-jiva/g' run_controller_delay_test_jiva.yml
 
@@ -157,9 +157,19 @@ sed -i '/command:/i \
             value: '"$run_id"'\
 ' run_controller_delay_test_jiva.yml
 
+## Replace the value of DATA_PERSISTENCE with application name in litmus experiment.
+sed -i '/name: DATA_PERSISTENCE/{n;s/.*/            value: busybox/}' run_controller_delay_test_jiva.yml
+
+## Insert the set of variables for busybox data consistency util into configmap spec.
+sed -i '/parameters.yml: |/a \
+    blocksize: 4k \
+    blockcount: 1024 \
+    testfile: ctrlnwdelaytest
+' run_controller_delay_test_jiva.yml
+
 cat run_controller_delay_test_jiva.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='name:network-delay-test-jiva' job=run_controller_delay_test_jiva.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-controller-network-delay' job=run_controller_delay_test_jiva.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:controller-network-delay-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"

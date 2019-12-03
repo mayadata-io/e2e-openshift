@@ -19,7 +19,7 @@ current_time=$(eval $time)
 
 present_dir=$(pwd)
 echo $present_dir
-
+oc adm policy add-scc-to-user anyuid system:serviceaccount:replica-fail-jiva:default
 bash Openshift-EE/utils/e2e-cr jobname:volume-replica-failure-jiva jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 bash Openshift-EE/utils/e2e-cr jobname:volume-replica-failure-jiva jobphase:Running
 
@@ -142,10 +142,21 @@ EOF
 sed -i -e 's/name=percona/app=busybox-rep-fail-jiva/g' \
 -e 's/value: app-percona-ns/value: replica-fail-jiva/g' \
 -e 's/value: percona-mysql-claim/value: openebs-busybox-rep-kill/g' run_rep_fail_test_jiva.yml
+-e 's/name: replica-failure/name: replica-failure-jiva/g' \
 
 sed -i '/command:/i \
           - name: RUN_ID\
             value: '"$run_id"'\
+' run_rep_fail_test_jiva.yml
+
+## Replace the value of DATA_PERSISTENCE with application name in litmus experiment.
+sed -i '/name: DATA_PERSISTENCE/{n;s/.*/            value: busybox/}' run_rep_fail_test_jiva.yml
+
+## Insert the set of variables for busybox data consistency util into configmap spec.
+sed -i '/parameters.yml: |/a \
+    blocksize: 4k \
+    blockcount: 1024 \
+    testfile: repfailtest
 ' run_rep_fail_test_jiva.yml
 
 cat run_rep_fail_test_jiva.yml

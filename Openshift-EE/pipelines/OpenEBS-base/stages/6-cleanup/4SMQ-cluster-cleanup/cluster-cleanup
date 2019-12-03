@@ -16,25 +16,25 @@ git clone https://github.com/mayadata-io/litmus.git
 cd litmus
 
 # Replace the VM IP In csv file
-sed -i -e 's/10.12.22.10/10.23.1.10/g' \
--e 's/10.12.22.11/10.23.1.11/g' \
--e 's/10.12.22.12/10.23.1.12/g' \
--e 's/10.12.22.13/10.23.1.13/g' k8s/on-prem/openshift-installer/ip.csv
+sed -i -e 's/10.12.22.10/10.34.1.28/g' \
+-e 's/10.12.22.11/10.34.1.29/g' \
+-e 's/10.12.22.12/10.34.1.30/g' \
+-e 's/10.12.22.13/10.34.1.31/g' k8s/on-prem/openshift-installer/ip.csv
 
-sed -i '/10.23.1.13/a \
-10.23.1.14 \
-10.23.1.15
+sed -i '/10.34.1.31/a \
+10.34.1.32 \
+10.34.1.33
 ' k8s/on-prem/openshift-installer/ip.csv
 
 #Replace the Vm names in csv file
-sed -i -e 's/auto1/AutoCluster-M/g' \
--e 's/auto2/AutoCluster-N1/g' \
--e 's/auto3/AutoCluster-N2/g' \
--e 's/auto4/AutoCluster-N3/g' k8s/on-prem/openshift-installer/vm_name.csv
+sed -i -e 's/auto1/oc-master-4.2/g' \
+-e 's/auto2/oc-worker1-4.2/g' \
+-e 's/auto3/oc-worker2-4.2/g' \
+-e 's/auto4/oc-worker3-4.2/g' k8s/on-prem/openshift-installer/vm_name.csv
 
-sed -i '/AutoCluster-N3/a \
-AutoCluster-N4 \
-AutoCluster-N5
+sed -i '/oc-worker3-4.2/a \
+oc-worker4-4.2 \
+oc-worker5-4.2
 ' k8s/on-prem/openshift-installer/vm_name.csv
 
 #Replace the snapshot name and exp ip in vars

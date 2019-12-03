@@ -53,7 +53,7 @@ bash Openshift-EE/utils/e2e-cr jobname:s2-j4-cstor-raidz1-pool jobphase:Waiting
 #bash Openshift-EE/utils/e2e-cr jobname:s2-j5-cstor-raidz2-pool jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:cstor-cspc-striped-pool jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:s2-j7-nfsv4-provision jobphase:Waiting
-bash Openshift-EE/utils/e2e-cr jobname:s2-j8-nfsv3-provision jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:s2-j8-nfsv4-jiva-provision jobphase:Waiting
 
 source ~/.profile
 

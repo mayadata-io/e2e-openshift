@@ -11,6 +11,7 @@ job_id=$(echo $1)
 pipeline_id=$(echo $2)
 case_id=XH12
 commit_id=$(echo $3)
+releaseTag=$(echo $4)
 source ~/.profile
 gittoken=$(echo "$github_token")
 
@@ -85,8 +86,8 @@ exit 1;
 fi
 
 bash Openshift-EE/utils/e2e-cr jobname:spc-raidz2-pool-cleanup jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
-python3 Openshift-EE/utils/result/result_update.py $job_id XH12 2-setup "Cleanup cStor based RAIDZ2 storage pool on disks and corresponding storage class" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 
+python3 Openshift-EE/utils/result/result_update.py $job_id XH12 2-setup "Cleanup cStor based RAIDZ2 storage pool on disks and corresponding storage class" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 if [ "$rc_val" != "0" ]; then
 exit 1;
 fi

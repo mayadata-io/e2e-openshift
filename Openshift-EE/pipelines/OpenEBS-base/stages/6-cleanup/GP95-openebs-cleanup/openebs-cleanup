@@ -8,6 +8,7 @@ node() {
 job_id=$(echo $1)
 pipeline_id=$(echo $2)
 commit_id=$(echo $3)
+releaseTag=$(echo $4)
 case_id=GP95
 
 time="date"
@@ -18,7 +19,6 @@ echo $present_dir
 
 bash Openshift-EE/utils/pooling jobname:cleanup-cspc-striped-pool
 bash Openshift-EE/utils/e2e-cr jobname:openebs-cleanup jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
-
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-deprovision metadata="")
 echo $test_name
 cd litmus
@@ -29,6 +29,7 @@ cp providers/openebs/installers/operator/master/litmusbook/run_litmus_test.yaml 
 #################
 ## RUNNER MAIN ##
 #################
+
 
 sed -i -e 's/name: litmus-openebs-runner/name: litmus-openebs-deprovision/g' \
 -e 's/provider: openebs-runner/provider: openebs-deprovision/g' \
@@ -54,12 +55,13 @@ current_time=$(eval $time)
 
 if [ "$rc_val" != "0" ]; then
 bash Openshift-EE/utils/e2e-cr jobname:openebs-cleanup jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Fail
-python3 Openshift-EE/utils/result/result_update.py $job_id GP95 2-setup "Cleanup OpenEBS related components" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id XC0I 2-setup "Cleanup OpenEBS related components" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 
 bash Openshift-EE/utils/e2e-cr jobname:openebs-cleanup jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
-python3 Openshift-EE/utils/result/result_update.py $job_id GP95 2-setup "Cleanup OpenEBS related components" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+
+python3 Openshift-EE/utils/result/result_update.py $job_id XC0I 2-setup "Cleanup OpenEBS related components" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 
 if [ "$rc_val" != "0" ]; then
 exit 1;

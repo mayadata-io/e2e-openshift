@@ -87,7 +87,7 @@ cp experiments/functional/jiva-pods-openebs-ns/run_litmus_test.yml deprovision_b
 EOF
 
 sed -i -e 's/value: provision/value: deprovision/g' \
--e 's/generateName: litmus-jiva-openebs-ns/generateName: deprovision-busybox-openebs-jiva/g' \
+-e 's/generateName: litmus-jiva-openebs-ns/generateName: deprovision-busybox-jiva-openebs/g' \
 -e 's/app: litmus-jiva-openebs-ns/app: deprovision-busybox-jiva-openebs/g' deprovision_busybox_jiva_openebs.yml
 
 sed -i '/command:/i \
@@ -106,7 +106,6 @@ bash Openshift-EE/utils/dump_cluster_state;
 
 #Update the e2e event for the job
 bash Openshift-EE/utils/event_updater jobname:jiva-openebs-ns $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
-
 rc_val=$(echo $?)
 
 # Obtain the status of the test using litmusresult(lr) 
@@ -122,6 +121,7 @@ fi
 
 # Update the e2e cr once the job is completed
 bash Openshift-EE/utils/e2e-cr jobname:jiva-openebs-ns jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:$testResult
+
 python3 Openshift-EE/utils/result/result_update.py $job_id $case_id 3-functional "Check if the application is successfully deployed and JIVA Controller, Replica pods are scheduled on OpenEBS namespace" $testResult $pipeline_id "$current_time" $commit_id $gitToken
 
 if [ "$rc_val" != "0" ]; then

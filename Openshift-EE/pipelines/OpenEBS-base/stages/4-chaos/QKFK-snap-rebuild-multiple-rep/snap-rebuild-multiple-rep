@@ -156,7 +156,7 @@ EOF
 sed -i -e 's/value: app-busybox-ns/value: snap-multiple-rep/g' \
 -e 's/app=busybox-sts/app=snap-multiple-rep/g' \
 -e 's/value: provision/value: deprovision/g' \
--e 's/generateName: litmus-busybox-liveness/generateName: busybox-liveness-dep-snap-multiple-replica/g' \
+-e 's/generateName: litmus-busybox-liveness/generateName: busybox-liveness-dep-snap-rebuild-multiple-rep/g' \
 -e 's/liveness: litmus-busybox-liveness/liveness: busybox-liveness-deprovision-snap-multiple-rep/g' busybox_loadgen_deprovision_snap_multiple_rep.yml
 
 sed -i '/command:/i \

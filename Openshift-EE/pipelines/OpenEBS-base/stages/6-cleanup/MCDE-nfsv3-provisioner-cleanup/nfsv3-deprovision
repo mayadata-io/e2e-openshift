@@ -12,6 +12,7 @@ job_id=$(echo $1)
 pipeline_id=$(echo $2)
 case_id=MCDE
 commit_id=$(echo $3)
+releaseTag=$(echo $4)
 source ~/.profile
 gittoken=$(echo "$github_token")
 
@@ -57,13 +58,11 @@ bash Openshift-EE/utils/event_updater jobname:nfsv3-deprovision $test_name jobid
 #################
 ## GET RESULT  ##
 #################
-#rc_val=$(echo $?)
-
+rc_val=$(echo $?)
 ## Check the test status & result from the litmus result custom resource
 source ~/.profile
 gittoken=$(echo "$github_token")
 testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
-rc_val=$(echo $?)
 current_time=$(eval $time)
 
 if [ "$rc_val" != "0" ]; then
@@ -73,8 +72,8 @@ exit 1;
 fi
 
 bash Openshift-EE/utils/e2e-cr jobname:nfsv3-deprovision jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
-python3 Openshift-EE/utils/result/result_update.py $job_id MCDE 2-setup "Cleanup NFS provisioner vers 3 and corresponding storage class" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 
+python3 Openshift-EE/utils/result/result_update.py $job_id MCDE 2-setup "Cleanup NFS provisioner vers 3 and corresponding storage class" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 if [ "$rc_val" != "0" ]; then
 exit 1;
 fi

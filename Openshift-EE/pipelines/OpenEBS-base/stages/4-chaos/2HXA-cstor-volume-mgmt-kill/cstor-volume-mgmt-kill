@@ -136,6 +136,7 @@ cp experiments/chaos/openebs_target_failure/run_litmus_test.yml run_target_mgmt_
 sed -i -e 's/value: percona-mysql-claim/value: openebs-bb-mgmt-targetkill/g' \
 -e 's/name: target-failure/name: target-mgmt-kill/g' \
 -e 's/name: openebs-target-failure/name: openebs-target-mgmt-failure/g' \
+-e 's/value: docker/value: cri-o/g' \
 -e 's/value: '\''name=percona'\''/value: '\''app=target-mgmt-kill'\''/g' \
 -e 's/value: app-percona-ns/value: mgmt-kill/g' run_target_mgmt_kill_test.yml
 
@@ -273,12 +274,12 @@ current_time=$(eval $time)
 # Update result of the test case in github mayadata-io/e2e-openshift repository
 
 if [ "$rc_val" != "0" ]; then
-bash Openshift-EE/utils/e2e-cr jobname:target-mgmt-kill jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Fail
+bash Openshift-EE/utils/e2e-cr jobname:target-mgmt-kill jobphase:Completed end_time:"$current_time" test_result:Pass jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Fail
 python3 Openshift-EE/utils/result/result_update.py $job_id 2HXA 4-chaos "Induce failure on cstor-volume-mgmt container in cstor-pool pod and check if it doesn't affect the application availability" Fail $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 
-bash Openshift-EE/utils/e2e-cr jobname:target-mgmt-kill jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
+bash Openshift-EE/utils/e2e-cr jobname:target-mgmt-kill jobphase:Completed end_time:"$current_time" test_result:Pass jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
 python3 Openshift-EE/utils/result/result_update.py $job_id 2HXA 4-chaos "Induce failure on cstor-volume-mgmt container in cstor-pool pod and check if it doesn't affect the application availability" Pass $pipeline_id "$current_time" $commit_id $gittoken
 
 if [ "$rc_val" != "0" ]; then

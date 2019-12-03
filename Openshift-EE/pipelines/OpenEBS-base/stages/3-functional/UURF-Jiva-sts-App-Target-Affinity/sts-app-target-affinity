@@ -191,7 +191,7 @@ EOF
 sed -i -e 's/value: app-busybox-ns/value: target-affinity-jiva/g' \
 -e '/svalue: provision/value: deprovision/g' \
 -e 's/app=busybox-sts/app=sts-target-affinity-jiva/g' \
--e 's/generateName: litmus-busybox-liveness/generateName: busybox-liveness-dep-app-target-affinity-jiva/g' \
+-e 's/generateName: litmus-busybox-liveness/generateName: busybox-liveness-dep-app-target-affinity/g' \
 -e 's/liveness: litmus-busybox-liveness/liveness: liveness-deprovision-app-target-affinity/g' loadgen_deprovision_app_target_affinity.yml
 
 sed -i '/command:/i \

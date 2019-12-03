@@ -22,7 +22,6 @@ case_id=Z0KY
 observer_node=$4
 releaseTag=$(echo $5)
 
-
 time="date"
 current_time=$(eval $time)
 
@@ -56,7 +55,6 @@ bash ../Openshift-EE/utils/litmus_job_runner label='name:node-storage-fill' fill
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:fill-node-capacity $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
-
 rc_val=$(echo $?)
 current_time=$(eval $time)
 
@@ -72,7 +70,6 @@ python3 Openshift-EE/utils/result/result_update.py $job_id Z0KY 5-infra-chaos "F
 if [ "$rc_val" != "0" ]; then
 exit 1;
 fi
-
 }
 
 if [ "$1" == "node" ];then

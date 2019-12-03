@@ -273,7 +273,6 @@ python3 Openshift-EE/utils/result/result_update.py $job_id KUL9 3-functional "Sc
 if [ "$rc_val" != "0" ]; then
 exit 1;
 fi
-
 }
 
 if [ "$1" == "node" ];then

@@ -26,7 +26,7 @@ present_dir=$(pwd)
 echo $present_dir
 
 #Creating e2e custom resoure result fot the each stage of the test.
-
+oc adm policy add-scc-to-user anyuid system:serviceaccount:single-rep-kill:default
 bash Openshift-EE/utils/e2e-cr jobname:jiva-single-rep-kill jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 bash Openshift-EE/utils/e2e-cr jobname:jiva-single-rep-kill jobphase:Running init_time:"$current_time"
 
@@ -157,14 +157,25 @@ cp experiments/chaos/openebs_volume_replica_failure/run_litmus_test.yml run_sing
 EOF
 
 sed -i -e 's/value: percona-mysql-claim/value: busybox-single-rep-kill/g' \
--e 's/generateName: openebs-volume-replica-failure/generateName: single-replica-failure/g' \
+-e 's/generateName: openebs-volume-replica-failure/generateName: single-replica-test-jiva/g' \
 -e 's/openebs-volume-replica-failure/single-replica-failure/g' \
+-e 's/name: replica-failure/name: single-rep-failure/g' \
 -e 's/value: '\''name=percona'\''/value: '\''app=single-rep-kill'\''/g' \
 -e 's/value: app-percona-ns/value: single-rep-kill/g' run_single_rep_failure.yml
 
 sed -i '/command:/i \
           - name: RUN_ID\
             value: '"$run_id"'\
+' run_single_rep_failure.yml
+
+## Replace the value of DATA_PERSISTENCE with application name in litmus experiment.
+sed -i '/name: DATA_PERSISTENCE/{n;s/.*/            value: busybox/}' run_single_rep_failure.yml
+
+## Insert the set of variables for busybox data consistency util into configmap spec.
+sed -i '/parameters.yml: |/a \
+    blocksize: 4k \
+    blockcount: 1024 \
+    testfile: ctrlkilltest
 ' run_single_rep_failure.yml
 
 cat run_single_rep_failure.yml
@@ -286,6 +297,7 @@ exit 1;
 fi
 
 bash Openshift-EE/utils/e2e-cr jobname:jiva-single-rep-kill jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
+
 python3 Openshift-EE/utils/result/result_update.py $job_id $case_id $gitlab_stage 'Induce failure on JIVA single replica deployment and check if it gets scheduled immediately and the application is available' Pass $pipeline_id "$current_time" $commit_id $gittoken
 
 if [ "$rc_val" != "0" ]; then

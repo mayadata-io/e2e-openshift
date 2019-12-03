@@ -11,6 +11,7 @@ job_id=$(echo $1)
 pipeline_id=$(echo $2)
 case_id=ZNSF
 commit_id=$(echo $3)
+releaseTag=$(echo $4)
 source ~/.profile
 gittoken=$(echo "$github_token")
 

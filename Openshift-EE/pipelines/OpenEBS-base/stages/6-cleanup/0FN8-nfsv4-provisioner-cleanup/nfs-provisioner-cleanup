@@ -2,6 +2,8 @@
 set -x
 pod() {
 
+node_name=$(sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port kubectl get nodes | grep worker | awk 'FNR==1 {print $1}')
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port "kubectl taint nodes $node_name infra-aid:NoSchedule-"
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/0FN8-nfsv4-provisioner-cleanup/nfs-provisioner-cleanup node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
 }
 
@@ -11,6 +13,7 @@ job_id=$(echo $1)
 pipeline_id=$(echo $2)
 case_id=0FN8
 commit_id=$(echo $3)
+releaseTag=$(echo $4)
 source ~/.profile
 gittoken=$(echo "$github_token")
 kubectl taint node gitlab-node1.mayalabs.io infra-aid:NoSchedule-
@@ -24,7 +27,7 @@ bash Openshift-EE/utils/e2e-cr jobname:spc-striped-pool-cleanup jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:spc-mirrored-pool-cleanup jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:spc-raidz1-pool-cleanup jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:cleanup-cspc-striped-pool jobphase:Waiting
-bash Openshift-EE/utils/e2e-cr jobname:nfsv3-deprovision jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:nfsv4-jiva-deprovision jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:nfsv4-deprovision jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:nfsv4-deprovision jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
@@ -63,14 +66,12 @@ bash Openshift-EE/utils/event_updater jobname:nfsv4-deprovision $test_name jobid
 #################
 ## GET RESULT  ##
 #################
-#rc_val=$(echo $?)
+rc_val=$(echo $?)
 
 ## Check the test status & result from the litmus result custom resource
 source ~/.profile
 gittoken=$(echo "$github_token")
 testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
-
-rc_val=$(echo $?)
 current_time=$(eval $time)
 
 if [ "$rc_val" != "0" ]; then
@@ -80,6 +81,7 @@ exit 1;
 fi
 
 bash Openshift-EE/utils/e2e-cr jobname:nfsv4-deprovision jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
+
 python3 Openshift-EE/utils/result/result_update.py $job_id 0FN8 2-setup "Cleanup NFS provisioner and corresponding storage class" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 
 if [ "$rc_val" != "0" ]; then

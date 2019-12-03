@@ -2,7 +2,6 @@
 set -x
 
 pod() {
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'ssh root@10.23.1.10 oc adm policy add-scc-to-user anyuid system:serviceaccount:app-percona-ns:default'
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/WHAP-volume-capacity-fill/volume-capacity-fill node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
 }
 
@@ -21,6 +20,7 @@ current_time=$(eval $time)
 present_dir=$(pwd)
 echo $present_dir
 
+oc adm policy add-scc-to-user anyuid system:serviceaccount:app-percona-ns:default
 bash Openshift-EE/utils/e2e-cr jobname:volume-capacity-fill jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 bash Openshift-EE/utils/e2e-cr jobname:volume-capacity-fill jobphase:Running
 
@@ -114,7 +114,7 @@ cp apps/percona/deployers/run_litmus_test.yml deprovision_run_test_percona.yml
 EOF
 sed -i -e 's/value: openebs-standard/value: openebs-cstor-disk/g' \
 -e 's/app: percona-deployment/app: percona-deployment-deprovision/g' \
--e 's/generateName: litmus-percona/generateName: percona-deprovision/g' \
+-e 's/generateName: litmus-percona/generateName: litmus-percona-deprovision/g' \
 -e 's/value: provision/value: deprovision/g' deprovision_run_test_percona.yml
 
 sed -i '/command:/i \
@@ -128,7 +128,6 @@ bash ../Openshift-EE/utils/litmus_job_runner label='app:percona-deployment-depro
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:volume-capacity-fill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
-
 rc_val=$(echo $?)
 
 # Obtain the status of the test using litmusresult(lr) 

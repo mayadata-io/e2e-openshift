@@ -268,7 +268,6 @@ python3 Openshift-EE/utils/result/result_update.py $job_id KLPX 4-chaos "Inject 
 if [ "$rc_val" != "0" ]; then
 exit 1;
 fi
-
 }
 
 if [ "$1" == "node" ];then

@@ -181,7 +181,7 @@ EOF
 sed -i -e 's/value: app-busybox-ns/value: app-scale/g' \
 -e 's/value: provision/value: deprovision/g' \
 -e 's/app=busybox-sts/app=busybox-scale/g' \
--e 's/generateName: litmus-busybox-liveness/generateName: busybox-liveness-dep-replica-scaleup/g' \
+-e 's/generateName: litmus-busybox-liveness/generateName: busybox-liveness-dep-sts-app-replica-scaleup/g' \
 -e 's/liveness: litmus-busybox-liveness/liveness: bb-liveness-deprovision-replica-scaleup/g' deprovision_replica_scaleup.yml
 
 sed -i '/command:/i \
