@@ -77,6 +77,11 @@ sed -i -e 's/value: app-percona-ns/value: backup-percona-jiva/g' \
 -e 's/value: "cstor"/value: "jiva"/g' \
 -e 's/value: percona-backup/value: percona-backup-jiva/g' run_backuprestore_jiva_test.yml
 
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' run_backuprestore_jiva_test.yml
+
 echo "Running the litmus test for Percona Backup Restore.."
 cat run_backuprestore_jiva_test.yml
 
