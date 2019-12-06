@@ -1,0 +1,119 @@
+#!/bin/bash
+set -x
+
+pod() {
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/0YB8-nfs-cstor-volume-mgmt/nfs-cstor-volume-mgmt node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
+}
+
+node() {
+job_id=$(echo $1) #Gitlab job id obtain from the gitlab env ($CI_JOB_ID).
+pipeline_id=$(echo $2) # Gitlab pipeline id obtained from gitlab env ($CI_PIPELINE_ID).
+commit_id=$(echo $3) #Gitlab commit id Obtained fron gilab env ($CI_COMMIT_SHA).
+releaseTag=$(echo $4)
+source ~/.profile
+#github token to push the test result into github mayadata-io/e2e-openshift repository.
+#This token is set as an env in ~/.profile in the test cluster.
+gittoken=$(echo "$github_token")
+case_id=0YB8  #test case ID.
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+#Creating e2e custom resource result for the test.
+bash Openshift-EE/utils/pooling jobname:nfs-cstor-istgt-kill
+bash Openshift-EE/utils/e2e-cr jobname:nfs-cstor-volume-mgmt-kill jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
+
+################
+# LitmusBook 1 #
+################
+# Performing Application Container Chaos
+
+run_id="mgmt-kill-nfs";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-target-failure metadata=${run_id})
+echo $test_name
+
+cd litmus
+# copy the content of chaos run_litmus_test.yml into a different file to update the test specific parameters.
+cp experiments/chaos/nfs_chaos/nfs_openebs_target_failure/run_litmus_test.yml nfs_cstor_volume_mgmt_kill.yml
+
+sed -i -e '/name: NFS_NAMESPACE/{n;s/.*/            value: app-nfsv4-ns/}' \
+-e '/name: NFS_LABEL/{n;s/.*/            value: app=nfs/}' \
+-e '/name: NFS_PVC/{n;s/.*/            value: nfs-pvc-claim/}' \
+-e '/name: APP_LABEL/{n;s/.*/            value: name=minio/}' \
+-e '/name: APP_NAMESPACE/{n;s/.*/            value: app-minio-ns/}' nfs_cstor_volume_mgmt_kill.yml
+
+sed -i -e 's/name: nfs-openebs-target-failure/name: nfs-openebs-cstor-volume-mgmt-kill/g' \
+-e 's/value: docker/value: cri-o/g' nfs_cstor_volume_mgmt_kill.yml
+
+echo "Running the litmus test for minio Deployment Container Volume mgmt kill.."
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' nfs_cstor_volume_mgmt_kill.yml
+
+cat nfs_cstor_volume_mgmt_kill.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='name:nfs-openebs-cstor-volume-mgmt-kill' job=nfs_cstor_volume_mgmt_kill.yml
+cd ..
+# Get the cluster state Once the litmus jobs completed.
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:nfs-cstor-volume-mgmt-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id 0YB8 4-chaos "Induce volume mgmt kill and check if it is recovered successfully" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# LitmusBook 2 #
+################
+# Deprovisioning the application
+run_id="deprovision";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=minio-deployment metadata=${run_id})
+echo $test_name
+
+cd litmus
+
+echo "Running the litmus test.."
+cp apps/minio/deployers/run_litmus_test.yml deprovision_app.yml
+
+# Replace the storage class name
+sed -i '/name: PROVIDER_STORAGE_CLASS/{n;s/.*/            value: openebs-nfs4/}' deprovision_app.yml
+# Make the action to deprovision
+sed -i -e 's/app: minio-litmus/app: minio-litmus-deprovision/g'
+-e 's/value: '\''provision'\''/value: '\''deprovision'\''/g' deprovision_app.yml
+
+cat deprovision_app.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:minio-litmus-deprovision' job=deprovision_app.yml
+
+echo "Dumping state of cluster post job run"; echo ""
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+
+bash Openshift-EE/utils/event_updater jobname:nfs-cstor-volume-mgmt-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+current_time=$(eval $time)
+
+# Update result of the test case in github mayadata-io/e2e-openshift repository.
+if [ "$rc_val" != "0" ]; then
+bash Openshift-EE/utils/e2e-cr jobname:nfs-cstor-volume-mgmt-kill jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Fail
+python3 Openshift-EE/utils/result/result_update.py $job_id 0YB8 4-chaos "Induce volume mgmt kill and check if it is recovered successfully" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+bash Openshift-EE/utils/e2e-cr jobname:nfs-cstor-volume-mgmt-kill jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
+python3 Openshift-EE/utils/result/result_update.py $job_id 0YB8 4-chaos "Induce volume mgmt kill and check if it is recovered successfully" Pass $pipeline_id "$current_time" $commit_id $gittoken
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4 $5
+else
+  pod
+fi

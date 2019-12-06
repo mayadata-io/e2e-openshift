@@ -34,7 +34,7 @@ sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
 -e 's/value: app-nfs-ns/value: app-nfsv4-jiva/g' \
 -e 's/value: openebs-cstor-disk/value: openebs-jiva-default/g' \
 -e 's/app: nfs-litmus/app: nfs-litmus-jiva/g' \
--e 's/value: openebs-nfs/value: openebs-nfs4/g' nfsv4-jiva-provision.yml
+-e 's/value: openebs-nfs/value: openebs-nfs4-jiva/g' nfsv4-jiva-provision.yml
 
 sed -i '/command:/i \
           - name: RUN_ID\

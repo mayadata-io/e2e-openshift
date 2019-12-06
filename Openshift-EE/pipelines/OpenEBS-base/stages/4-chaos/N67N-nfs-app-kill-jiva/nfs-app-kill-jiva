@@ -1,0 +1,86 @@
+#!/bin/bash
+set -x
+
+pod() {
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/N67N-nfs-app-kill-jiva/nfs-app-kill-jiva node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
+}
+
+node() {
+job_id=$(echo $1) #Gitlab job id obtain from the gitlab env ($CI_JOB_ID).
+pipeline_id=$(echo $2) # Gitlab pipeline id obtained from gitlab env ($CI_PIPELINE_ID).
+commit_id=$(echo $3) #Gitlab commit id Obtained fron gilab env ($CI_COMMIT_SHA).
+releaseTag=$(echo $4)
+source ~/.profile
+#github token to push the test result into github mayadata-io/e2e-openshift repository.
+#This token is set as an env in ~/.profile in the test cluster.
+gittoken=$(echo "$github_token")
+case_id=N67N  #test case ID.
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+#Creating e2e custom resource result for the test.
+bash Openshift-EE/utils/e2e-cr jobname:nfs-app-kill-jiva jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:nfs-app-kill-jiva jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
+bash Openshift-EE/utils/e2e-cr jobname:nfs-ctrl-kill-jiva jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:nfs-ctrl-container-kill jobphase:Waiting
+################
+# LitmusBook 1 #
+################
+
+# Performing Application Pod Chaos
+
+run_id="nfs-jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=nfs-application-pod-failure metadata=${run_id})
+echo $test_name
+
+cd litmus
+# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
+cp experiments/chaos/nfs_chaos/nfs_provisioner_pod_kill/run_litmus_test.yml nfs_app_kill_jiva.yml
+
+sed -i -e '/name: NFS_NAMESPACE/{n;s/.*/            value: app-nfsv4-jiva/}' \
+-e '/name: NFS_LABEL/{n;s/.*/            value: app=nfs/}' \
+-e '/name: APP_LABEL/{n;s/.*/            value: name=minio/}' \
+-e '/name: APP_NAMESPACE/{n;s/.*/            value: app-minio-jiva/}' \
+-e '/name: CONTAINER-RUNTIME/{n;s/.*/            value: cri-o/}' nfs_app_kill_jiva.yml
+
+sed -i 's/name: nfs-app-pod-failure/name: nfs-app-pod-failure-jiva/g' nfs_app_kill_jiva.yml
+echo "Running the litmus test for minio Deployment application pod kill.."
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' nfs_app_kill_jiva.yml
+
+cat nfs_app_kill_jiva.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='name:nfs-app-pod-failure-jiva' job=nfs_app_kill_jiva.yml
+cd ..
+# Get the cluster state Once the litmus jobs completed.
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:nfs-app-kill-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+current_time=$(eval $time)
+
+# Update result of the test case in github mayadata-io/e2e-openshift repository.
+if [ "$rc_val" != "0" ]; then
+bash Openshift-EE/utils/e2e-cr jobname:nfs-app-kill-jiva jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Fail
+python3 Openshift-EE/utils/result/result_update.py $job_id N67N 4-chaos "Induce application pod failure and check if it is recovered successfully" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+bash Openshift-EE/utils/e2e-cr jobname:nfs-app-kill-jiva jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
+python3 Openshift-EE/utils/result/result_update.py $job_id N67N 4-chaos "Induce application pod failure and check if it is recovered successfully" Pass $pipeline_id "$current_time" $commit_id $gittoken
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4 $5
+else
+  pod
+fi
