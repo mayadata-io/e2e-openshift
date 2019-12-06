@@ -19,57 +19,20 @@ current_time=$(eval $time)
 bash Openshift-EE/utils/e2e-cr jobname:app-deploy-rwx jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:app-deploy-rwx jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase=wordpress-deployment metadata="")
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=minio-deployment metadata="")
 echo $test_name
 
 cd litmus
 
 echo "Running the litmus test.."
-cp apps/wordpress/deployers/run_litmus_test.yml deploy_app.yml
+cp apps/minio/deployers/run_litmus_test.yml deploy_app.yml
 
 # Replace the storage class name
-sed -i -e 's/value: openebs-nfs/value: openebs-nfs4/g' deploy_app.yml
+sed -i '/name: PROVIDER_STORAGE_CLASS/{n;s/.*/            value: openebs-nfs4/}' deploy_app.yml
 
 cat deploy_app.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:wordpress-litmus' job=deploy_app.yml
-
-echo "Dumping state of cluster post job run"; echo ""
-cd ..
-bash Openshift-EE/utils/dump_cluster_state;
-
-bash Openshift-EE/utils/event_updater jobname:app-deploy-rwx $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
-
-if [ "$?" != "0" ]; then
-exit 1;
-fi
-
-################
-# LitmusBook 2 #
-################
-
-run_id="deprovision";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=wordpress-deployment metadata=${run_id})
-echo $test_name
-
-cd litmus
-
-echo "Running the litmus test.."
-cp apps/wordpress/deployers/run_litmus_test.yml deprovision_app.yml
-
-# Replace the storage class name
-sed -i -e 's/value: openebs-nfs/value: openebs-nfs4/g' \
--e 's/generateName: litmus-wordpress-deployment-/generateName: litmus-wordpress-deprovision-/g' \
--e 's/app: wordpress-litmus/app: wordpress-litmus-deprovision/g' \
--e 's/value: provision/value: deprovision/g' deprovision_app.yml
-
-sed -i '/command:/i \
-          - name: RUN_ID\
-            value: '"$run_id"'\
-' deprovision_app.yml          
-
-cat deprovision_app.yml
-
-bash ../Openshift-EE/utils/litmus_job_runner label='app:wordpress-litmus-deprovision' job=deprovision_app.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='app:minio-litmus' job=deploy_app.yml
 
 echo "Dumping state of cluster post job run"; echo ""
 cd ..

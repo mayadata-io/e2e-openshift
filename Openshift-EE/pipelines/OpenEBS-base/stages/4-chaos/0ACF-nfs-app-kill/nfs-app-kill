@@ -24,122 +24,29 @@ echo $present_dir
 #Creating e2e custom resource result for the test.
 bash Openshift-EE/utils/e2e-cr jobname:nfs-app-kill jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:nfs-app-kill jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
-
+bash Openshift-EE/utils/e2e-cr jobname:nfs-target-kill jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:nfs-cstor-istgt jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:nfs-cstor-volume-mgmt jobphase:Waiting
 ################
 # LitmusBook 1 #
 ################
 
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-app-nfs-ns metadata="")
-echo $test_name
-
-cd litmus
-echo "Running the litmus test for Busybox Deployment.."
-# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
-cp apps/busybox/deployers/run_litmus_test.yml busybox_nfs_app_kill.yml
-
-# Update the environmental variables in litmus job spec.
-
-: << EOF
-  ---------------------------------------------------------------------------------------------------------------------
- | specAttribute     | kind   |         default value               | test specifc value                               |
-  ---------------------------------------------------------------------------------------------------------------------|
- | appNamespace      | env    | app-busybox-ns                      | app-nfs-ns                                       | 
- | Litmus job label  | label  | app: busybox-litmus                 | app: deploy-busybox-nfs-app-kill                 |
- | appLabel          | env    | app=busybox-sts                     | app=nfs-app-kill                                 | 
- | storage class     | env    | openebs-cstor-sparse                | openebs-nfsv4                                    |
- | deploy type       | env    | statefulset                         | deployment                                       |
- | appPVC            | env    | openebs-busybox                     | openebs-bb-appkill                               |
-  ----------------------------------------------------------------------------------------------------------------------
-EOF
-
-sed -i -e 's/app: busybox-litmus/app: deploy-busybox-nfs-app-kill/g' \
--e 's/app=busybox-sts/app=nfs-app-kill/g' \
--e 's/value: statefulset/value: deployment/g' \
--e 's/value: openebs-cstor-sparse/value: openebs-nfs4/g' \
--e 's/value: openebs-busybox/value: openebs-bb-appkill/g' \
--e 's/value: app-busybox-ns/value: app-nfs-ns/g' busybox_nfs_app_kill.yml
-cat busybox_nfs_app_kill.yml
-
-# Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
-
-bash ../Openshift-EE/utils/litmus_job_runner label='app:deploy-busybox-nfs-app-kill' job=busybox_nfs_app_kill.yml
-cd ..
-# Get the cluster state Once the litmus jobs completed.
-bash Openshift-EE/utils/dump_cluster_state;
-# Update the e2e event for the job.
-bash Openshift-EE/utils/event_updater jobname:nfs-app-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
-
-if [ "$?" != "0" ]; then
-python3 Openshift-EE/utils/result/result_update.py $job_id 0ACF 4-chaos "Induce application pod failure and check if it is recovered successfully" Fail $pipeline_id "$current_time" $commit_id $gittoken
-exit 1;
-fi
-
-################
-# LitmusBook 2 #
-################
-
-run_id="nfs-app-kill";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
-echo $test_name
-
-cd litmus
-# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
-cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_nfs_app_kill.yml
-
-# Update the environmental variables in litmus job spec.
-
-: << EOF
-  ---------------------------------------------------------------------------------------------------------------------
- | specAttribute     | kind   |         default value               | test specifc value                               |
-  ---------------------------------------------------------------------------------------------------------------------|
- | appNamespace      | env    | app-busybox-ns                      | app-nfs-ns                                       | 
- | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: busybox-liveness-nfs-app-kill          |
- | appLabel          | env    | app=busybox-sts                     | app=nfs-app-kill                                 | 
-  ----------------------------------------------------------------------------------------------------------------------
-EOF
-
-sed -i -e 's/value: app-busybox-ns/value: app-nfs-ns/g' \
--e 's/app=busybox-sts/app=nfs-app-kill/g' \
--e 's/liveness: litmus-busybox-liveness/liveness: busybox-liveness-nfs-app-kill/g' busybox_loadgen_nfs_app_kill.yml
-
-sed -i '/command:/i \
-          - name: RUN_ID\
-            value: '"$run_id"'\
-' busybox_loadgen_nfs_app_kill.yml
-
-cat busybox_loadgen_nfs_app_kill.yml
-
-# Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
-bash ../Openshift-EE/utils/litmus_job_runner label='liveness:busybox-liveness-nfs-app-kill' job=busybox_loadgen_nfs_app_kill.yml
-cd ..
-# Get the cluster state Once the litmus jobs completed.
-bash Openshift-EE/utils/dump_cluster_state;
-# Update the e2e event for the job.
-bash Openshift-EE/utils/event_updater jobname:nfs-app-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
-
-if [ "$?" != "0" ]; then
-python3 Openshift-EE/utils/result/result_update.py $job_id 0ACF 4-chaos "Induce application pod failure and check if it is recovered successfully" Fail $pipeline_id "$current_time" $commit_id $gittoken
-exit 1;
-fi
-
-################
-# LitmusBook 3 #
-################
-
 # Performing Application Pod Chaos
 
-run_id="nfs";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=application-pod-failure metadata=${run_id})
+run_id="nfs";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=nfs-application-pod-failure metadata=${run_id})
 echo $test_name
 
 cd litmus
 # copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
-cp experiments/chaos/app_pod_failure/run_litmus_test.yml nfs_app_kill.yml
+cp experiments/chaos/nfs_chaos/nfs_provisioner_pod_kill/run_litmus_test.yml nfs_app_kill.yml
 
-sed -i -e 's/app=jenkins-app/app=nfs-app-kill/g' \
--e 's/name: application-pod-failure/name: nfs-application-pod-failure/g' \
--e 's/value: docker/value: cri-o/g' \
--e 's/value: app-jenkins-ns/value: app-nfs-ns/g' nfs_app_kill.yml
+sed -i -e '/name: NFS_NAMESPACE/{n;s/.*/            value: app-nfsv4-ns/}' \
+-e '/name: NFS_LABEL/{n;s/.*/            value: app=nfs/}' \
+-e '/name: APP_LABEL/{n;s/.*/            value: name=minio/}' \
+-e '/name: APP_NAMESPACE/{n;s/.*/            value: app-minio-ns/}' \
+-e '/name: CONTAINER-RUNTIME/{n;s/.*/            value: cri-o/}' nfs_app_kill.yml
 
-echo "Running the litmus test for Busybox Deployment application pod kill.."
+echo "Running the litmus test for minio Deployment application pod kill.."
 
 sed -i '/command:/i \
           - name: RUN_ID\
@@ -148,109 +55,7 @@ sed -i '/command:/i \
 
 cat nfs_app_kill.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='name:nfs-application-pod-failure' job=nfs_app_kill.yml
-cd ..
-# Get the cluster state Once the litmus jobs completed.
-bash Openshift-EE/utils/dump_cluster_state;
-bash Openshift-EE/utils/event_updater jobname:nfs-app-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
-
-# Update result of the test case in github mayadata-io/e2e-openshift repository.
-if [ "$?" != "0" ]; then
-python3 Openshift-EE/utils/result/result_update.py $job_id 0ACF 4-chaos "Induce application pod failure and check if it is recovered successfully" Fail $pipeline_id "$current_time" $commit_id $gittoken
-exit 1;
-fi
-
-################
-# LitmusBook 4 #
-################
-
-run_id="deprovision-nfs-app-kill";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
-echo $test_name
-
-cd litmus
-# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
-cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_deprovision_nfs_app_kill.yml
-
-# Update the environmental variables in litmus job spec.
-
-: << EOF
-  ---------------------------------------------------------------------------------------------------------------------
- | specAttribute     | kind   |         default value               | test specifc value                               |
-  ---------------------------------------------------------------------------------------------------------------------|
- | appNamespace      | env    | app-busybox-ns                      | app-nfs-ns                                         | 
- | appLabel          | env    | app=busybox-sts                     | app=nfs-app-kill                                     |
- | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: busybox-liveness-deprovision-nfs-app-kill  |
- | action            | env    | provision                           | deprovision                                      | 
-  ----------------------------------------------------------------------------------------------------------------------
-EOF
-
-sed -i -e 's/value: app-busybox-ns/value: app-nfs-ns/g' \
--e 's/app=busybox-sts/app=nfs-app-kill/g' \
--e 's/value: provision/value: deprovision/g' \
--e 's/generateName: litmus-busybox-liveness/generateName: busybox-liveness-dep-nfs-app-kill/g' \
--e 's/liveness: litmus-busybox-liveness/liveness: busybox-liveness-deprovision-nfs-app-kill/g' busybox_loadgen_deprovision_nfs_app_kill.yml
-
-sed -i '/command:/i \
-          - name: RUN_ID\
-            value: '"$run_id"'\
-' busybox_loadgen_deprovision_nfs_app_kill.yml
-
-cat busybox_loadgen_deprovision_nfs_app_kill.yml
-# Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
-bash ../Openshift-EE/utils/litmus_job_runner label='liveness:busybox-liveness-deprovision-nfs-app-kill' job=busybox_loadgen_deprovision_nfs_app_kill.yml
-cd ..
-# Get the cluster state Once the litmus jobs completed.
-bash Openshift-EE/utils/dump_cluster_state;
-bash Openshift-EE/utils/event_updater jobname:nfs-app-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
-
-rc_val=$(echo $?)
-
-# Update result of the test case in github mayadata-io/e2e-openshift repository.
-if [ "$rc_val" != "0" ]; then
-python3 Openshift-EE/utils/result/result_update.py $job_id 0ACF 4-chaos "Induce application pod failure and check if it is recovered successfully" Fail $pipeline_id "$current_time" $commit_id $gittoken
-exit 1;
-fi
-
-################
-# LitmusBook 5 #
-################
-
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-app-nfs-ns metadata="")
-echo $test_name
-
-cd litmus
-# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
-cp apps/busybox/deployers/run_litmus_test.yml deprovision_nfs_app_kill.yml
-
-# Update the environmental variables in litmus job spec.
-
-: << EOF
-  ---------------------------------------------------------------------------------------------------------------------
- | specAttribute     | kind   |         default value               | test specifc value                               |
-  ---------------------------------------------------------------------------------------------------------------------|
- | appNamespace      | env    | app-busybox-ns                      | app-nfs-ns                                       | 
- | Litmus job label  | label  | app: busybox-litmus                 | app: busybox-deprovision-app-nfs-ns              |
- | appLabel          | env    | app=busybox-sts                     | app=nfs-app-kill                                 | 
- | storage class     | env    | openebs-cstor-sparse                | openebs-cstor-disk                               |
- | deploy type       | env    | statefulset                         | deployment                                       |
- | appPVC            | env    | openebs-busybox                     | openebs-bb-appkill                               |
- | action            | env    | provision                           | deprovison                                       |
-  ----------------------------------------------------------------------------------------------------------------------
-EOF
-
-sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovision-app-nfs-ns/g' \
--e 's/app: busybox-litmus/app: busybox-deprovision-app-nfs-ns/g' \
--e 's/app=busybox-sts/app=nfs-app-kill/g' \
--e 's/value: statefulset/value: deployment/g' \
--e 's/value: openebs-busybox/value: openebs-bb-appkill/g' \
--e 's/value: openebs-cstor-sparse/value: openebs-nfs4/g' \
--e 's/value: app-busybox-ns/value: app-nfs-ns/g' \
--e 's/value: provision/value: deprovision/g' deprovision_nfs_app_kill.yml
-
-## Running the litmus test for Busybox Deprovision
-cat deprovision_nfs_app_kill.yml
-# Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
-bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-deprovision-app-nfs-ns' job=deprovision_nfs_app_kill.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='name:nfs-app-pod-failure' job=nfs_app_kill.yml
 cd ..
 # Get the cluster state Once the litmus jobs completed.
 bash Openshift-EE/utils/dump_cluster_state;

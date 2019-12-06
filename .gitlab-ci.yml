@@ -356,6 +356,12 @@ NWQB-Backup-Restore-Jiva:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/5EA0-Backup-Restore-LocalPV/backup-restore-localpv
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/5EA0-Backup-Restore-LocalPV/backup-restore-localpv
 
+WVTY-App-Deploy-Jiva-RWX:
+  extends: .func_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/WVTY-app-deploy-jiva-RWX/app-deploy-jiva-rwx
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/WVTY-app-deploy-jiva-RWX/app-deploy-jiva-rwx
+
 .chaos_test_template:
   image: openebs/openshift-ci:latest
   stage: CHAOS
@@ -536,6 +542,42 @@ PX1D-Jiva-replica-node-affinity:
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/PX1D-jiva-replica-node-affinity/replica-node-affinity
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/PX1D-jiva-replica-node-affinity/replica-node-affinity
+
+3UFA-nfs-Target-Kill:
+  extends: .chaos_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/3UFA-nfs-target-kill/nfs-target-kill
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/3UFA-nfs-target-kill/nfs-target-kill
+
+I7QP-nfs-Cstor-istgt-Kill:
+  extends: .chaos_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/I7QP-nfs-cstor-istgt/nfs-cstor-istgt
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/I7QP-nfs-cstor-istgt/nfs-cstor-istgt
+
+0YB8-nfs-Cstor-volume-mgmt:
+  extends: .chaos_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/0YB8-nfs-cstor-volume-mgmt/nfs-cstor-volume-mgmt
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/0YB8-nfs-cstor-volume-mgmt/nfs-cstor-volume-mgmt
+
+N67N-nfs-App-Kill-Jiva:
+  extends: .chaos_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/N67N-nfs-app-kill-jiva/nfs-app-kill-jiva
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/N67N-nfs-app-kill-jiva/nfs-app-kill-jiva
+
+8ZWN-nfs-Ctrl-Kill-Jiva:
+  extends: .chaos_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/8ZWN-nfs-ctrl-kill-jiva/nfs-ctrl-kill-jiva
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/8ZWN-nfs-ctrl-kill-jiva/nfs-ctrl-kill-jiva
+
+NEPS-nfs-Ctrl-Container-Kill-Jiva:
+  extends: .chaos_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/NEPS-nfs-ctrl-container-kill/nfs-ctrl-container-kill
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/NEPS-nfs-ctrl-container-kill/nfs-ctrl-container-kill
 
 .infra_chaos_test_template:
   image: openebs/openshift-ci:latest
