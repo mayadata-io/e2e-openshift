@@ -30,7 +30,7 @@ bash Openshift-EE/utils/e2e-cr jobname:nfs-cstor-volume-mgmt-kill jobphase:Runni
 ################
 # Performing Application Container Chaos
 
-run_id="mgmt-kill";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-target-failure metadata=${run_id})
+run_id="mgmt-kill-nfs";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-target-failure metadata=${run_id})
 echo $test_name
 
 cd litmus

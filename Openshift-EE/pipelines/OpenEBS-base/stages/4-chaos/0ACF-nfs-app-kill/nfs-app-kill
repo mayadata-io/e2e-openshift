@@ -25,8 +25,8 @@ echo $present_dir
 bash Openshift-EE/utils/e2e-cr jobname:nfs-app-kill jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:nfs-app-kill jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 bash Openshift-EE/utils/e2e-cr jobname:nfs-target-kill jobphase:Waiting
-bash Openshift-EE/utils/e2e-cr jobname:nfs-cstor-istgt jobphase:Waiting
-bash Openshift-EE/utils/e2e-cr jobname:nfs-cstor-volume-mgmt jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:nfs-cstor-istgt-kill jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:nfs-cstor-volume-mgmt-kill jobphase:Waiting
 ################
 # LitmusBook 1 #
 ################
@@ -45,8 +45,6 @@ sed -i -e '/name: NFS_NAMESPACE/{n;s/.*/            value: app-nfsv4-ns/}' \
 -e '/name: APP_LABEL/{n;s/.*/            value: name=minio/}' \
 -e '/name: APP_NAMESPACE/{n;s/.*/            value: app-minio-ns/}' \
 -e '/name: CONTAINER-RUNTIME/{n;s/.*/            value: cri-o/}' nfs_app_kill.yml
-
-echo "Running the litmus test for minio Deployment application pod kill.."
 
 sed -i '/command:/i \
           - name: RUN_ID\

@@ -43,11 +43,8 @@ sed -i -e '/name: NFS_NAMESPACE/{n;s/.*/            value: app-nfsv4-ns/}' \
 -e '/name: APP_LABEL/{n;s/.*/            value: name=minio/}' \
 -e '/name: APP_NAMESPACE/{n;s/.*/            value: app-minio-ns/}' nfs_target_kill.yml
 
-sed -i -e 's/value: "target-zrepl-kill"/value: "target-kill"/g' \
--e 's/value: "cstor-volume-mgmt"/value: "cstor-istgt"/g' \
+sed -i -e 's/value: "target-zrepl-kill"/value: "target-delete"/g' \
 -e 's/value: docker/value: cri-o/g' nfs_target_kill.yml
-
-echo "Running the litmus test for minio Deployment application Target kill.."
 
 sed -i '/command:/i \
           - name: RUN_ID\

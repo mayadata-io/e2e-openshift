@@ -28,7 +28,7 @@ echo "Running the litmus test.."
 cp apps/minio/deployers/run_litmus_test.yml deploy_app_jiva.yml
 
 # Replace the storage class name
-sed -i '/name: PROVIDER_STORAGE_CLASS/{n;s/.*/            value: openebs-nfs4/}' deploy_app_jiva.yml
+sed -i '/name: PROVIDER_STORAGE_CLASS/{n;s/.*/            value: openebs-nfs4-jiva/}' deploy_app_jiva.yml
 
 sed -i -e 's/app: minio-litmus/app: minio-litmus-jiva/g' \
 -e 's/value: app-minio-ns/value: app-minio-jiva/g' deploy_app_jiva.yml

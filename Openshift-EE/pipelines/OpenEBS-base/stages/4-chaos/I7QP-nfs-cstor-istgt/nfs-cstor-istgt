@@ -30,7 +30,7 @@ bash Openshift-EE/utils/e2e-cr jobname:nfs-cstor-istgt-kill jobphase:Running ini
 ################
 # Performing Application container Chaos
 
-run_id="istgt-kill";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-target-failure metadata=${run_id})
+run_id="istgt-kill-nfs";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-target-failure metadata=${run_id})
 echo $test_name
 
 cd litmus
