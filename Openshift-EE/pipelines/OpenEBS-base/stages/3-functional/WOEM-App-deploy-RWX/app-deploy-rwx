@@ -2,6 +2,8 @@
 set -x
 
 pod() {
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port ssh root@10.23.1.10 'oc adm policy add-scc-to-user privileged system:serviceaccount:app-minio-ns'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port ssh root@10.23.1.10 'oc adm policy add-scc-to-user anyuid system:serviceaccount:app-minio-ns'	
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/WOEM-App-deploy-RWX/app-deploy-rwx node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
 }
 
