@@ -178,6 +178,8 @@ fi
 # LitmusBook 5 #
 ################
 
+kubectl delete po --all -n percona-target-nw-loss
+
 echo "********Deprovisioning Percona Application*******"
 
 run_id="deprovision";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=percona-deployment metadata=${run_id})
