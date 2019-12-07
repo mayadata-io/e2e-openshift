@@ -41,7 +41,7 @@ cp experiments/chaos/nfs_chaos/nfs_provisioner_pod_kill/run_litmus_test.yml nfs_
 
 sed -i -e '/name: NFS_NAMESPACE/{n;s/.*/            value: app-nfsv4-jiva/}' \
 -e '/name: NFS_LABEL/{n;s/.*/            value: app=nfs/}' \
--e '/name: APP_LABEL/{n;s/.*/            value: name=minio/}' \
+-e '/name: APP_LABEL/{n;s/.*/            value: name=minio-0/}' \
 -e '/name: APP_NAMESPACE/{n;s/.*/            value: app-minio-jiva/}' \
 -e '/name: CONTAINER-RUNTIME/{n;s/.*/            value: cri-o/}' nfs_app_kill_jiva.yml
 

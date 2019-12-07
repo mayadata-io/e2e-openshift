@@ -40,7 +40,7 @@ cp experiments/chaos/nfs_chaos/nfs_openebs_target_failure/run_litmus_test.yml nf
 sed -i -e '/name: NFS_NAMESPACE/{n;s/.*/            value: app-nfsv4-jiva/}' \
 -e '/name: NFS_LABEL/{n;s/.*/            value: app=nfs/}' \
 -e '/name: NFS_PVC/{n;s/.*/            value: nfs-pvc-claim/}' \
--e '/name: APP_LABEL/{n;s/.*/            value: name=minio/}' \
+-e '/name: APP_LABEL/{n;s/.*/            value: name=minio-0/}' \
 -e '/name: APP_NAMESPACE/{n;s/.*/            value: app-minio-jiva/}' nfs_ctrl_kill_jiva.yml
 
 sed -i -e 's/name: nfs-openebs-target-failure/name: nfs-openebs-ctrl-failure-jiva/g' \ 
