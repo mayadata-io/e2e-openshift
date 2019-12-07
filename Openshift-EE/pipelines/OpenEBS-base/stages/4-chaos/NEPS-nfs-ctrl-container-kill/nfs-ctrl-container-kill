@@ -82,7 +82,7 @@ cp apps/minio/deployers/run_litmus_test.yml deprovision_app_jiva.yml
 # Replace the storage class name
 sed -i '/name: PROVIDER_STORAGE_CLASS/{n;s/.*/            value: openebs-nfs4/}' deprovision_app_jiva.yml
 # Make the action to deprovision
-sed -i -e 's/app: minio-litmus/app: minio-litmus-deprovision-jiva/g'
+sed -i -e 's/app: minio-litmus/app: minio-litmus-deprovision-jiva/g' \
 -e 's/value: '\''provision'\''/value: '\''deprovision'\''/g' deprovision_app_jiva.yml
 
 cat deprovision_app_jiva.yml

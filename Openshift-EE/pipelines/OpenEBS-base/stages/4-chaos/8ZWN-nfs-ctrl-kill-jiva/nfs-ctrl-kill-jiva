@@ -43,7 +43,7 @@ sed -i -e '/name: NFS_NAMESPACE/{n;s/.*/            value: app-nfsv4-jiva/}' \
 -e '/name: APP_LABEL/{n;s/.*/            value: name=minio-0/}' \
 -e '/name: APP_NAMESPACE/{n;s/.*/            value: app-minio-jiva/}' nfs_ctrl_kill_jiva.yml
 
-sed -i -e 's/name: nfs-openebs-target-failure/name: nfs-openebs-ctrl-failure-jiva/g' \ 
+sed -i -e 's/name: nfs-openebs-target-failure/name: nfs-openebs-ctrl-failure-jiva/g' \
 -e 's/value: docker/value: cri-o/g' nfs_ctrl_kill_jiva.yml
 
 echo "Running the litmus test for minio Deployment application controller kill.."
@@ -84,3 +84,4 @@ if [ "$1" == "node" ];then
 else
   pod
 fi
+
