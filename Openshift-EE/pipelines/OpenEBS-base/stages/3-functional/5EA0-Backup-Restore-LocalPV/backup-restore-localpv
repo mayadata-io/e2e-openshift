@@ -41,6 +41,7 @@ cp apps/percona/deployers/run_litmus_test.yml percona_backup_restore_localpv.yml
 
 sed -i -e 's/app: percona-deployment/app: deploy-percona-backup-restore-localpv/g' \
 -e 's/value: openebs-standard/value: openebs-hostpath/g' \
+-e 's/value: enable/value: disable/g' \
 -e 's/value: app-percona-ns/value: backup-percona-localpv/g' percona_backup_restore_localpv.yml
 
 sed -i '/command:/i \
