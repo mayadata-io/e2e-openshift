@@ -85,6 +85,11 @@ sed -i '/name: PROVIDER_STORAGE_CLASS/{n;s/.*/            value: openebs-nfs4/}'
 sed -i -e 's/app: minio-litmus/app: minio-litmus-deprovision-jiva/g' \
 -e 's/value: '\''provision'\''/value: '\''deprovision'\''/g' deprovision_app_jiva.yml
 
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' deprovision_app_jiva.yml
+
 cat deprovision_app_jiva.yml
 
 bash ../Openshift-EE/utils/litmus_job_runner label='app:minio-litmus-deprovision-jiva' job=deprovision_app_jiva.yml
