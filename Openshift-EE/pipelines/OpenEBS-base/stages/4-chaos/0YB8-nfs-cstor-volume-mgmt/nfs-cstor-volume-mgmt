@@ -81,7 +81,7 @@ cp apps/minio/deployers/run_litmus_test.yml deprovision_app.yml
 # Replace the storage class name
 sed -i '/name: PROVIDER_STORAGE_CLASS/{n;s/.*/            value: openebs-nfs4/}' deprovision_app.yml
 # Make the action to deprovision
-sed -i -e 's/app: minio-litmus/app: minio-litmus-deprovision/g'
+sed -i -e 's/app: minio-litmus/app: minio-litmus-deprovision/g' \
 -e 's/value: '\''provision'\''/value: '\''deprovision'\''/g' deprovision_app.yml
 
 cat deprovision_app.yml
@@ -117,3 +117,4 @@ if [ "$1" == "node" ];then
 else
   pod
 fi
+
