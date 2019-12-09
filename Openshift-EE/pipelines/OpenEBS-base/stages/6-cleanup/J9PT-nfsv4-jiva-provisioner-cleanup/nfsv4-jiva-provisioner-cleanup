@@ -19,6 +19,8 @@ current_time=$(eval $time)
 bash Openshift-EE/utils/pooling jobname:nfsv4-deprovision
 bash Openshift-EE/utils/e2e-cr jobname:nfsv4-jiva-deprovision jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
+kubectl delete daemonset --all -n app-nfsv4-jiva
+
 run_id="jiva-cleanup";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=nfs-provision metadata=${run_id})
 echo $test_name
 cd litmus
@@ -64,7 +66,7 @@ testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-column
 current_time=$(eval $time)
 
 if [ "$rc_val" != "0" ]; then
-bash Openshift-EE/utils/e2e-cr jobname:nfsv4-jiva-eprovision jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Fail
+bash Openshift-EE/utils/e2e-cr jobname:nfsv4-jiva-deprovision jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Fail
 python3 Openshift-EE/utils/result/result_update.py $job_id J9PT 2-setup "Cleanup NFS provisioner and corresponding storage class" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
