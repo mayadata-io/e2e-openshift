@@ -16,8 +16,8 @@ commit_id=$(echo $3)
 releaseTag=$(echo $4)
 current_time=$(eval $time)
 
-oc adm policy add-scc-to-user privileged system:serviceaccount:app-minio-jiva
-oc adm policy add-scc-to-user anyuid system:serviceaccount:app-minio-jiva
+oc adm policy add-scc-to-user privileged system:serviceaccount:app-minio-jiva:default
+oc adm policy add-scc-to-user anyuid system:serviceaccount:app-minio-jiva:default
 
 bash Openshift-EE/utils/e2e-cr jobname:app-deploy-jiva-rwx jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:app-deploy-jiva-rwx jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
