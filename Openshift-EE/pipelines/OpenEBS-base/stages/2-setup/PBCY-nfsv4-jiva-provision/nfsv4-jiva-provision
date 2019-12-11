@@ -19,6 +19,8 @@ current_time=$(eval $time)
 
 oc adm policy add-scc-to-user privileged system:serviceaccount:app-nfsv4-jiva:nfs-provisioner
 oc adm policy add-scc-to-user anyuid system:serviceaccount:app-nfsv4-jiva:nfs-provisioner
+oc adm policy add-scc-to-user privileged system:serviceaccount:app-nfsv4-jiva:default
+oc adm policy add-scc-to-user anyuid system:serviceaccount:app-nfsv4-jiva:default
 
 bash Openshift-EE/utils/pooling jobname:s2-j7-nfsv4-provision
 bash Openshift-EE/utils/e2e-cr jobname:s2-j8-nfsv4-jiva-provision jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
