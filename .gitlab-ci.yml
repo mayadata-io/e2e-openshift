@@ -9,7 +9,7 @@ stages:
   - OPENEBS-CLEANUP
   - CLUSTER-CLEANUP
 
-PCZD-OpenShift-3.10:
+PCZD-OpenShift:
   image: openebs/openshift-ci:latest
   stage: CLUSTER-SETUP
   script:     
@@ -676,7 +676,7 @@ GP95-openebs-Uninstall:
   stage: CLUSTER-CLEANUP
   when: always
   dependencies:
-    - PCZD-OpenShift-3.10
+    - PCZD-OpenShift
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/4SMQ-cluster-cleanup/cluster-cleanup
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/4SMQ-cluster-cleanup/cluster-cleanup
