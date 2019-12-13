@@ -68,6 +68,7 @@ cp experiments/functional/backup_and_restore/run_litmus_test.yml run_backupresto
 
 sed -i -e 's/value: app-percona-ns/value: backup-percona-cstor/g' \
 -e 's/app: velero-backup-restore/app: velero-backup-restore-cstor/g' \
+-e 's/velero-plugin:ci/velero-plugin:1.5.0-RC2-velero_1.0.0/g' \
 -e 's/value: percona-backup/value: percona-backup-cstor/g' run_backuprestore_test.yml
 
 echo "Running the litmus test for Percona Backup Restore.."
