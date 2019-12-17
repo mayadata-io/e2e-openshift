@@ -1,4 +1,4 @@
-### VO3D-Verify application availablity post jiva controller failure
+### VO3D - Verify application availablity post jiva controller failure
 
 #### Description
 

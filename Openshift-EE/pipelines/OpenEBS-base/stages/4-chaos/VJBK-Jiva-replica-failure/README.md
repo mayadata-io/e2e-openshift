@@ -1,4 +1,4 @@
-### VJBK-Ensure application availability upon failing a jiva replica pod
+### VJBK- Ensure application availability upon failing a jiva replica pod
 
 #### Description
 
