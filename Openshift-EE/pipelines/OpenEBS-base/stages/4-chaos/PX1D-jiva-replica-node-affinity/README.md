@@ -1,4 +1,4 @@
-### PX1D-Verify Jiva replica stickiness to node.
+### PX1D - Verify Jiva replica stickiness to node.
 
 #### Description
 

@@ -1,4 +1,4 @@
-### 72WM-Verify applicaton availablity post cStor pool pod failure.
+### 72WM - Verify applicaton availablity post cStor pool pod failure.
 
 #### Description
 
