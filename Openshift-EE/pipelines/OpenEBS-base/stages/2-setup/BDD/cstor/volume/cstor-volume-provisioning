@@ -28,7 +28,7 @@ bash Openshift-EE/utils/e2e-cr jobname:bdd-cstor-volume-provisioning jobphase:Ru
 cd /home/devuser/go/src/github.com/openebs
 
 # Running BDD test for cstor-volume-provisioning
-cd maya/tests/cstor/volume && ginkgo -v -- -kubeconfig=$HOME/.kube/config --cstor-replicas=3 --cstor-maxpools=3
+cd maya/tests/cstor/volume && ginkgo -v -focus="\[Cstor Volume Provisioning Positive\]" -- -kubeconfig=$HOME/.kube/config --cstor-replicas=3 --cstor-maxpools=3
 
 #Evaluating result based on the return count
 
