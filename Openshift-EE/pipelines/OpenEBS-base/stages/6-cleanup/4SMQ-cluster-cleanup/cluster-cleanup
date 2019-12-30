@@ -16,26 +16,32 @@ git clone https://github.com/mayadata-io/litmus.git
 cd litmus
 
 # Replace the VM IP In csv file
-sed -i -e 's/10.12.22.10/10.34.1.28/g' \
--e 's/10.12.22.11/10.34.1.29/g' \
--e 's/10.12.22.12/10.34.1.30/g' \
--e 's/10.12.22.13/10.34.1.31/g' k8s/on-prem/openshift-installer/ip.csv
+sed -i -e "s/10.12.22.10/$master_ip/g" \
+-e "s/10.12.22.11/$worker1_ip/g" \
+-e "s/10.12.22.12/$worker2_ip/g" \
+-e "s/10.12.22.13/$worker3_ip/g" k8s/on-prem/openshift-installer/ip.csv
 
-sed -i '/10.34.1.31/a \
-10.34.1.32 \
-10.34.1.33
-' k8s/on-prem/openshift-installer/ip.csv
+sed -i "/$worker3_ip/a \
+$worker4_ip \
+" k8s/on-prem/openshift-installer/ip.csv
+
+sed -i "/$worker4_ip/a \
+$worker5_ip \
+" k8s/on-prem/openshift-installer/ip.csv
 
 #Replace the Vm names in csv file
-sed -i -e 's/auto1/oc-master-4.2/g' \
--e 's/auto2/oc-worker1-4.2/g' \
--e 's/auto3/oc-worker2-4.2/g' \
--e 's/auto4/oc-worker3-4.2/g' k8s/on-prem/openshift-installer/vm_name.csv
+sed -i -e "s/auto1/$master_name/g" \
+-e "s/auto2/$worker1_name/g" \
+-e "s/auto3/$worker2_name/g" \
+-e "s/auto4/$worker3_name/g" k8s/on-prem/openshift-installer/vm_name.csv
 
-sed -i '/oc-worker3-4.2/a \
-oc-worker4-4.2 \
-oc-worker5-4.2
-' k8s/on-prem/openshift-installer/vm_name.csv
+sed -i "/$worker3_name/a \
+$worker4_name \
+" k8s/on-prem/openshift-installer/vm_name.csv
+
+sed -i "/$worker4_name/a \
+$worker5_name \
+" k8s/on-prem/openshift-installer/vm_name.csv
 
 #Replace the snapshot name and exp ip in vars
 sed -i -e 's/snapshot_name: "oc-cluster"/snapshot_name: "cauto"/g' \
