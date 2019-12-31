@@ -139,45 +139,6 @@ fi
 # LitmusBook 4 #
 ################
 
-run_id="deprovision-target-nw-loss";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=percona-loadgen metadata=${run_id})
-echo $test_name
-
-cd litmus
-cp apps/percona/workload/run_litmus_test.yml percona_loadgen_deprovision_target_nw_loss.yml
-
-# Update the environmental variables in litmus job spec.
-
-sed -i -e 's/value: app-percona-ns/value: percona-target-nw-loss/g' \
--e 's/value: provision/value: deprovision/g' \
--e 's/generateName: percona-loadgen-/generateName: percona-loadgen-nw-loss-deprovision-/g' \
--e 's/loadgen: percona-loadjob/loadgen: percona-loadjob-nw-loss-deprovision/g' percona_loadgen_deprovision_target_nw_loss.yml
-
-sed -i '/command:/i \
-          - name: RUN_ID\
-            value: '"$run_id"'\
-' percona_loadgen_deprovision_target_nw_loss.yml
-
-cat percona_loadgen_deprovision_target_nw_loss.yml
-
-# Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
-bash ../Openshift-EE/utils/litmus_job_runner label='loadgen:percona-loadjob-nw-loss-deprovision' job=percona_loadgen_deprovision_target_nw_loss.yml
-cd ..
-# Get the cluster state Once the litmus jobs completed.
-bash Openshift-EE/utils/dump_cluster_state;
-bash Openshift-EE/utils/event_updater jobname:target-network-loss $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
-
-rc_val=$(echo $?)
-
-# Update result of the test case in github mayadata-io/e2e-openshift repository.
-if [ "$rc_val" != "0" ]; then
-python3 Openshift-EE/utils/result/result_update.py $job_id QCA4 4-chaos "Induce cstor target network loss and check if it gets recovered successfully" Fail $pipeline_id "$current_time" $commit_id $gittoken
-exit 1;
-fi
-
-################
-# LitmusBook 5 #
-################
-
 kubectl delete job --all -n percona-target-nw-loss
 
 echo "********Deprovisioning Percona Application*******"
