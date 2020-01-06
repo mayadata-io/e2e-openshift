@@ -2,7 +2,7 @@
 set -x
 
 pod() {
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/3PZ0-Backup-Restore-Cstor/backup-restore-cstor node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/3PZ0-Backup-Restore-Cstor/backup-restore-cstor node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"' '"'$VELERO_VERSION'"'
 }
 
 node() {
@@ -13,6 +13,7 @@ job_id=$(echo $1)
 pipeline_id=$(echo $2)
 commit_id=$(echo $3)
 releaseTag=$(echo $4)
+velero_version=$(echo $5)
 case_id=3PZ0
 
 time="date"
@@ -42,6 +43,9 @@ cp apps/percona/deployers/run_litmus_test.yml percona_backup_restore.yml
 sed -i -e 's/app: percona-deployment/app: deploy-percona-backup-restore/g' \
 -e 's/value: openebs-standard/value: openebs-cstor-disk/g' \
 -e 's/value: app-percona-ns/value: backup-percona-cstor/g' percona_backup_restore.yml
+
+#Getting velero version from gitlab-env
+sed -i "s/v1.1.0/$velero_version/g" percona_backup_restore.yml
 cat percona_backup_restore.yml
 
 bash ../Openshift-EE/utils/litmus_job_runner label='app:deploy-percona-backup-restore' job=percona_backup_restore.yml
@@ -98,7 +102,7 @@ fi
 }
 
 if [ "$1" == "node" ];then
-  node $2 $3 $4 $5
+  node $2 $3 $4 $5 $6
 else
   pod
 fi
