@@ -16,7 +16,7 @@ time="date"
 current_time=$(eval $time)
 
 #pooling over previous job to complete
-bash Openshift-EE/utils/pooling jobname:bdd-cstor-volume-provisioning-negative
+bash Openshift-EE/utils/pooling jobname:bdd-cstor-volume-provisioning
 bash Openshift-EE/utils/e2e-cr jobname:cstor-integration-test jobphase:Running init_time:"$current_time"
 
 
