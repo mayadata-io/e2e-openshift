@@ -2,7 +2,7 @@
 set -x
 
 pod() {
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/3PZ0-Backup-Restore-Cstor/backup-restore-cstor node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"' '"'$VELERO_VERSION'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/3PZ0-Backup-Restore-Cstor/backup-restore-cstor node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"' '"'$VELERO_VERSION'"' '"'$VELERO_PLUGIN_VERSION'"'
 }
 
 node() {
@@ -14,6 +14,7 @@ pipeline_id=$(echo $2)
 commit_id=$(echo $3)
 releaseTag=$(echo $4)
 velero_version=$(echo $5)
+velero_plugin_version=$(echo $6)
 case_id=3PZ0
 
 time="date"
@@ -44,8 +45,6 @@ sed -i -e 's/app: percona-deployment/app: deploy-percona-backup-restore/g' \
 -e 's/value: openebs-standard/value: openebs-cstor-disk/g' \
 -e 's/value: app-percona-ns/value: backup-percona-cstor/g' percona_backup_restore.yml
 
-#Getting velero version from gitlab-env
-sed -i "s/v1.1.0/$velero_version/g" percona_backup_restore.yml
 cat percona_backup_restore.yml
 
 bash ../Openshift-EE/utils/litmus_job_runner label='app:deploy-percona-backup-restore' job=percona_backup_restore.yml
@@ -72,8 +71,10 @@ cp experiments/functional/backup_and_restore/run_litmus_test.yml run_backupresto
 
 sed -i -e 's/value: app-percona-ns/value: backup-percona-cstor/g' \
 -e 's/app: velero-backup-restore/app: velero-backup-restore-cstor/g' \
--e 's/velero-plugin:ci/velero-plugin:1.5.0-RC2-velero_1.0.0/g' \
 -e 's/value: percona-backup/value: percona-backup-cstor/g' run_backuprestore_test.yml
+#Getting velero version from gitlab-env
+sed -i "s/v1.1.0/$velero_version/g" run_backuprestore_test.yml
+sed -i "s/plugin:ci/plugin:$velero_plugin_version/g" run_backuprestore_test.yml
 
 echo "Running the litmus test for Percona Backup Restore.."
 cat run_backuprestore_test.yml
@@ -102,7 +103,7 @@ fi
 }
 
 if [ "$1" == "node" ];then
-  node $2 $3 $4 $5 $6
+  node $2 $3 $4 $5 $6 $7
 else
   pod
 fi

@@ -2,7 +2,7 @@
 set -x
 
 pod() {
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/5EA0-Backup-Restore-LocalPV/backup-restore-localpv node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/5EA0-Backup-Restore-LocalPV/backup-restore-localpv node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"' '"'$VELERO_VERSION'"'
 }
 
 node() {
@@ -13,6 +13,7 @@ job_id=$(echo $1)
 pipeline_id=$(echo $2)
 commit_id=$(echo $3)
 releaseTag=$(echo $4)
+velero_version=$(echo $5)
 case_id=5EA0
 
 time="date"
@@ -78,6 +79,8 @@ sed -i -e 's/value: app-percona-ns/value: backup-percona-localpv/g' \
 -e 's/value: "cstor"/value: "localpv"/g' \
 -e 's/value: percona-backup/value: percona-backup-localpv/g' run_backuprestore_localpv_test.yml
 
+sed -i "s/v1.1.0/$velero_version/g" run_backuprestore_localpv_test.yml
+
 sed -i '/command:/i \
           - name: RUN_ID\
             value: '"$run_id"'\
@@ -110,7 +113,7 @@ fi
 }
 
 if [ "$1" == "node" ];then
-  node $2 $3 $4 $5
+  node $2 $3 $4 $5 $6
 else
   pod
 fi
