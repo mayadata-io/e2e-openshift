@@ -1,6 +1,8 @@
 #!/bin/bash
 set -x
-
+job_retry_count=0
+container_retry_count=0
+job_state_retry_count=0
 litmus_job_label_key=$(echo $1 | cut -d "=" -f 2 | cut -d ":" -f 1)
 litmus_job_label_value=$(echo $1 | cut -d "=" -f 2 | cut -d ":" -f 2)
 litmus_job_file=$(echo $2 | cut -d "=" -f 2)
@@ -14,11 +16,15 @@ job_name=$(eval ${jobNameCmd}); retcode=$?
 
 while [ -z "$job_name" ]; do
   sleep 5
+  job_retry_count=$((job_retry_count+1))
+    if [[ "$job_retry_count" -eq "10" ]]; then
+      echo "unable to get JOB_NAME"; exit 1;
+    fi
   job_name=$(eval ${jobNameCmd});
 done
 chmod 755 ../Openshift-EE/utils/error_handler
 bash ../Openshift-EE/utils/error_handler ${retcode} msg="Unable to run litmusbook, exiting" action="exit"
-
+    
 ## Obtain the litmus pod name 
 
 litmusPodCmd="kubectl get pod --no-headers -n litmus -o jsonpath='{.items[?(@.metadata.labels.job-name==\"${job_name}\")].metadata.name}'"
@@ -38,6 +44,10 @@ while true; do
   cstate=$(eval ${containerStateCmd}); rc=$?
   if [[ $rc -eq 0 && ! $cstate ]]; then
     sleep 10
+    container_retry_count=$((container_retry_count+1))
+    if [[ "$container_retry_count" -eq "10" ]]; then
+      echo "unable to get CONTAINER-STATUS"; exit 1;
+    fi
     else if [[ $rc -eq 0 && ! -z $cstate ]]; then
       if [[ ! $cstate =~ 'terminated' ]]; then
         sleep 10
@@ -57,7 +67,11 @@ while true; do
     else break;
     fi
   else
-    echo "unable to get litmus job status"; exit 1
+    sleep 10
+    job_state_retry_count=$((job_state_retry_count+1))
+    if [[ "$job_state_retry_count" -eq "10" ]]; then
+      echo "unable to get litmus job status"; exit 1;
+    fi  
   fi
 done
 echo "Litmus test run Job has completed"

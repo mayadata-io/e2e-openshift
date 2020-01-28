@@ -1,0 +1,232 @@
+#!/bin/bash
+set -x
+
+pod() {
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/NQ82-cStor-target-failure-new-replica-rebuild/target-failure-new-replica-rebuild node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
+}
+
+node() {
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+releaseTag=$(echo $4)
+case_id=NQ82
+
+source ~/.profile
+gittoken=$(echo "$github_token")
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+bash Openshift-EE/utils/e2e-cr jobname:target-failure-cvr-scaleup jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:target-failure-cvr-scaleup jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
+
+################
+# LitmusBook 1 #
+################
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-target-kill-cvr-scaleup metadata="")
+echo $test_name
+
+cd litmus
+echo "Running the litmus test for Busybox Deployment.."
+# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/deployers/run_litmus_test.yml target_kill_cvr_scaleup.yml
+
+sed -i -e 's/app: busybox-litmus/app: deploy-busybox-target-failure-cvr-scaleup/g' \
+-e 's/generateName: litmus-busybox-deploy-/generateName: litmus-busybox-deploy-target-failure-cvr-scaleup-/g' \
+-e 's/app=busybox-sts/app=bb-target-failure-cvr-scaleup/g' \
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/value: openebs-cstor-sparse/value: openebs-cstor-cvr-scale/g' \
+-e 's/value: openebs-busybox/value: openebs-bb-target-failure-cvr-scaleup/g' \
+-e 's/value: app-busybox-ns/value: target-kill-cvr-scaleup/g' target_kill_cvr_scaleup.yml
+
+cat target_kill_cvr_scaleup.yml
+
+# Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:deploy-busybox-target-failure-cvr-scaleup' job=target_kill_cvr_scaleup.yml
+cd ..
+# Get the cluster state Once the litmus jobs completed.
+bash Openshift-EE/utils/dump_cluster_state;
+# Update the e2e event for the job.
+bash Openshift-EE/utils/event_updater jobname:target-failure-cvr-scaleup $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id NQ82 4-chaos "Verify the CVR scaled up successfully and kill the target pod while new replica in in rebuild progress then check the volume status is healthy" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# LitmusBook 2 #
+################
+
+run_id="target-failure-cvr-scaleup";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+echo $test_name
+
+cd litmus
+cp apps/busybox/liveness/run_litmus_test.yml loadgen_target_kill_cvr_scaleup.yml
+
+sed -i -e 's/value: app-busybox-ns/value: target-kill-cvr-scaleup/g' \
+-e 's/app=busybox-sts/app=bb-target-failure-cvr-scaleup/g' \
+-e 's/liveness: litmus-busybox-liveness/liveness: bb-liveness-target-failure-cvr-scaleup/g' loadgen_target_kill_cvr_scaleup.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' loadgen_target_kill_cvr_scaleup.yml
+
+cat loadgen_target_kill_cvr_scaleup.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='liveness:bb-liveness-target-failure-cvr-scaleup' job=loadgen_target_kill_cvr_scaleup.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:target-failure-cvr-scaleup $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id NQ82 4-chaos "Verify the CVR scaled up successfully and kill the target pod while new replica in in rebuild progress then check the volume status is healthy" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# LitmusBook 3 #
+################
+
+run_id="target-failure";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-cvr-scaleup metadata=${run_id})
+echo $test_name
+
+cd litmus
+cp experiments/functional/target-failure-cvr-scaleup/run_litmus_test.yml cvr_scaleup_target_failure.yml
+
+ # Update the environmental variables in litmus job spec.
+
+sed -i -e '/name: SPC_NAME/{n;s/.*/            value: cstor-block-disk-pool-stripe/}' \
+-e '/name: OPENEBS_VERSION/{n;s/.*/            value: '"'$releaseTag'"'/}' \
+-e '/name: APP_PVC/{n;s/.*/            value: openebs-bb-target-failure-cvr-scaleup/}' \
+-e '/name: OPERATOR_NAMESPACE/{n;s/.*/            value: openebs/}' \
+-e '/name: APP_LABEL/{n;s/.*/            value: 'app=bb-target-failure-cvr-scaleup'/}' \
+-e '/name: APP_NAMESPACE/{n;s/.*/            value: target-kill-cvr-scaleup/}' \
+-e '/name: DATA_PERSISTENCE/{n;s/.*/            value: busybox/}' \
+-e '/name: INDUCE_TARGET_FAILURE/{n;s/.*/            value: enable/}' \
+-e 's/name: cvr-scaleup/name: target-failure-cvr-scaleup-configmap/g' cvr_scaleup_target_failure.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' cvr_scaleup_target_failure.yml
+
+## Insert the set of variables for busybox data consistency util into configmap spec.
+sed -i '/parameters.yml: |/a \
+    blocksize: 4k \
+    blockcount: 1024 \
+    testfile: cvrscaleup
+' cvr_scaleup_target_failure.yml
+
+cat  cvr_scaleup_target_failure.yml
+ # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
+bash ../Openshift-EE/utils/litmus_job_runner label='app:target-failure-cvr-scaleup' job=cvr_scaleup_target_failure.yml
+cd ..
+# Get the cluster state Once the litmus jobs completed.
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:target-failure-cvr-scaleup $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id NQ82 4-chaos "Verify the CVR scaled up successfully and kill the target pod while new replica in in rebuild progress then check the volume status is healthy" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# LitmusBook 4 #
+################
+
+run_id="deprovision-target-failure-cvr-scaleup";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+echo $test_name
+
+cd litmus
+cp apps/busybox/liveness/run_litmus_test.yml loadgen_deprovision_cvr_scaleup.yml
+
+sed -i -e 's/value: app-busybox-ns/value: target-kill-cvr-scaleup/g' \
+-e 's/app=busybox-sts/app=bb-target-failure-cvr-scaleup/g' \
+-e 's/value: provision/value: deprovision/g' \
+-e 's/liveness: litmus-busybox-liveness/liveness: bb-liveness-deprovision-target-failure-cvr-scaleup/g' loadgen_deprovision_cvr_scaleup.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' loadgen_deprovision_cvr_scaleup.yml
+
+cat loadgen_deprovision_cvr_scaleup.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='liveness:bb-liveness-deprovision-target-failure-cvr-scaleup' job=loadgen_deprovision_cvr_scaleup.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:target-failure-cvr-scaleup $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id NQ82 4-chaos "Verify the CVR scaled up successfully and kill the target pod while new replica in in rebuild progress then check the volume status is healthy" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# LitmusBook 5 #
+################
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-target-kill-cvr-scaleup metadata="")
+echo $test_name
+
+cd litmus
+echo "Running the litmus test for Busybox deprovision.."
+cp apps/busybox/deployers/run_litmus_test.yml busybox_deprovision_cvr_scaleup_target_kill.yml
+
+sed -i -e 's/app: busybox-litmus/app: deprovision-busybox-target-failure-cvr-scaleup/g' \
+-e 's/generateName: litmus-busybox-deploy-/generateName: litmus-busybox-deprovision-target-failure-cvr-scaleup-/g' \
+-e 's/app=busybox-sts/app=bb-target-failure-cvr-scaleup/g' \
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/value: provision/value: deprovision/g' \
+-e 's/value: openebs-cstor-sparse/value: openebs-cstor-cvr-scale/g' \
+-e 's/value: openebs-busybox/value: openebs-bb-target-failure-cvr-scaleup/g' \
+-e 's/value: app-busybox-ns/value: target-kill-cvr-scaleup/g' busybox_deprovision_cvr_scaleup_target_kill.yml
+
+cat busybox_deprovision_cvr_scaleup_target_kill.yml
+
+# Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:deprovision-busybox-target-failure-cvr-scaleup' job=busybox_deprovision_cvr_scaleup_target_kill.yml
+cd ..
+# Get the cluster state Once the litmus jobs completed.
+bash Openshift-EE/utils/dump_cluster_state;
+# Update the e2e event for the job.
+bash Openshift-EE/utils/event_updater jobname:target-failure-cvr-scaleup $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+
+# Obtain the status of the test using litmusresult(lr) 
+testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+current_time=$(eval $time)
+
+# Update the result of the test case in github mayadata-io/e2e-openshift repository.
+if [ "$rc_val" != "0" ]; then
+bash Openshift-EE/utils/e2e-cr jobname:target-failure-cvr-scaleup jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:$testResult
+python3 Openshift-EE/utils/result/result_update.py $job_id NQ82 4-chaos "Verify the CVR scaled up successfully and kill the target pod while new replica in in rebuild progress then check the volume status is healthy" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+# Update the e2e cr once the job is completed
+bash Openshift-EE/utils/e2e-cr jobname:target-failure-cvr-scaleup jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:$testResult
+
+python3 Openshift-EE/utils/result/result_update.py $job_id NQ82 4-chaos "Verify the CVR scaled up successfully and kill the target pod while new replica in in rebuild progress then check the volume status is healthy" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+
+
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4 $5
+else
+  pod
+fi
