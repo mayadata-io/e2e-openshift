@@ -35,6 +35,7 @@ cp providers/nfs-provisioner/run_litmus_test.yml nfsv4-provision.yml
 
 sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
 -e 's/value: app-nfs-ns/value: app-nfsv4-ns/g' \
+-e 's/value: 50G/value: 25G/g' \
 -e 's/value: openebs-nfs/value: openebs-nfs4/g' nfsv4-provision.yml
 
 #################
