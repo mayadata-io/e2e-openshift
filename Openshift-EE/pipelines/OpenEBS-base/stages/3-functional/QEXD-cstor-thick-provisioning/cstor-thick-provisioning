@@ -1,0 +1,111 @@
+#!/bin/bash
+set -x
+
+pod() {
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/QEXD-cstor-thick-provisioning/cstor-thick-provisioning node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
+
+}
+
+node() {
+source ~/.profile
+gittoken=$(echo "$github_token")
+
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+releaseTag=$(echo $4)
+case_id=QEXD
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+bash Openshift-EE/utils/e2e-cr jobname:cstor-thick-provisioning jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:cstor-thick-provisioning jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
+
+
+################
+# LitmusBook 1 #
+################
+
+run_id="striped-thick-provision";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=cstor-block-device-pool-provision metadata=${run_id})
+echo $test_name
+cd litmus
+
+# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
+cp providers/cstor/cstor-block-device-pool/run_litmus_test.yml create_pool_thick_provisioning.yml
+
+echo "Running the litmus test.."
+
+sed -i -e 's/app: cstor-block-device-pool-provision/app: cstor-pool-thick-provision/g' \
+-e 's/generateName: cstor-block-device-pool-provision/generateName: cstor-pool-thick-provision/g' \
+-e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
+-e 's/value: cstor-block-disk-pool/value: cstor-pool-thick-provision/g' \
+-e 's/value: openebs-cstor-disk/value: openebs-cstor-disk-thick-provision/g' \
+-e 's/false/true/g' create_pool_thick_provisioning.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' create_pool_thick_provisioning.yml
+
+cat create_pool_thick_provisioning.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:cstor-pool-thick-provision' job=create_pool_thick_provisioning.yml
+bash ../Openshift-EE/utils/dump_cluster_state;
+cd ..
+bash Openshift-EE/utils/event_updater jobname:cstor-thick-provisioning $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id QEXD 3-functional "Create cStor based thick provision Striped storage pool on disks and corresponding storage class" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+
+################
+# LitmusBook 2 #
+################
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=cstor-thick-provisioning metadata="")
+echo $test_name
+cd litmus
+
+cp experiments/functional/cstor_thick_provisioning/run_litmus_test.yml create_thick_provisioning.yml
+
+sed -i -e '/name: APP_NAMESPACE/{n;s/.*/            value: thick-provision-ns/g}' \
+-e '/name: APP_PVC/{n;s/.*/            value: thick-provision-pvc/g}' \
+-e '/name: STORAGE_CLASS/{n;s/.*/            value: cstor-thick-provision-sc/g}' \
+-e '/name: POOL_NAME/{n;s/.*/            value: cstor-pool-thick-provision/g}' create_thick_provisioning.yml
+
+cat create_thick_provisioning.yml 
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:thick-provisioning' job=create_thick_provisioning.yml
+bash ../Openshift-EE/utils/dump_cluster_state;
+cd ..
+bash Openshift-EE/utils/event_updater jobname:cstor-thick-provisioning $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+current_time=$(eval $time)
+
+if [ "$rc_val" != "0" ]; then
+bash Openshift-EE/utils/e2e-cr jobname:cstor-thick-provisioning jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Fail
+python3 Openshift-EE/utils/result/result_update.py $job_id QEXD 3-functional "Create cStor based thick provision Striped storage pool on disks and corresponding storage class" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+bash Openshift-EE/utils/e2e-cr jobname:cstor-thick-provisioning jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
+python3 Openshift-EE/utils/result/result_update.py $job_id QEXD 3-functional "Create cStor based thick provision Striped storage pool on disks and corresponding storage class" Pass $pipeline_id "$current_time" $commit_id $gittoken
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4 $5
+else
+  pod
+fi
