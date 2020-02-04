@@ -363,6 +363,12 @@ NWQB-Backup-Restore-Jiva:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/5EA0-Backup-Restore-LocalPV/backup-restore-localpv
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/5EA0-Backup-Restore-LocalPV/backup-restore-localpv
 
+QEXD-cStor-thick-provisioning:
+  extends: .func_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/QEXD-cstor-thick-provisioning/cstor-thick-provisioning
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/QEXD-cstor-thick-provisioning/cstor-thick-provisioning
+
 WVTY-App-Deploy-Jiva-RWX:
   extends: .func_test_template
   script:
