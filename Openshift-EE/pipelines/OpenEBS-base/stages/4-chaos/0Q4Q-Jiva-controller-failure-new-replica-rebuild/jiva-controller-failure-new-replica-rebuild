@@ -147,7 +147,7 @@ EOF
 
 sed -i -e 's/app-percona-ns/ctrl-kill-rep-scaleup/g' \
 -e '/name: COMPONENT_FAILURE/{n;s/.*/            value: controller/}' \
--e 's/app:scaleup-jiva-replica-litmus/app:scaleup-jiva-replica-litmus-ctrl-kill/g' \
+-e 's/app: scaleup-jiva-replica-litmus/app: scaleup-jiva-replica-litmus-ctrl-kill/g' \
 -e 's/percona-mysql-claim/busybox-ctrl-kill-rep-scaleup/g'  ctrl_kill_scale_jiva_rep.yml
 
 sed -i '/command:/i \
