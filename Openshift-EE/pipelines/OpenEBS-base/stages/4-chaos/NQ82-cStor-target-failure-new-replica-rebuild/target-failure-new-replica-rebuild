@@ -98,7 +98,7 @@ run_id="target-failure";test_name=$(bash Openshift-EE/utils/generate_test_name t
 echo $test_name
 
 cd litmus
-cp experiments/functional/target-failure-cvr-scaleup/run_litmus_test.yml cvr_scaleup_target_failure.yml
+cp experiments/functional/cvr-scaleup/run_litmus_test.yml cvr_scaleup_target_failure.yml
 
  # Update the environmental variables in litmus job spec.
 
@@ -110,7 +110,8 @@ sed -i -e '/name: SPC_NAME/{n;s/.*/            value: cstor-block-disk-pool-stri
 -e '/name: APP_NAMESPACE/{n;s/.*/            value: target-kill-cvr-scaleup/}' \
 -e '/name: DATA_PERSISTENCE/{n;s/.*/            value: busybox/}' \
 -e '/name: INDUCE_TARGET_FAILURE/{n;s/.*/            value: enable/}' \
--e 's/name: cvr-scaleup/name: target-failure-cvr-scaleup-configmap/g' cvr_scaleup_target_failure.yml
+-e 's/name: cvr-scaleup/name: target-failure-cvr-scaleup-configmap/g' \
+-e 's/app: cvr-scaleup/app: target-failure-cvr-scaleup/g' cvr_scaleup_target_failure.yml
 
 sed -i '/command:/i \
           - name: RUN_ID\

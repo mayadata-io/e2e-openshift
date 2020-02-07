@@ -24,12 +24,12 @@ current_time=$(eval $time)
 present_dir=$(pwd)
 echo $present_dir
 
-for i in efk-vars.yml efk.yml get_url.yml; do
-  wget https://raw.githubusercontent.com/openebs/e2e-infrastructure/master/workload/efk-client/playbook/$i
-done
+# for i in efk-vars.yml efk.yml get_url.yml; do
+#   wget https://raw.githubusercontent.com/openebs/e2e-infrastructure/master/workload/efk-client/playbook/$i
+# done
 
-echo "EFK: Deploying Aggregrator and Forwarder on client"
-ansible-playbook efk.yml --extra-vars "commit_id=$commit_id pipeline_id=$pipeline_id e_user=$elastic_user e_password=$elastic_password" 
+# echo "EFK: Deploying Aggregrator and Forwarder on client"
+# ansible-playbook efk.yml --extra-vars "commit_id=$commit_id pipeline_id=$pipeline_id e_user=$elastic_user e_password=$elastic_password" 
 
 # Applying e2e-CRD
 echo "***Applying e2e-crd***********"
