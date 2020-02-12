@@ -683,7 +683,13 @@ XC0I-cleanup-cspc-striped-pool:
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/XC0I-cleanup-cspc-striped-pool/cleanup-cspc-striped-pool
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/XC0I-cleanup-cspc-striped-pool/cleanup-cspc-striped-pool
-
+    
+P068-cleanup-spc-thick-provision-pool:
+  extends: .cleanup_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/P068-cleanup-spc-thick-provision-pool/cleanup-spc-pool
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/P068-cleanup-spc-thick-provision-pool/cleanup-spc-pool
+        
 J9PT-nfsv4-jiva-provision-cleanup:
   extends: .cleanup_test_template
   script:
