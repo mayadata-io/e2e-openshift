@@ -5,8 +5,8 @@ pod() {
 echo $CI_JOB_ID
 ###clone e2e-openshift-repo
 echo "cloning e2e-openshift repo*************"
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'git clone https://github.com/openebs/e2e-openshift.git'
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p 1658 'cd e2e-openshift && git checkout release-branch && bash Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/4SMQ-cluster-cleanup/cluster-cleanup node '"'$CI_JOB_ID'"'' '"'$master_ip'"' '"'$worker1_ip'"' '"'$worker2_ip'"' '"'$worker3_ip'"' '"'$worker4_ip'"' '"'$worker5_ip'"' '"'$master_name'"' '"'$worker1_name'"' '"'$worker2_name'"' '"'$worker3_name'"' '"'$worker4_name'"' '"'$worker5_name'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone https://github.com/openebs/e2e-openshift.git'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && git checkout release-branch && bash Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/4SMQ-cluster-cleanup/cluster-cleanup node '"'$CI_JOB_ID'"'' '"'$master_ip'"' '"'$worker1_ip'"' '"'$worker2_ip'"' '"'$worker3_ip'"' '"'$worker4_ip'"' '"'$worker5_ip'"' '"'$master_name'"' '"'$worker1_name'"' '"'$worker2_name'"' '"'$worker3_name'"' '"'$worker4_name'"' '"'$worker5_name'"'
 }
 
 node() {
