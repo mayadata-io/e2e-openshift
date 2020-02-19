@@ -1,10 +1,8 @@
 #!/bin/bash
-set -x
+
 pod() {
-set +x
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b release-branch https://github.com/mayadata-io/e2e-openshift.git'
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/K9YC-openebs-deploy/deploy-openebs node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"' '"'$RELEASE_BRANCH'"' '"'$NDM_TAG'"' '"'$E_USER'"' '"'$E_PASSWORD'"'
-set -x
 }
 
 node() {

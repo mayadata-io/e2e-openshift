@@ -1,5 +1,5 @@
 #!/bin/bash
-set -x
+
 
 pod() {
 # sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b OpenEBS-base https://github.com/openebs/e2e-openshift.git'
