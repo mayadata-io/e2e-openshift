@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 pod() {
 echo $CI_JOB_ID
 ###clone e2e-openshift-repo
@@ -60,7 +59,7 @@ $worker5_name \
 sed -i -e 's/snapshot_name: "oc-cluster"/snapshot_name: "cauto"/g' \
 -e 's/esx_ip: "10.12.1.1"/esx_ip: "10.23.1.1"/g' k8s/on-prem/openshift-installer/vars.yml
 
-ansible-playbook k8s/on-prem/openshift-installer/revert_cluster_state.yml -vv
+ansible-playbook k8s/on-prem/openshift-installer/revert_cluster_state.yml 
 
 #Removimg e2e openshift test repo
 cd  && rm -rf e2e-openshift && rm -rf infra
