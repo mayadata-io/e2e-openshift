@@ -22,6 +22,8 @@ current_time=$(eval $time)
 present_dir=$(pwd)
 echo $present_dir
 
+echo "releaseTag=$releaseTag"
+
 for i in efk-vars.yml efk.yml get_url.yml; do
   wget https://raw.githubusercontent.com/openebs/e2e-infrastructure/master/workload/efk-client/playbook/$i
 done
