@@ -34,7 +34,7 @@ file_update_retries = 5
 job_url = "<a href=\"https://gitlab.openebs.ci/openebs/e2e-openshift/-/jobs/{0}\">{0}</a>".format(job_id)
 
 # kibana url for the respective job using commit_sha and pipeline_id
-efk_url = "\"https://e2e-logs.openebs100.io/app/kibana#/discover?_g=(refreshInterval:(pause:!t,value:0),time:(from:now-7d,mode:quick,to:now))&_a=(columns:!(_source),filters:!(('$state':(store:appState),meta:(alias:!n,disabled:!f,index:cluster-logs,key:commit_id,negate:!f,params:(query:{0},type:phrase),type:phrase,value:{0}),query:(match:(commit_id:(query:{0},type:phrase)))),('$state':(store:appState),meta:(alias:!n,disabled:!f,index:cluster-logs,key:pipeline_id,negate:!f,params:(query:{1},type:phrase),type:phrase,value:{1}),query:(match:(pipeline_id:(query:{1},type:phrase))))),index:cluster-logs,interval:auto,query:(language:lucene,query:''),sort:!('@timestamp',desc))\"".format(commit_sha,pipeline_id)
+efk_url = "\"http://eck.openebs100.io:5603/app/kibana#/discover?_g=(refreshInterval:(pause:!f,value:5000),time:(from:now-7d,to:now))&_a=(columns:!(log),filters:!(('$state':(store:appState),meta:(alias:!n,disabled:!f,index:faa59410-ca5f-11e9-834d-e7e11a373ae5,key:pipeline_id,negate:!f,params:(query:{1}),type:phrase,value:{1}),query:(match:(pipeline_id:(query:{1},type:phrase)))),('$state':(store:appState),meta:(alias:!n,disabled:!f,index:faa59410-ca5f-11e9-834d-e7e11a373ae5,key:commit_id,negate:!f,params:(query:{0}),type:phrase,value:{0}),query:(match:(commit_id:(query:{0},type:phrase))))),index:faa59410-ca5f-11e9-834d-e7e11a373ae5,interval:auto,query:(language:kuery,query:''),sort:!('@timestamp',desc))\"".format(commit_sha,pipeline_id)
 
 # creating html link from kibana job url: efk_url
 efk_link = "<a href={0}>{1}</a>".format(efk_url, test_result)
