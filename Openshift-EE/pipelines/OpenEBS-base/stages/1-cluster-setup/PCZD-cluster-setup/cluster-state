@@ -23,7 +23,7 @@ fi
 echo "*************************Checking the Cluster's Health********************"
 
 echo "Checking for the number of nodes in ready state*******************************"
-ready_nodes=$(sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port kubectl get nodes | grep Ready | wc -l)
+ready_nodes=$(sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port kubectl get nodes --no-headers | grep -v NotReady | wc -l)
 
 git_token=$(sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cat ~/.profile | grep github_token | cut -d= -f2')
 gittoken=$(echo $git_token | tr -d '"')
