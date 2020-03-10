@@ -18,7 +18,7 @@ done
 
 if [ "$wait" == "1" ]; then
 sleep 120
-fi
+fi  
 
 echo "*************************Checking the Cluster's Health********************"
 
@@ -28,7 +28,14 @@ ready_nodes=$(sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $por
 git_token=$(sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cat ~/.profile | grep github_token | cut -d= -f2')
 gittoken=$(echo $git_token | tr -d '"')
 
-if [ "$ready_nodes" -eq 5 ]; then
+echo "Checking for the pending certificates"
+cert=$(sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port oc get csr -no-headers | grep Pending | wc -l)
+if [ "$cert" -gt 0 ]; then
+echo "Openshift CSR's are pending kindly approve it and take snapshot"
+exit;
+fi
+
+if [ "$ready_nodes" -eq 6 ]; then
 echo "Number of nodes in ready state is $ready_nodes"
 echo "******Cluster is in Healthy state****"
 

@@ -7,7 +7,7 @@ stages:
   - CHAOS
   - INFRA-CHAOS
   - OPENEBS-CLEANUP
-  - CLUSTER-CLEANUP
+  # - CLUSTER-CLEANUP
 
 PCZD-OpenShift:
   image: openebs/openshift-ci:latest
@@ -702,12 +702,12 @@ GP95-openebs-Uninstall:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/GP95-openebs-cleanup/openebs-cleanup
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/GP95-openebs-cleanup/openebs-cleanup
 
-4SMQ-cluster-Delete:
-  image: openebs/openshift-ci:latest
-  stage: CLUSTER-CLEANUP
-  when: always
-  dependencies:
-    - PCZD-OpenShift
-  script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/4SMQ-cluster-cleanup/cluster-cleanup
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/4SMQ-cluster-cleanup/cluster-cleanup
+# 4SMQ-cluster-Delete:
+#   image: openebs/openshift-ci:latest
+#   stage: CLUSTER-CLEANUP
+#   when: always
+#   dependencies:
+#     - PCZD-OpenShift
+#   script:
+#     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/4SMQ-cluster-cleanup/cluster-cleanup
+#     - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/4SMQ-cluster-cleanup/cluster-cleanup
