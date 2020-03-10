@@ -28,7 +28,7 @@ ready_nodes=$(sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $por
 git_token=$(sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cat ~/.profile | grep github_token | cut -d= -f2')
 gittoken=$(echo $git_token | tr -d '"')
 
-if [ "$ready_nodes" -eq 6 ]; then
+if [ "$ready_nodes" -eq 5 ]; then
 echo "Number of nodes in ready state is $ready_nodes"
 echo "******Cluster is in Healthy state****"
 
