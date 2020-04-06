@@ -107,6 +107,13 @@ BDD-CSTOR-VOLUME-PROVISIONING:
 #     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/cstor/volume/cstor-volume-provisioning-negative
 #     - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/cstor/volume/cstor-volume-provisioning-negative
 
+BDD-CSTOR-VOLUME-PROVISION-WAITFORFIRSTCONSUMER:
+  image: openebs/openshift-ci:latest
+  stage: OPENEBS-SETUP
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/cstor/volume/cstor-volume-provision-waitforfirstconsumer
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/cstor/volume/cstor-volume-provision-waitforfirstconsumer
+
 BDD-CSTOR-SCALEUP-REPLICA:
   image: openebs/openshift-ci:latest
   stage: OPENEBS-SETUP
