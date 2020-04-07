@@ -345,6 +345,13 @@ IFBV-CVR-Scaleup:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/36CY-cvr-scaledown/cvr-scaledown
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/36CY-cvr-scaledown/cvr-scaledown
 
+
+6QDS-Local-Backup-Restore-Cstor:
+  extends: .func_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/6QDS-Local-Backup-Restore-Cstor/local-backup-restore-cstor
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/6QDS-Local-Backup-Restore-Cstor/local-backup-restore-cstor
+
 3PZ0-Backup-Restore-Cstor:
   extends: .func_test_template
   script:
