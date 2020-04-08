@@ -235,7 +235,7 @@ cp apps/busybox/deployers/run_litmus_test.yml deprovision_busybox_jiva_replica_c
 
 sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovision-replica-scaleup/g' \
 -e 's/app: busybox-litmus/app: deprovision-jiva-busybox-rep-scaleup-ctrl-kill/g' \
--e 's/app=busybox-sts/app=busybox-jiva-replica/g' \
+-e 's/app=busybox-sts/app=jiva-rep-scaleup-ctrl-kill/g' \
 -e 's/value: statefulset/value: deployment/g' \
 -e 's/value: openebs-cstor-sparse/value: openebs-jiva-standalone/g' \
 -e 's/value: openebs-busybox/value: busybox-ctrl-kill-rep-scaleup/g' \
