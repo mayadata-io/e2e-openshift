@@ -27,6 +27,7 @@ bash Openshift-EE/utils/e2e-cr jobname:snap-rebuild-multiple-rep jobphase:Waitin
 bash Openshift-EE/utils/e2e-cr jobname:clone-post-snap-rebuild jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:pool-delete jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:pool-kill jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:target-failure-cvr-scaleup jobphase:Waiting
 
 ################
 # LitmusBook 1 #
