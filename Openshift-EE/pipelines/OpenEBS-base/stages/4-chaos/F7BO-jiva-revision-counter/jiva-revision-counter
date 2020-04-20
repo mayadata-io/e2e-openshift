@@ -111,6 +111,7 @@ cp experiments/chaos/revision_counter/run_litmus_test.yml run_revision_counter.y
 
 sed -i -e '/name: APP_NAMESPACE/{n;s/.*/            value: 'jiva-revision-counter'/}' \
 -e '/name: APP_LABEL/{n;s/.*/            value: 'name=percona'/}' \
+-e '/name: APP_PVC/{n;s/.*/            value: 'percona-mysql-claim'/}' \
 -e '/name: MOUNT_PATH/{n;s#.*#            value: '/var/lib/mysql'#}' run_revision_counter.yml
 
 echo "Running the litmus test for validation of jiva revision counter.."
