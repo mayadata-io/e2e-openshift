@@ -1,0 +1,52 @@
+#!/bin/bash
+
+pod() {
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && GOPATH="/home/devuser/go"; PATH=$PATH:"/usr/local/go/bin:$GOPATH/bin"; /bin/bash /home/devuser/e2e-openshift/Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/cstor/volume/cstor-volume-provision-waitforfirstconsumer node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+}
+
+node() {
+
+job_id=$(echo $1) #Gitlab job id obtain from the gitlab env ($CI_JOB_ID).
+pipeline_id=$(echo $2)  # Gitlab pipeline id obtained from gitlab env ($CI_PIPELINE_ID).
+commit_id=$(echo $3) #Gitlab commit id Obtained fron gilab env ($CI_COMMIT_SHA).
+
+source ~/.profile
+
+#github token to push the test result into github mayadata-io/e2e-openshift repository.
+#This token is set as an env in ~/.profile in the test cluster.
+
+gittoken=$(echo "$github_token")
+
+time="date"
+current_time=$(eval $time)
+
+#pooling over previous job to complete
+bash Openshift-EE/utils/pooling jobname:bdd-cstor-volume-provisioning
+bash Openshift-EE/utils/e2e-cr jobname:bdd-cstor-volume-provision-waitforfirstconsumer jobphase:Running init_time:"$current_time" init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+cd /home/devuser/go/src/github.com/openebs
+
+# Running BDD test for cstor-volume-provisioning
+cd maya/tests/cstor/volume && ginkgo -v -focus="\[WAITFORFIRSTCONSUMER\]" -- -kubeconfig=$HOME/.kube/config --cstor-replicas=3 --cstor-maxpools=3
+			
+#Evaluating result based on the return count
+
+if [ "$?" != "0" ];then
+  echo "cstor-volume-provision-waitforfirstconsumer-test-failed"
+  current_time=$(eval $time)
+  cd /home/devuser/e2e-openshift
+  bash Openshift-EE/utils/e2e-cr jobname:bdd-cstor-volume-provision-waitforfirstconsumer jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Fail
+  exit 1;
+else
+  echo "bdd-cstor-volume-provision-waitforfirstconsumer-test-Passed"
+  current_time=$(eval $time)
+  cd /home/devuser/e2e-openshift
+  bash Openshift-EE/utils/e2e-cr jobname:bdd-cstor-volume-provision-waitforfirstconsumer jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:$testResult
+fi
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4
+else
+  pod
+fi
