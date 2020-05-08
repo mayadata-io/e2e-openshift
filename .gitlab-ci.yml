@@ -163,7 +163,6 @@ PBCY-NFSv4-JIVA-PROVISION:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/PBCY-nfsv4-jiva-provision/nfsv4-jiva-provision
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/PBCY-nfsv4-jiva-provision/nfsv4-jiva-provision
 
-
 .func_test_template:
   image: openebs/openshift-ci:latest
   stage: FUNCTIONAL
@@ -345,7 +344,6 @@ IFBV-CVR-Scaleup:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/36CY-cvr-scaledown/cvr-scaledown
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/36CY-cvr-scaledown/cvr-scaledown
 
-
 6QDS-Local-Backup-Restore-Cstor:
   extends: .func_test_template
   script:
@@ -381,6 +379,12 @@ WVTY-App-Deploy-Jiva-RWX:
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/WVTY-app-deploy-jiva-RWX/app-deploy-jiva-rwx
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/WVTY-app-deploy-jiva-RWX/app-deploy-jiva-rwx
+
+RQUV-cStor-spc-roThresholdlimit:
+  extends: .func_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/RQUV-cStor-spc-roThresholdlimit/cstor-spc-rothresholdlimit
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/RQUV-cStor-spc-roThresholdlimit/cstor-spc-rothresholdlimit
 
 .chaos_test_template:
   image: openebs/openshift-ci:latest
