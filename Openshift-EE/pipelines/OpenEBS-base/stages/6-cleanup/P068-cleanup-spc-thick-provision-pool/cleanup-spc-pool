@@ -19,7 +19,7 @@ time="date"
 current_time=$(eval $time)
 
 #pooling over previous job to complete
-bash Openshift-EE/utils/pooling jobname:cleanup-cspc-striped-pool
+bash Openshift-EE/utils/pooling jobname:spc-raidz1-pool-cleanup
 bash Openshift-EE/utils/e2e-cr jobname:cleanup-spc-thick-provision-pool jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
 run_id="thick-provision-cleanup";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=cstor-block-device-pool-provision metadata=${run_id})

@@ -58,13 +58,6 @@ G45J-MIRRORED-POOL:
 #     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/9ZWW-create-raidz2-pool/create-raidz2-pool
 #     - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/9ZWW-create-raidz2-pool/create-raidz2-pool
 
-KUSG-CSPC_STRIPE_POOL:
-  image: openebs/openshift-ci:latest
-  stage: OPENEBS-SETUP
-  script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/KUSG-create-cspc-stripe-pool/cspc-create-striped-pool
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/KUSG-create-cspc-stripe-pool/cspc-create-striped-pool
-
 BDD-STRIPED-SPARSE-SPC:
   image: openebs/openshift-ci:latest
   stage: OPENEBS-SETUP
@@ -701,12 +694,6 @@ ZNSF-cleanup-spc-raidz1-pool:
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/ZNSF-cleanup-spc-raidz1-pool/cleanup-spc-raidz1-pool
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/ZNSF-cleanup-spc-raidz1-pool/cleanup-spc-raidz1-pool
-
-XC0I-cleanup-cspc-striped-pool:
-  extends: .cleanup_test_template
-  script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/XC0I-cleanup-cspc-striped-pool/cleanup-cspc-striped-pool
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/XC0I-cleanup-cspc-striped-pool/cleanup-cspc-striped-pool
     
 P068-cleanup-spc-thick-provision-pool:
   extends: .cleanup_test_template
