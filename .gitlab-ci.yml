@@ -603,11 +603,11 @@ NEPS-nfs-Ctrl-Container-Kill-Jiva:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/NEPS-nfs-ctrl-container-kill/nfs-ctrl-container-kill
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/NEPS-nfs-ctrl-container-kill/nfs-ctrl-container-kill
 
-NQ82-cStor-target-failure-replica-scaleup:
-  extends: .chaos_test_template
-  script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/NQ82-cStor-target-failure-new-replica-rebuild/target-failure-new-replica-rebuild
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/NQ82-cStor-target-failure-new-replica-rebuild/target-failure-new-replica-rebuild
+      #NQ82-cStor-target-failure-replica-scaleup:
+      #  extends: .chaos_test_template
+      #  script:
+      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/NQ82-cStor-target-failure-new-replica-rebuild/target-failure-new-replica-rebuild
+      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/NQ82-cStor-target-failure-new-replica-rebuild/target-failure-new-replica-rebuild
 
 0Q4Q-Jiva-controller-failure-replica-scaleup:
   extends: .chaos_test_template
