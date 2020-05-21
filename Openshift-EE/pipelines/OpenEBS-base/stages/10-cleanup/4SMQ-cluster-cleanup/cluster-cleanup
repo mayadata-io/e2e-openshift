@@ -1,0 +1,73 @@
+#!/bin/bash
+
+pod() {
+echo $CI_JOB_ID
+###clone e2e-openshift-repo
+echo "cloning e2e-openshift repo*************"
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone https://github.com/openebs/e2e-openshift.git'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && git checkout release-branch && bash Openshift-EE/pipelines/OpenEBS-base/stages/10-cleanup/4SMQ-cluster-cleanup/cluster-cleanup node '"'$CI_JOB_ID'"'' '"'$master_ip'"' '"'$worker1_ip'"' '"'$worker2_ip'"' '"'$worker3_ip'"' '"'$worker4_ip'"' '"'$worker5_ip'"' '"'$master_name'"' '"'$worker1_name'"' '"'$worker2_name'"' '"'$worker3_name'"' '"'$worker4_name'"' '"'$worker5_name'"'
+}
+
+node() {
+job_id=$(echo $1)
+master_ip=$(echo $2)
+worker1_ip=$(echo $3)
+worker2_ip=$(echo $4)
+worker3_ip=$(echo $5)
+worker4_ip=$(echo $6)
+worker5_ip=$(echo $7)
+
+master_name=$(echo $8)
+worker1_name=$(echo $9)
+worker2_name=$(echo ${10})
+worker3_name=$(echo ${11})
+worker4_name=$(echo ${12})
+worker5_name=$(echo ${13})
+
+git clone https://github.com/mayadata-io/litmus.git
+cd litmus
+
+# Replace the VM IP In csv file
+sed -i -e "s/10.12.22.10/$master_ip/g" \
+-e "s/10.12.22.11/$worker1_ip/g" \
+-e "s/10.12.22.12/$worker2_ip/g" \
+-e "s/10.12.22.13/$worker3_ip/g" k8s/on-prem/openshift-installer/ip.csv
+
+sed -i "/$worker3_ip/a \
+$worker4_ip \
+" k8s/on-prem/openshift-installer/ip.csv
+
+sed -i "/$worker4_ip/a \
+$worker5_ip \
+" k8s/on-prem/openshift-installer/ip.csv
+
+#Replace the Vm names in csv file
+sed -i -e "s/auto1/$master_name/g" \
+-e "s/auto2/$worker1_name/g" \
+-e "s/auto3/$worker2_name/g" \
+-e "s/auto4/$worker3_name/g" k8s/on-prem/openshift-installer/vm_name.csv
+
+sed -i "/$worker3_name/a \
+$worker4_name \
+" k8s/on-prem/openshift-installer/vm_name.csv
+
+sed -i "/$worker4_name/a \
+$worker5_name \
+" k8s/on-prem/openshift-installer/vm_name.csv
+
+#Replace the snapshot name and exp ip in vars
+sed -i -e 's/snapshot_name: "oc-cluster"/snapshot_name: "cauto"/g' \
+-e 's/esx_ip: "10.12.1.1"/esx_ip: "10.23.1.1"/g' k8s/on-prem/openshift-installer/vars.yml
+
+ansible-playbook k8s/on-prem/openshift-installer/revert_cluster_state.yml 
+
+#Removimg e2e openshift test repo
+cd  && rm -rf e2e-openshift && rm -rf infra
+cd /home/devuser/go/src/github.com/openebs && rm -rf maya
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4 $5 $6 $7 $8 $9 ${10} ${11} ${12} ${13} ${14}
+else
+  pod
+fi
