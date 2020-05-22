@@ -6,8 +6,14 @@ stages:
   - FUNCTIONAL
   - CHAOS
   - INFRA-CHAOS
+  - CSTOR-CSI-INFRA-SETUP
+  - CSTOR-CSI-FUNCTIONAL
+  - CSTOR-CSI-CHAOS
+  - CSTOR-CSI-INFRA-CHAOS
   - OPENEBS-CLEANUP
   - CLUSTER-CLEANUP
+  
+##########################################################################################
 
 PCZD-OpenShift:
   image: openebs/openshift-ci:latest
@@ -15,6 +21,8 @@ PCZD-OpenShift:
   script:     
     - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/1-cluster-setup/PCZD-cluster-setup/cluster-state
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/1-cluster-setup/PCZD-cluster-setup/cluster-state
+
+##########################################################################################
 
 K9YC-OpenEBS:
   image: openebs/openshift-ci:latest
@@ -162,6 +170,8 @@ PBCY-NFSv4-JIVA-PROVISION:
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/PBCY-nfsv4-jiva-provision/nfsv4-jiva-provision
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/PBCY-nfsv4-jiva-provision/nfsv4-jiva-provision
+
+##########################################################################################
 
 .func_test_template:
   image: openebs/openshift-ci:latest
@@ -385,6 +395,8 @@ RQUV-cStor-spc-roThresholdlimit:
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/RQUV-cStor-spc-roThresholdlimit/cstor-spc-rothresholdlimit
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/RQUV-cStor-spc-roThresholdlimit/cstor-spc-rothresholdlimit
+
+##########################################################################################
 
 .chaos_test_template:
   image: openebs/openshift-ci:latest
@@ -658,6 +670,131 @@ PC78-Drain-app-Node:
       #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/5-infra-chaos/T1JZ-node-failure-jiva/node-failure-jiva
       #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/5-infra-chaos/T1JZ-node-failure-jiva/node-failure-jiva
 
+##########################################################################################
+
+.csi_infra_test_template:
+  image: openebs/openshift-ci:latest
+  stage: CSTOR-CSI-INFRA-SETUP
+  when: always
+  dependencies:
+    - K9YC-OpenEBS
+
+AAO9-CSTOR-OPERATOR:
+  extends: .csi_infra_test_template        
+  script:
+    - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-csi-infra-setup/AAO9-cstor-operator/cstor-operator
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-csi-infra-setup/AAO9-cstor-operator/cstor-operator
+  
+2UVA-CSPC-MIRROR-POOL:
+  extends: .csi_infra_test_template        
+  script:
+    - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-csi-infra-setup/2UVA-create-cspc-mirror-pool/create-cspc-mirror-pool
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-csi-infra-setup/2UVA-create-cspc-mirror-pool/create-cspc-mirror-pool
+
+GRLZ-CSPC-STRIPE-POOL:
+  extends: .csi_infra_test_template        
+  script:
+    - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-csi-infra-setup/GRLZ-create-cspc-stripe-pool/create-cspc-stripe-pool
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-csi-infra-setup/GRLZ-create-cspc-stripe-pool/create-cspc-stripe-pool
+
+O0FF-CSI-PROVISIONER:
+  extends: .csi_infra_test_template        
+  script:
+    - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-csi-infra-setup/O0FF-deploy-csi-provisioner/deploy-csi-provisioner
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-csi-infra-setup/O0FF-deploy-csi-provisioner/deploy-csi-provisioner
+
+##########################################################################################
+
+.csi_func_test_template:
+  image: openebs/openshift-ci:latest
+  stage: CSTOR-CSI-FUNCTIONAL
+  when: always
+  dependencies:
+    - K9YC-OpenEBS
+
+19WS-CSI-CSTOR-CLONE:
+  extends: .csi_infra_test_template        
+  script:
+    - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-functional/19WS-csi-cstor-clone/csi-cstor-clone
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-functional/19WS-csi-cstor-clone/csi-cstor-clone
+
+BPUC-CSI-VOLUME-RESIZE-XFS:
+  extends: .csi_infra_test_template        
+  script:
+    - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-functional/BPUC-csi-volume-resize-xfs/csi-volume-resize-xfs
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-functional/BPUC-csi-volume-resize-xfs/csi-volume-resize-xfs
+
+CGCH-CSTOR-CSPC-POOL-SCALEUP:
+  extends: .csi_infra_test_template        
+  script:
+    - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-functional/CGCH-cstor-cspc-pool-scaleup/cstor-cspc-pool-scaleup
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-functional/CGCH-cstor-cspc-pool-scaleup/cstor-cspc-pool-scaleup
+
+EUI0-CSI-VOLUME-RESIZE:
+  extends: .csi_infra_test_template        
+  script:
+    - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-functional/EUI0-csi-volume-resize/csi-volume-resize
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-functional/EUI0-csi-volume-resize/csi-volume-resize
+
+F4DE-CSTOR-CSPC-POOL-EXPANSION:
+  extends: .csi_infra_test_template        
+  script:
+    - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-functional/F4DE-cstor-cspc-pool-expansion/cstor-cspc-pool-expansion
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-functional/F4DE-cstor-cspc-pool-expansion/cstor-cspc-pool-expansion
+        
+IEZ4-CSTOR-CSPC-POOL-REPLACE-BLOCKDEVICE:
+  extends: .csi_infra_test_template        
+  script:
+    - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-functional/IEZ4-cstor-cspc-pool-replace-blockdevice/cstor-cspc-pool-replace-blockdevice
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-functional/IEZ4-cstor-cspc-pool-replace-blockdevice/cstor-cspc-pool-replace-blockdevice
+
+S4B9-CSI-CSTOR-SNAPSHOT:
+  extends: .csi_infra_test_template        
+  script:
+    - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-functional/S4B9-csi-cstor-snapshot/csi-cstor-snapshot
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-functional/S4B9-csi-cstor-snapshot/csi-cstor-snapshot
+                    
+##########################################################################################
+
+.csi_chaos_test_template:
+  image: openebs/openshift-ci:latest
+  stage: CSTOR-CSI-CHAOS
+  when: always
+  dependencies:
+    - K9YC-OpenEBS
+
+5NV4-CSTOR-APP-KILL:
+  extends: .csi_chaos_test_template        
+  script:
+    - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/8-csi-chaos/5NV4-cstor-app-kill/cstor-app-kill
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/8-csi-chaos/5NV4-cstor-app-kill/cstor-app-kill
+    
+8DJC-CSTOR-TARGET-KILL:
+  extends: .csi_chaos_test_template        
+  script:
+    - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/8-csi-chaos/8DJC-cstor-target-kill/cstor-target-kill
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/8-csi-chaos/8DJC-cstor-target-kill/cstor-target-kill
+
+D3L0-TARGET-NETWORK-LOSS:
+  extends: .csi_chaos_test_template        
+  script:
+    - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/8-csi-chaos/D3L0-target-network-loss/target-network-loss
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/8-csi-chaos/D3L0-target-network-loss/target-network-loss
+    
+##########################################################################################
+
+C55O-cspc-pdb:
+  image: openebs/openshift-ci:latest
+  stage: CSTOR-CSI-INFRA-CHAOS
+  when: always
+  dependencies:
+    - K9YC-OpenEBS
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/9-csi-infra-chaos/JFSM-pdb-cspc/pdb-cspc
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/9-csi-infra-chaos/JFSM-pdb-cspc/pdb-cspc
+
+##########################################################################################
+
 .cleanup_test_template:
   image: openebs/openshift-ci:latest
   stage:  OPENEBS-CLEANUP
@@ -668,50 +805,70 @@ PC78-Drain-app-Node:
 0FN8-nfsv4-provisioner-cleanup:
   extends: .cleanup_test_template
   script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/0FN8-nfsv4-provisioner-cleanup/nfs-provisioner-cleanup
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/0FN8-nfsv4-provisioner-cleanup/nfs-provisioner-cleanup    
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/10-cleanup/0FN8-nfsv4-provisioner-cleanup/nfs-provisioner-cleanup
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/10-cleanup/0FN8-nfsv4-provisioner-cleanup/nfs-provisioner-cleanup    
 
 # MCDE-nfsv3-provisioner-cleanup:
 #   extends: .cleanup_test_template
 #   script:
-#     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/MCDE-nfsv3-provisioner-cleanup/nfsv3-deprovision
-#     - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/MCDE-nfsv3-provisioner-cleanup/nfsv3-deprovision
+#     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/10-cleanup/MCDE-nfsv3-provisioner-cleanup/nfsv3-deprovision
+#     - ./Openshift-EE/pipelines/OpenEBS-base/stages/10-cleanup/MCDE-nfsv3-provisioner-cleanup/nfsv3-deprovision
 
 0NQ0-cleanup-spc-striped-pool:
   extends: .cleanup_test_template
   script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/0NQ0-cleanup-spc-striped-pool/cleanup-spc-striped-pool
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/0NQ0-cleanup-spc-striped-pool/cleanup-spc-striped-pool
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/10-cleanup/0NQ0-cleanup-spc-striped-pool/cleanup-spc-striped-pool
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/10-cleanup/0NQ0-cleanup-spc-striped-pool/cleanup-spc-striped-pool
 
 P7Q4-cleanup-spc-mirrored-pool:
   extends: .cleanup_test_template
   script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/P7Q4-cleanup-spc-mirrored-pool/cleanup-spc-mirrored-pool
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/P7Q4-cleanup-spc-mirrored-pool/cleanup-spc-mirrored-pool
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/10-cleanup/P7Q4-cleanup-spc-mirrored-pool/cleanup-spc-mirrored-pool
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/10-cleanup/P7Q4-cleanup-spc-mirrored-pool/cleanup-spc-mirrored-pool
 
 ZNSF-cleanup-spc-raidz1-pool:
   extends: .cleanup_test_template
   script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/ZNSF-cleanup-spc-raidz1-pool/cleanup-spc-raidz1-pool
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/ZNSF-cleanup-spc-raidz1-pool/cleanup-spc-raidz1-pool
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/10-cleanup/ZNSF-cleanup-spc-raidz1-pool/cleanup-spc-raidz1-pool
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/10-cleanup/ZNSF-cleanup-spc-raidz1-pool/cleanup-spc-raidz1-pool
     
 P068-cleanup-spc-thick-provision-pool:
   extends: .cleanup_test_template
   script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/P068-cleanup-spc-thick-provision-pool/cleanup-spc-pool
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/P068-cleanup-spc-thick-provision-pool/cleanup-spc-pool
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/10-cleanup/P068-cleanup-spc-thick-provision-pool/cleanup-spc-pool
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/10-cleanup/P068-cleanup-spc-thick-provision-pool/cleanup-spc-pool
         
 J9PT-nfsv4-jiva-provision-cleanup:
   extends: .cleanup_test_template
   script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/J9PT-nfsv4-jiva-provisioner-cleanup/nfsv4-jiva-provisioner-cleanup
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/J9PT-nfsv4-jiva-provisioner-cleanup/nfsv4-jiva-provisioner-cleanup
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/10-cleanup/J9PT-nfsv4-jiva-provisioner-cleanup/nfsv4-jiva-provisioner-cleanup
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/10-cleanup/J9PT-nfsv4-jiva-provisioner-cleanup/nfsv4-jiva-provisioner-cleanup
 
+RZTG-cleanup-cstor-operator:
+  extends: .cleanup_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/10-cleanup/RZTG-cleanup-cstor-operator/cleanup-cstor-operator
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/10-cleanup/RZTG-cleanup-cstor-operator/cleanup-cstor-operator
+    
+XC0I-cleanup-cspc-striped-pool:
+  extends: .cleanup_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/10-cleanup/XC0I-cleanup-cspc-striped-pool/cleanup-cspc-striped-pool
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/10-cleanup/XC0I-cleanup-cspc-striped-pool/cleanup-cspc-striped-pool
+    
+KWD0-cleanup-cspc-mirrored-pool:
+  extends: .cleanup_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/10-cleanup/KWD0-cleanup-cspc-mirrored-pool/cleanup-cspc-mirrored-pool
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/10-cleanup/KWD0-cleanup-cspc-mirrored-pool/cleanup-cspc-mirrored-pool
+                        
 GP95-openebs-Uninstall:
   extends: .cleanup_test_template
   script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/GP95-openebs-cleanup/openebs-cleanup
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/GP95-openebs-cleanup/openebs-cleanup
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/10-cleanup/GP95-openebs-cleanup/openebs-cleanup
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/10-cleanup/GP95-openebs-cleanup/openebs-cleanup
+
+##########################################################################################
 
 4SMQ-cluster-Delete:
   image: openebs/openshift-ci:latest
@@ -720,5 +877,5 @@ GP95-openebs-Uninstall:
   dependencies:
     - PCZD-OpenShift
   script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/4SMQ-cluster-cleanup/cluster-cleanup
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/4SMQ-cluster-cleanup/cluster-cleanup
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/10-cleanup/4SMQ-cluster-cleanup/cluster-cleanup
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/10-cleanup/4SMQ-cluster-cleanup/cluster-cleanup
