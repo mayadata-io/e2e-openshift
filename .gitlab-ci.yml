@@ -713,43 +713,43 @@ O0FF-CSI-PROVISIONER:
     - K9YC-OpenEBS
 
 19WS-CSI-CSTOR-CLONE:
-  extends: .csi_infra_test_template        
+  extends: .csi_func_test_template        
   script:
     - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-functional/19WS-csi-cstor-clone/csi-cstor-clone
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-functional/19WS-csi-cstor-clone/csi-cstor-clone
 
 BPUC-CSI-VOLUME-RESIZE-XFS:
-  extends: .csi_infra_test_template        
+  extends: .csi_func_test_template        
   script:
     - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-functional/BPUC-csi-volume-resize-xfs/csi-volume-resize-xfs
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-functional/BPUC-csi-volume-resize-xfs/csi-volume-resize-xfs
 
 CGCH-CSTOR-CSPC-POOL-SCALEUP:
-  extends: .csi_infra_test_template        
+  extends: .csi_func_test_template        
   script:
     - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-functional/CGCH-cstor-cspc-pool-scaleup/cstor-cspc-pool-scaleup
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-functional/CGCH-cstor-cspc-pool-scaleup/cstor-cspc-pool-scaleup
 
 EUI0-CSI-VOLUME-RESIZE:
-  extends: .csi_infra_test_template        
+  extends: .csi_func_test_template        
   script:
     - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-functional/EUI0-csi-volume-resize/csi-volume-resize
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-functional/EUI0-csi-volume-resize/csi-volume-resize
 
 F4DE-CSTOR-CSPC-POOL-EXPANSION:
-  extends: .csi_infra_test_template        
+  extends: .csi_func_test_template        
   script:
     - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-functional/F4DE-cstor-cspc-pool-expansion/cstor-cspc-pool-expansion
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-functional/F4DE-cstor-cspc-pool-expansion/cstor-cspc-pool-expansion
         
 IEZ4-CSTOR-CSPC-POOL-REPLACE-BLOCKDEVICE:
-  extends: .csi_infra_test_template        
+  extends: .csi_func_test_template        
   script:
     - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-functional/IEZ4-cstor-cspc-pool-replace-blockdevice/cstor-cspc-pool-replace-blockdevice
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-functional/IEZ4-cstor-cspc-pool-replace-blockdevice/cstor-cspc-pool-replace-blockdevice
 
 S4B9-CSI-CSTOR-SNAPSHOT:
-  extends: .csi_infra_test_template        
+  extends: .csi_func_test_template        
   script:
     - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-functional/S4B9-csi-cstor-snapshot/csi-cstor-snapshot
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-functional/S4B9-csi-cstor-snapshot/csi-cstor-snapshot
