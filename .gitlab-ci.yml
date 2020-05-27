@@ -620,7 +620,7 @@ PC78-Drain-app-Node:
 
 .spc_cleanup_test_template:
   image: openebs/openshift-ci:latest
-  stage:  SPC-POOL-CLEANUP
+  stage: SPC-POOL-CLEANUP
   when: always
   dependencies:
     - K9YC-OpenEBS
