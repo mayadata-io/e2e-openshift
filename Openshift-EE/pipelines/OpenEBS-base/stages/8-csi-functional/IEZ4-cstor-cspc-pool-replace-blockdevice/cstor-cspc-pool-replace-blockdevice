@@ -1,0 +1,137 @@
+#!/bin/bash
+
+pod(){
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/8-csi-functional/IEZ4-cstor-cspc-pool-replace-blockdevice/cstor-cspc-pool-replace-blockdevice node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
+}
+
+node() {
+source ~/.profile
+gittoken=$(echo "$github_token")
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+releaseTag=$(echo $4)
+case_id=IEZ4
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+bash Openshift-EE/utils/pooling jobname:cstor-cspc-pool-expansion
+bash Openshift-EE/utils/e2e-cr jobname:cstor-cspc-pool-replace-blockdevice jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
+
+################
+# LitmusBook 1 #
+################
+
+echo "****Deploying busybox Application using CSI****"
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-replace-blockdevice metadata='')
+echo $test_name
+
+cd litmus
+echo "Running the litmus test for busybox Deployment.."
+cp apps/busybox/deployers/run_litmus_test.yml replace_blockdevice.yml
+
+sed -i -e 's/value: app-busybox-ns/value: replace-blockdevice/g' \
+-e 's/app: busybox-litmus/app: busybox-litmus-replace-blockdevice/g' \
+-e 's/generateName: litmus-busybox-deploy-/generateName: litmus-busybox-replace-blockdevice-/g' \
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/value: openebs-cstor-sparse/value: openebs-cstor-mirror-cspc-sc/g' replace_blockdevice.yml
+
+cat replace_blockdevice.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-litmus-replace-blockdevice' job=replace_blockdevice.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:cstor-cspc-pool-replace-blockdevice $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+exit 1;
+fi
+
+################
+# LitmusBook 2 #
+################
+
+echo "****Busybox liveness****"
+
+run_id="replace-blockdevice";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+echo $test_name
+
+cd litmus
+echo "Running the litmus test for busybox liveness..."
+cp apps/busybox/liveness/run_litmus_test.yml replace_blockdevice_liveness.yml
+
+sed -i -e 's/liveness: litmus-busybox-liveness/liveness: litmus-replace-blockdevice-liveness/g' \
+-e 's/generateName: litmus-busybox-liveness-/generateName: litmus-replace-blockdevice-liveness-/g' \
+-e 's/value: app-busybox-ns/value: replace-blockdevice/g' replace_blockdevice_liveness.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' replace_blockdevice_liveness.yml
+
+cat replace_blockdevice_liveness.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='liveness:litmus-replace-blockdevice-liveness' job=replace_blockdevice_liveness.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:cstor-cspc-pool-replace-blockdevice $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+rc_val=$(echo $?)
+current_time=$(eval $time)
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+
+################
+# LitmusBook 3 #
+################
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=blockdevice-replacement metadata='')
+echo $test_name
+
+cd litmus
+
+cp experiments/functional/disk_replacement/run_litmus_test.yml pool_blockdevice_replacement.yml
+
+sed -i -e '/name: POOL_NAME/{n;s/.*/            value: cstor-cspc-mirror-pool/}' \
+-e '/name: APP_NAMESPACE/{n;s/.*/            value: replace-blockdevice/}' \
+-e '/name: APP_LABEL/{n;s/.*/            value: '\''app=busybox-sts'\''/}' \
+-e '/name: DATA_PERSISTENCE/{n;s/.*/            value: busybox/}' \
+-e '/name: APP_PVC/{n;s/.*/            value: openebs-busybox/}' \
+-e '/name: OPERATOR_NS/{n;s/.*/            value: openebs/}' pool_blockdevice_replacement.yml
+
+sed -i '/parameters.yml: |/a \
+    blocksize: 4k \
+    blockcount: 1024 \
+    testfile: pool_blockdevice_replace
+' pool_blockdevice_replacement.yml
+
+cat pool_blockdevice_replacement.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:disk-replacement' job=pool_blockdevice_replacement.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:cstor-cspc-pool-replace-blockdevice $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+current_time=$(eval $time)
+
+if [ "$rc_val" != "0" ]; then
+bash Openshift-EE/utils/e2e-cr jobname:cstor-cspc-pool-replace-blockdevice jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" openebs_version:"$releaseTag" test_result:Fail
+exit 1;
+fi
+
+bash Openshift-EE/utils/e2e-cr jobname:cstor-cspc-pool-replace-blockdevice jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
+
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4 $5
+else
+  pod
+fi

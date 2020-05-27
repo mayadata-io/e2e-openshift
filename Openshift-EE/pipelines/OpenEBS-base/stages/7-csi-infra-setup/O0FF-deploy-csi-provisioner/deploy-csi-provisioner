@@ -1,0 +1,73 @@
+#!/bin/bash
+
+pod() {
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-infra-setup/O0FF-deploy-csi-provisioner/deploy-csi-provisioner node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
+}
+
+node() {
+
+time="date"
+current_time=$(eval $time)
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+releaseTag=$(echo $4)
+case_id=O0FF
+source ~/.profile
+gittoken=$(echo "$github_token")
+
+present_dir=$(pwd)
+echo $present_dir
+
+#pooling over previous job to complete
+echo "***********Applying openebs-storage-clas********"
+bash Openshift-EE/utils/pooling jobname:cstor-cspc-mirrored-pool
+bash Openshift-EE/utils/e2e-cr jobname:csi-provisioner jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=csi-provision metadata="")
+echo $test_name
+
+cd litmus
+echo "Running the litmus test.."
+sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
+-e 's/value: openebs-csi-cstor-sparse/value: openebs-cstor-csi/g' \
+-e 's/value: "1.9.0"/value: "'$releaseTag'"/g' \
+-e 's/cstor-sparse-pool/cstor-cspc-disk-pool/g' providers/csi-provisioner/run_litmus_test.yml
+run_test=providers/csi-provisioner/run_litmus_test.yml
+
+cat $run_test
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:csi-provisioner' job=$run_test
+
+echo "Dumping state of cluster post job run"; echo ""
+bash ../Openshift-EE/utils/dump_cluster_state;
+
+cd ..
+bash Openshift-EE/utils/event_updater jobname:csi-provisioner $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+#################
+## GET RESULT  ##
+#################
+rc_val=$(echo $?)
+
+## Check the test status & result from the litmus result custom resource
+source ~/.profile
+gittoken=$(echo "$github_token")
+testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+
+current_time=$(eval $time)
+bash Openshift-EE/utils/e2e-cr jobname:csi-provisioner jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:$testResult 
+
+python3 Openshift-EE/utils/result/result_update.py $job_id O0FF 6-csi-infra-setup "Deploy-csi-provisioner" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4 $5
+else
+  pod
+fi

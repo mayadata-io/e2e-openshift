@@ -1,0 +1,113 @@
+#!/bin/bash
+
+
+pod() {	
+node_name=$(sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port kubectl get nodes --no-headers | grep -v master | awk 'FNR==1 {print $1}')
+
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port "kubectl taint nodes $node_name infra-aid=observer:NoSchedule"
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port "mkdir infra && echo $node_name >> infra/node_name"
+
+echo $node_name
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/10-csi-infra-chaos/JFSM-pdb-cspc/pdb-cspc node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"' '"'$node_name'"'
+}
+
+node() {
+source ~/.profile
+gittoken=$(echo "$github_token")
+
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+releaseTag=$(echo $4)
+observer_node=$(echo $5)
+case_id=JFSM
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+bash Openshift-EE/utils/e2e-cr jobname:pdb-cspc jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:pdb-cspc jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
+
+################
+# LitmusBook 1 #
+################
+
+echo "*******Deploying Percona Application****"
+
+run_id="pdb";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=percona-deployment metadata=${run_id})
+echo $test_name
+
+cd litmus
+echo "Running the litmus test for Percona Deployment.."
+
+cp apps/percona/deployers/run_litmus_test.yml percona_deploy_pdb.yml
+
+sed -i -e 's/app: percona-deployment/app: deploy-percona-pdb/g' \
+-e 's/value: openebs-standard/value: openebs-cstor-csi/g' \
+-e '/name: TARGET_AFFINITY_CHECK/{n;s/value: enable/value: disable/g}' \
+-e 's/value: app-percona-ns/value: percona-pdb/g' percona_deploy_pdb.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' percona_deploy_pdb.yml
+
+cat percona_deploy_pdb.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:deploy-percona-pdb' job=percona_deploy_pdb.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:pdb-cspc $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id JFSM 10-csi-infra-chaos "Ensure that CSPC pool pod not getting evicted violating pod disruption budget" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# LitmusBook 2 #
+################
+
+echo "*******Performing CSPC pool pod disruption budget test**********"
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=cspc-pod-disruption-budget metadata="")
+echo $test_name
+
+cd litmus
+cp experiments/chaos/cspc_pod_disruption_budget/run_litmus_test.yml run_cspc_pdb_test.yml
+
+sed -i '/name: CSPC_NAME/{n;s/.*/            value: cstor-cspc-disk-pool/}' run_cspc_pdb_test.yml
+sed -i -e "s|#nodeSelector|nodeSelector|g" \
+-e "s|#  kubernetes.io/hostname:|  kubernetes.io/hostname: ${observer_node}|g" run_cspc_pdb_test.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='name:cspc-pdb' job=run_cspc_pdb_test.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:pdb-cspc $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+current_time=$(eval $time)
+
+if [ "$rc_val" != "0" ]; then
+bash Openshift-EE/utils/e2e-cr jobname:pdb-cspc jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Fail
+python3 Openshift-EE/utils/result/result_update.py $job_id JFSM 10-csi-infra-chaos "Ensure that CSPC pool pod not getting evicted violating pod disruption budget." Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+bash Openshift-EE/utils/e2e-cr jobname:pdb-cspc jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
+python3 Openshift-EE/utils/result/result_update.py $job_id JFSM 10-csi-infra-chaos "Ensure that CSPC pool pod not getting evicted violating pod disruption budget." Pass $pipeline_id "$current_time" $commit_id $gittoken
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4 $5 $6
+else
+  pod
+fi
