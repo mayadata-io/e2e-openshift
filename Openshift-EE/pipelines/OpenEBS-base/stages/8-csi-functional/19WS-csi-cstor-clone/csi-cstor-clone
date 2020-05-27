@@ -1,0 +1,209 @@
+#!/bin/bash
+
+
+pod() {
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/8-csi-functional/19WS-csi-cstor-clone/csi-cstor-clone node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
+}
+
+node() {
+source ~/.profile
+gittoken=$(echo "$github_token")
+
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+releaseTag=$(echo $4)
+case_id=19WS
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+bash Openshift-EE/utils/pooling jobname:csi-cstor-snapshot
+bash Openshift-EE/utils/e2e-cr jobname:csi-cstor-clone jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
+
+################
+# LitmusBook 1 #
+################
+
+echo "*******Performing clone litmus test**********"
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=cstor-csi-clone metadata="")
+echo $test_name
+
+cd litmus
+cp experiments/functional/cstor-csi/csi-clone/run_litmus_test.yml run_clone_test.yml
+
+## Insert the value of Environment variables in litmus experiment. 
+sed -i -e '/name: APP_NAMESPACE/{n;s/.*/            value: cstor-snap-clone/}' \
+-e '/name: DATA_PERSISTENCE/{n;s/.*/            value: busybox/}' \
+-e '/name: STORAGE_CLASS_NAME/{n;s/.*/            value: openebs-cstor-csi/}' \
+-e '/name: APP_NAME/{n;s/.*/            value: busybox-clone/}' \
+-e '/name: CLONED_PVC/{n;s/.*/            value: csi-clone/}' \
+-e '/name: APP_PVC/{n;s/.*/            value: csi-vol/}' run_clone_test.yml
+
+## Insert the set of variables for busybox data consistency util into configmap spec.
+sed -i '/parameters.yml: |/a \
+    blocksize: 4k\
+    blockcount: 1024\
+    testfile: csisnapclonetest
+' run_clone_test.yml
+
+echo "Running the litmus test for creation of clone.."
+cat run_clone_test.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='name:cstor-csi-clone' job=run_clone_test.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:csi-cstor-clone $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id 19WS 8-csi-functional "Create clone and verify if the clone is created successfully" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# LitmusBook 2 #
+################
+
+echo "*******Performing deprovision clone litmus test**********"
+
+run_id="deprovision";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=cstor-csi-clone metadata=${run_id})
+echo $test_name
+
+cd litmus
+cp experiments/functional/cstor-csi/csi-clone/run_litmus_test.yml run_dep_clone_test.yml
+
+## Insert the value of Environment variables in litmus experiment. 
+sed -i -e '/name: APP_NAMESPACE/{n;s/.*/            value: cstor-snap-clone/}' \
+-e '/name: DATA_PERSISTENCE/{n;s/.*/            value: busybox/}' \
+-e '/name: STORAGE_CLASS_NAME/{n;s/.*/            value: openebs-cstor-csi/}' \
+-e '/name: APP_NAME/{n;s/.*/            value: busybox-clone/}' \
+-e '/name: CLONED_PVC/{n;s/.*/            value: csi-clone/}' \
+-e '/name: APP_PVC/{n;s/.*/            value: csi-vol/}' run_dep_clone_test.yml
+
+## Replace the job runner label for deprovision of clone
+sed -i -e 's/name: cstor-csi-clone/name: cstor-csi-clone-dep/g' \
+-e 's/value: '\''provision'\''/value: '\''deprovision'\''/g' run_dep_clone_test.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' run_dep_clone_test.yml
+
+## Insert the set of variables for busybox data consistency util into configmap spec.
+sed -i '/parameters.yml: |/a \
+    blocksize: 4k\
+    blockcount: 1024\
+    testfile: csisnapclonetest
+' run_dep_clone_test.yml
+
+echo "Running the litmus test for deletion of clone.."
+cat run_dep_clone_test.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='name:cstor-csi-clone-dep' job=run_dep_clone_test.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:csi-cstor-clone $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id 19WS 8-csi-functional "Create clone and verify if the clone is created successfully" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# LitmusBook 3 #
+################
+
+echo "*******Performing deprovision snapshot litmus test**********"
+
+run_id="deprovision";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=cstor-csi-snapshot metadata=${run_id})
+echo $test_name
+
+cd litmus
+cp experiments/functional/cstor-csi/csi-snapshot/run_litmus_test.yml run_dep_snapshot_test.yml
+
+sed -i -e 's/name: cstor-csi-snapshot/name: cstor-csi-snapshot-dep/g' \
+-e 's/value: '\''provision'\''/value: '\''deprovision'\''/g' run_dep_snapshot_test.yml
+
+## Replace the value of DATA_PERSISTENCE with application name in litmus experiment. 
+sed -i -e '/name: DATA_PERSISTENCE/{n;s/.*/            value: busybox/}' \
+-e '/name: APP_NAMESPACE/{n;s/.*/            value: cstor-snap-clone/}' \
+-e '/name: APP_PVC/{n;s/.*/            value: csi-vol/}' run_dep_snapshot_test.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' run_dep_snapshot_test.yml
+
+## Insert the set of variables for busybox data consistency util into configmap spec.
+sed -i '/parameters.yml: |/a \
+    blocksize: 4k\
+    blockcount: 1024\
+    testfile: csisnapclonetest
+' run_dep_snapshot_test.yml
+
+echo "Running the litmus test for deletion of snapshot.."
+cat run_dep_snapshot_test.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='name:cstor-csi-snapshot-dep' job=run_dep_snapshot_test.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:csi-cstor-snapshot $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id 19WS 8-csi-functional "Create clone and verify if the clone is created successfully" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# LitmusBook 4 #
+################
+
+echo "*******Deprovisioning Busybox Application****"
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-cstor-snap-clone metadata="")
+echo $test_name
+
+cd litmus
+echo "Running the litmus test for Busybox Deprovision.."
+
+cp apps/busybox/deployers/run_litmus_test.yml busybox_dep_snap_clone.yml
+
+sed -i -e 's/app: busybox-litmus/app: deprovision-busybox-snap-clone/g' \
+-e 's/value: openebs-cstor-sparse/value: openebs-cstor-csi/g' \
+-e 's/value: openebs-busybox/value: csi-vol/g' \
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/value: provision/value: deprovision/g' \
+-e 's/value: app-busybox-ns/value: cstor-snap-clone/g' busybox_dep_snap_clone.yml
+cat busybox_dep_snap_clone.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:deprovision-busybox-snap-clone' job=busybox_dep_snap_clone.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:csi-cstor-clone $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+current_time=$(eval $time)
+
+if [ "$rc_val" != "0" ]; then
+bash Openshift-EE/utils/e2e-cr jobname:csi-cstor-clone jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Fail
+python3 Openshift-EE/utils/result/result_update.py $job_id 19WS 8-csi-functional "Create clone and verify if the clone is created successfully" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+bash Openshift-EE/utils/e2e-cr jobname:csi-cstor-clone jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
+python3 Openshift-EE/utils/result/result_update.py $job_id 19WS 8-csi-functional "Create clone and verify if the clone is created successfully" Pass $pipeline_id "$current_time" $commit_id $gittoken
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4 $5
+else
+  pod
+fi

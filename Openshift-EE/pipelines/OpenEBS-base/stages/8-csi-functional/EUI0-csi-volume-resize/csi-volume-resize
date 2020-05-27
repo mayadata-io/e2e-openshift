@@ -1,0 +1,74 @@
+#!/bin/bash
+
+
+pod() {	
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/8-csi-functional/EUI0-csi-volume-resize/csi-volume-resize node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
+}
+
+node() {
+source ~/.profile
+gittoken=$(echo "$github_token")
+
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+releaseTag=$(echo $4)
+case_id=EUI0
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+bash Openshift-EE/utils/e2e-cr jobname:csi-volume-resize-ext4 jobphase:Waiting init_time:"$current_time"
+bash Openshift-EE/utils/e2e-cr jobname:csi-volume-resize-ext4 jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
+
+run_id="csi";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=csi-volume-resize metadata=${run_id})
+echo $test_name
+
+cd litmus
+cp experiments/functional/csi-volume-resize/run_litmus_test.yml run_cstor_volume_resize_test.yml
+
+sed -i -e '/name: APP_PVC/{n;s/.*/            value: openebs-busybox/g}' \
+-e '/name: APP_LABEL/{n;s/.*/            value: app=busybox-sts/g}' \
+-e '/name: STORAGE_CLASS/{n;s/.*/            value: openebs-cstor-csi/g}' \
+-e 's/app: csi-vol-resize/app: csi-vol-resize-ext4/g' \
+-e '/name: PV_CAPACITY/{n;s/.*/            value: 5Gi/g}' \
+-e '/name: NEW_CAPACITY/{n;s/.*/            value: 10Gi/g}' \
+-e '/name: APP_NAMESPACE/{n;s/.*/            value: busybox-csi/g}' run_cstor_volume_resize_test.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' run_cstor_volume_resize_test.yml
+
+cat run_cstor_volume_resize_test.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:csi-vol-resize-ext4' job=run_cstor_volume_resize_test.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:csi-volume-resize-ext4 $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+return_count=$?
+current_time=$(eval $time)
+
+if [ "$return_count" != "0" ]; then
+bash Openshift-EE/utils/e2e-cr jobname:csi-volume-resize-ext4 jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Fail
+python3 Openshift-EE/utils/result/result_update.py $job_id EUI0 8-csi-functional "Check if the volume size is changed" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+bash Openshift-EE/utils/e2e-cr jobname:csi-volume-resize-ext4 jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
+python3 Openshift-EE/utils/result/result_update.py $job_id EUI0 8-csi-functional "check if the volume size is changed" Pass $pipeline_id "$current_time" $commit_id $gittoken
+
+if [ "$return_count" != "0" ]; then
+exit 1;
+fi
+
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4 $5
+else
+  pod
+fi
