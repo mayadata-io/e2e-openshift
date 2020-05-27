@@ -70,7 +70,7 @@ test_name=$(bash Openshift-EE/utils/generate_test_name testcase=velero-backup-re
 echo $test_name
 
 cd litmus
-cp experiments/functional/backup_and_restore/run_litmus_test.yml run_backuprestore_test.yml
+cp experiments/functional/backup_and_restore/run_litmus_test.yml run_backuprestore_test_local.yml
 
 sed -i -e 's/value: app-percona-ns/value: backup-percona-cstor-local/g' \
 -e 's/app: velero-backup-restore/app: velero-backup-restore-cstor-local/g' \
