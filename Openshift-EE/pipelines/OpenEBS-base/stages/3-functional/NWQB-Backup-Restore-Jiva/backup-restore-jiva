@@ -24,7 +24,7 @@ echo $present_dir
 oc adm policy add-scc-to-user anyuid system:serviceaccount:backup-percona-jiva:default
 oc adm policy add-scc-to-user privileged -z velero -n velero
 bash Openshift-EE/utils/e2e-cr jobname:backup-restore-jiva jobphase:Waiting
-bash Openshift-EE/utils/pooling jobname:backup-restore-cstor-local
+bash Openshift-EE/utils/pooling jobname:backup-restore-cstor-diff-profile
 bash Openshift-EE/utils/e2e-cr jobname:backup-restore-jiva jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
 ################
