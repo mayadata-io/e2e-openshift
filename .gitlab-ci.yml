@@ -336,6 +336,18 @@ IFBV-CVR-Scaleup:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/36CY-cvr-scaledown/cvr-scaledown
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/36CY-cvr-scaledown/cvr-scaledown
 
+39NK-Remote-Restore-Diff-Namespace:
+  extends: .func_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/39NK-Backup-Restore-Different-Namespace/backup-restore-different-namespace
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/39NK-Backup-Restore-Different-Namespace/backup-restore-different-namespace
+
+FEYN-Remote-Restore-Diff-Profile:
+  extends: .func_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/FEYN-Backup-Restore-Different-Profile/backup-restore-different-profile
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/FEYN-Backup-Restore-Different-Profile/backup-restore-different-profile
+
 6QDS-Local-Backup-Restore-Cstor:
   extends: .func_test_template
   script:

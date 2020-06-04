@@ -74,7 +74,8 @@ cp experiments/functional/backup_and_restore/run_litmus_test.yml run_backupresto
 
 sed -i -e 's/value: app-percona-ns/value: backup-percona-cstor-local/g' \
 -e 's/app: velero-backup-restore/app: velero-backup-restore-cstor-local/g' \
--e 's/value: percona-backup/value: percona-backup-cstor-local/g' run_backuprestore_test_local.yml
+-e 's/value: percona-backup/value: percona-backup-cstor-local/g' \
+-e '/name: DEPROVISION_VELERO/{n;s/.*/            value: "true"/}' run_backuprestore_test_local.yml
 #Getting velero version from gitlab-env
 sed -i "s/v1.1.0/$velero_version/g" run_backuprestore_test.yml
 sed -i "s/plugin:ci/plugin:$velero_plugin_version/g" run_backuprestore_test_local.yml

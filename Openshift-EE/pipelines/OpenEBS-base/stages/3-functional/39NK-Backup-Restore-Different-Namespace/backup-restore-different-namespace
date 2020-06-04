@@ -1,0 +1,115 @@
+#!/bin/bash
+
+
+pod() {
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/39NK-Backup-Restore-Different-Namespace/backup-restore-different-namespace node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"' '"'$VELERO_VERSION'"' '"'$VELERO_PLUGIN_VERSION'"'
+}
+
+node() {
+source ~/.profile
+gittoken=$(echo "$github_token")
+
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+releaseTag=$(echo $4)
+velero_version=$(echo $5)
+velero_plugin_version=$(echo $6)
+case_id=39NK
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+oc adm policy add-scc-to-user anyuid system:serviceaccount:backup-percona-cstor-diff-ns:default
+oc adm policy add-scc-to-user anyuid system:serviceaccount:backup-percona-cstor-diff-ns-local:default
+
+bash Openshift-EE/utils/e2e-cr jobname:backup-restore-cstor-diff-ns jobphase:Waiting
+bash Openshift-EE/utils/pooling jobname:backup-restore-cstor-local
+bash Openshift-EE/utils/e2e-cr jobname:backup-restore-cstor-diff-ns jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
+
+################
+# LitmusBook 1 #
+################
+
+echo "*******Deploying Percona Application****"
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=percona-deployment metadata="")
+echo $test_name
+
+cd litmus
+echo "Running the litmus test for Percona Deployment.."
+
+cp apps/percona/deployers/run_litmus_test.yml percona_backup_restore_diff_ns.yml
+
+sed -i -e 's/app: percona-deployment/app: deploy-percona-backup-restore-diff-ns/g' \
+-e 's/value: openebs-standard/value: openebs-cstor-disk/g' \
+-e 's/value: app-percona-ns/value: backup-percona-cstor-diff-ns/g' percona_backup_restore_diff_ns.yml
+
+cat percona_backup_restore_diff_ns.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:deploy-percona-backup-restore-diff-ns' job=percona_backup_restore_diff_ns.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:backup-restore-cstor-diff-ns $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id 39NK 3-functional "Create backup using velero and verify if it can be successfully restored" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# LitmusBook 2 #
+################
+
+echo "*******Performing Backup and Restore on percona Application using local snapshot**********"
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=velero-backup-restore metadata="")
+echo $test_name
+
+cd litmus
+cp experiments/functional/backup_and_restore/run_litmus_test.yml run_backuprestore_test_diff_ns.yml
+
+sed -i -e 's/value: app-percona-ns/value: backup-percona-cstor-diff-ns/g' \
+-e 's/app: velero-backup-restore/app: velero-backup-restore-diff-ns/g' \
+-e 's/value: percona-backup/value: percona-backup-cstor-diff-ns/g' \
+-e '/name: RESTORE_IN_DIFF_NAMESPACE/{n;s/.*/            value: "true"/}' \
+-e '/name: DEPROVISION_VELERO/{n;s/.*/            value: "true"/}' run_backuprestore_test_diff_ns.yml
+
+#Getting velero version from gitlab-env
+sed -i "s/v1.1.0/$velero_version/g" run_backuprestore_test_diff_ns.yml
+sed -i "s/plugin:ci/plugin:$velero_plugin_version/g" run_backuprestore_test_diff_ns.yml
+
+echo "Running the litmus test for Percona Backup Restore.."
+cat run_backuprestore_test_diff_ns.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:velero-backup-restore-diff-ns' job=run_backuprestore_test_diff_ns.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:backup-restore-cstor-diff-ns $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+current_time=$(eval $time)
+
+if [ "$rc_val" != "0" ]; then
+bash Openshift-EE/utils/e2e-cr jobname:backup-restore-cstor-diff-ns jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Fail
+python3 Openshift-EE/utils/result/result_update.py $job_id 39NK 3-functional "Create backup using velero and verify if it can be successfully restored" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+bash Openshift-EE/utils/e2e-cr jobname:backup-restore-cstor-diff-ns jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
+python3 Openshift-EE/utils/result/result_update.py $job_id 39NK 3-functional "Create backup using velero and verify if it can be successfully restored" Pass $pipeline_id "$current_time" $commit_id $gittoken
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4 $5 $6 $7
+else
+  pod
+fi
