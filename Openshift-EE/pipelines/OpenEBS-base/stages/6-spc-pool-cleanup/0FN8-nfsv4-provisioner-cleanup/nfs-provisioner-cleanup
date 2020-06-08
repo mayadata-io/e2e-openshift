@@ -28,6 +28,7 @@ bash Openshift-EE/utils/e2e-cr jobname:spc-striped-pool-cleanup jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:spc-mirrored-pool-cleanup jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:spc-raidz1-pool-cleanup jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:cleanup-spc-thick-provision-pool jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:openebs-cleanup jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:nfsv4-deprovision jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
 run_id="cleanup";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=nfs-provision metadata=${run_id})
