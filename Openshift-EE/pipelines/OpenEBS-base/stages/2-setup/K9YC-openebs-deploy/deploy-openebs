@@ -87,25 +87,26 @@ echo $test_name
 git clone https://github.com/mayadata-io/litmus.git
 cd litmus
 
-sed -i -e '/name: OPENEBS_MAYA_APISERVER_IMAGE/{n;s/.*/            value: '"'$maya_api_server_image'"'/}' \
--e '/name: OPENEBS_PROVISIONER_IMAGE/{n;s/.*/            value: '"'$provisioner_image'"'/}' \
--e '/name: OPENEBS_SNAPSHOT_CONTROLLER_IMAGE/{n;s/.*/            value: '"'$snapshot_controller_image'"'/}' \
--e '/name: OPENEBS_SNAPSHOT_PROVISIONER_IMAGE/{n;s/.*/            value: '"'$snapshot_provisioner_image'"'/}' \
--e '/name: OPENEBS_IO_JIVA_IMAGE/{n;s/.*/            value: '"'$jiva_image'"'/}' \
--e '/name: OPENEBS_MAYA_EXPORTER_IMAGE/{n;s/.*/            value: '"'$maya_exporter_image'"'/}' \
--e '/name: OPENEBS_NODE_DISK_MANAGER_IMAGE/{n;s/.*/            value: '"'$ndm_image'"'/}' \
--e '/name: OPENEBS_NODE_DISK_OPERATOR_IMAGE/{n;s/.*/            value: '"'$ndm_operator_image'"'/}' \
--e '/name: OPENEBS_IO_CSTOR_TARGET_IMAGE/{n;s/.*/            value: '"'$cstor_target_image'"'/}' \
--e '/name: OPENEBS_IO_CSTOR_POOL_IMAGE/{n;s/.*/            value: '"'$cstor_pool_image'"'/}' \
--e '/name: OPENEBS_IO_CSTOR_POOL_MGMT_IMAGE/{n;s/.*/            value: '"'$cstor_pool_mgmt_image'"'/}' \
--e '/name: OPENEBS_IO_CSTOR_VOLUME_MGMT_IMAGE/{n;s/.*/            value: '"'$cstor_volume_mgmt_image'"'/}' \
--e '/name: OPENEBS_LOCALPV_PROVISIONER_IMAGE/{n;s/.*/            value: '"'$localpv_provisioner_image'"'/}' \
--e '/name: OPENEBS_ADMISSION_SERVER_IMAGE/{n;s/.*/            value: '"'$admission_server_image'"'/}' \
--e '/name: OPENEBS_CLEANUP_JOB_IMAGE/{n;s/.*/            value: '"'$cleanup_job_image'"'/}' \
--e '/name: DEPLOY_MODE/{n;s/.*/            value: '"'$deploy_mode'"'/}' \
--e '/name: HELM_REPO/{n;s/.*/            value: '"'$helm_repo'"'/}' \
--e '/name: HELM_BRANCH/{n;s/.*/            value: '"'$helm_branch'"'/}' \
--e '/name: OPERATOR_NS/{n;s/.*/            value: openebs/}' providers/openebs/installers/operator/master/litmusbook/run_litmus_test.yml
+export OPENEBS_MAYA_APISERVER_IMAGE=$maya_api_server_image
+export OPENEBS_PROVISIONER_IMAGE=$provisioner_image
+export OPENEBS_SNAPSHOT_CONTROLLER_IMAGE=$snapshot_controller_image
+export OPENEBS_SNAPSHOT_PROVISIONER_IMAGE=$snapshot_provisioner_image
+export OPENEBS_IO_JIVA_IMAGE=$jiva_image
+export OPENEBS_MAYA_EXPORTER_IMAGE=$maya_exporter_image
+export OPENEBS_NODE_DISK_MANAGER_IMAGE=$ndm_image
+export OPENEBS_NODE_DISK_OPERATOR_IMAGE=$ndm_operator_image
+export OPENEBS_IO_CSTOR_TARGET_IMAGE=$cstor_target_image
+export OPENEBS_IO_CSTOR_POOL_IMAGE=$cstor_pool_image
+export OPENEBS_IO_CSTOR_POOL_MGMT_IMAGE=$cstor_pool_mgmt_image
+export OPENEBS_IO_CSTOR_VOLUME_MGMT_IMAGE=$cstor_volume_mgmt_image
+export OPENEBS_LOCALPV_PROVISIONER_IMAGE=$localpv_provisioner_image
+export OPENEBS_ADMISSION_SERVER_IMAGE=$admission_server_image
+export OPENEBS_CLEANUP_JOB_IMAGE=$cleanup_job_image
+export DEPLOY_MODE=$deploy_mode
+export HELM_REPO=$helm_repo
+export HELM_BRANCH=$helm_branch
+wget https://raw.githubusercontent.com/openebs/e2e-infrastructure/master/env-update/env.py
+python3 env.py -f providers/openebs/installers/operator/master/litmusbook/run_litmus_test.yml
 
 sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
 -e "s/value: '10'/value: '20'/g" \
