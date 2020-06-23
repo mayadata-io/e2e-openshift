@@ -78,7 +78,7 @@ sed -i -e 's/value: app-percona-ns/value: backup-percona-cstor-diff-profile/g' \
 -e '/name: DEPROVISION_VELERO/{n;s/.*/            value: "true"/}' run_backuprestore_test_diff_profile.yml
 
 #Getting velero version from gitlab-env
-sed -i "s/v1.1.0/$velero_version/g" run_backuprestore_testdiff_profile.yml
+sed -i "s/v1.1.0/$velero_version/g" run_backuprestore_test_diff_profile.yml
 sed -i "s/plugin:ci/plugin:$velero_plugin_version/g" run_backuprestore_test_diff_profile.yml
 
 echo "Running the litmus test for Percona Backup Restore.."
