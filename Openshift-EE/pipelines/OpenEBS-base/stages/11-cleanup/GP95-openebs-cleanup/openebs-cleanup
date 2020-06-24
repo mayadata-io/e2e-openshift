@@ -24,7 +24,7 @@ echo $test_name
 cd litmus
 
 # copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
-cp providers/openebs/installers/operator/master/litmusbook/run_litmus_test.yaml cleanup_openebs.yml
+cp providers/openebs/installers/operator/master/litmusbook/run_litmus_test.yml cleanup_openebs.yml
 
 #################
 ## RUNNER MAIN ##
