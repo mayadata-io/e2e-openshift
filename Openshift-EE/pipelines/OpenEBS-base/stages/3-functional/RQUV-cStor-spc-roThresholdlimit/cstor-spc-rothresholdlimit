@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 pod() {
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/RQUV-cStor-spc-roThresholdlimit/cstor-spc-rothresholdlimit node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
 }
@@ -33,6 +32,8 @@ echo $test_name
 cd litmus
 
 cp experiments/functional/rothreshold-limit/run_litmus_test.yml cstor_rothreshold_limit.yml
+
+sed -i -e '/name: PV_CAPACITY/{n;s/.*/            value: 6Gi/}' cstor_rothreshold_limit.yml
 
 cat cstor_rothreshold_limit.yml 
 
