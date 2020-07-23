@@ -35,7 +35,7 @@ echo "Openshift CSR's are pending kindly approve it and take snapshot"
 exit;
 fi
 
-if [ "$ready_nodes" -eq 6 ]; then
+if [ "$ready_nodes" -eq 8 ]; then
 echo "Number of nodes in ready state is $ready_nodes"
 echo "******Cluster is in Healthy state****"
 
