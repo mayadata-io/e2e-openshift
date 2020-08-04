@@ -2,6 +2,6 @@
 set -x
 
 echo "Dumping state of cluster post job run"; echo ""
-kubectl get pods --all-namespaces -o wide
+kubectl get pods --all-namespaces -o wide | grep -v 'openshift-service-catalog-removed\|openshift-service-ca\|openshift-sdn\|openshift-operator-lifecycle-manager\|openshift-network-operator\|openshift-multus\|openshift-monitoring\|openshift-marketplace\|openshift-machine-config-operator\|openshift-machine-api\|openshift-kube-scheduler\|openshift-kube-controller-manager\|openshift-kube-apiserver\|openshift-image-registry\|openshift-etcd\|openshift-dns\|openshift-controller-manager\|openshift-cluster-node-tuning-operator\|openshift-cluster-storage-operator\|openshift-console\|openshift-authentication\|openshift-ingress\|openshift-kube-storage-version-migrator-operator\|openshift-cluster-samples-operator\|openshift-cluster-machine-approver\|openshift-kube-storage-version-migrator\|openshift-config-operator\|openshift-cloud-credential-operator\|openshift-cluster-version\|openshift-insights'
 kubectl get pvc --all-namespaces
 kubectl get sc
