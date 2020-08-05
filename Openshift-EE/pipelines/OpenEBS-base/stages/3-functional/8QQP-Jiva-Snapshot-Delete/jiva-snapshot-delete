@@ -47,6 +47,7 @@ echo "Running the litmus test for Jiva internal snapshot deletion."
 cp experiments/functional/snapshot_deletion/jiva/run_litmus_test.yml jiva_snapshot_delete.yml
 
 sed -i -e 's/value: fio/value: fio-jiva-snapshot-del/g' \
+-e 's/value: "LEADER"/value: "RANDOM"/g' \
 -e 's/value: openebs-jiva-standard/value: openebs-jiva-default/g' jiva_snapshot_delete.yml
 
 cat jiva_snapshot_delete.yml
