@@ -1,0 +1,60 @@
+#!/bin/bash
+
+pod(){
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/8-csi-functional/GQYO-block-pool-creation-with-claimed-bd/block-pool-creation-with-claimed-bd node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
+}
+
+node() {
+source ~/.profile
+gittoken=$(echo "$github_token")
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+releaseTag=$(echo $4)
+case_id=GQYO
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+bash Openshift-EE/utils/e2e-cr jobname:block-pool-creation-with-claimed-bd jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:block-pool-creation-with-claimed-bd jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
+
+################
+# LitmusBook 1 #
+################
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=block-pool-creation-with-claimed-bd metadata='')
+echo $test_name
+
+cd litmus
+
+cp experiments/functional/cspc-pool/block-pool-creation-with-claimed-bd/test.yml block-pool-creation-with-claimed-bd.yml
+
+cat block-pool-creation-with-claimed-bd.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:cstor-pool-creation-with-claimed-bd' job=block-pool-creation-with-claimed-bd.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:block-pool-creation-with-claimed-bd $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+current_time=$(eval $time)
+
+if [ "$rc_val" != "0" ]; then
+bash Openshift-EE/utils/e2e-cr jobname:block-pool-creation-with-claimed-bd jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" openebs_version:"$releaseTag" test_result:Fail
+python3 Openshift-EE/utils/result/result_update.py $job_id GQYO 8-csi-functional "Verify if the pool creation is failed when the blockdevice is already claimed" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+bash Openshift-EE/utils/e2e-cr jobname:block-pool-creation-with-claimed-bd jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
+#python3 Openshift-EE/utils/result/result_update.py $job_id GQYO 8-csi-functional "Verify if the pool creation is failed when the blockdevice is already claimed" Fail $pipeline_id "$current_time" $commit_id $gittoken
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4 $5
+else
+  pod
+fi

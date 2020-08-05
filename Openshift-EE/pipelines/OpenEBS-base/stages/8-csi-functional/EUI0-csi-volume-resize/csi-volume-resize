@@ -24,6 +24,45 @@ echo $present_dir
 bash Openshift-EE/utils/e2e-cr jobname:csi-volume-resize-ext4 jobphase:Waiting init_time:"$current_time"
 bash Openshift-EE/utils/e2e-cr jobname:csi-volume-resize-ext4 jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
+################
+# LitmusBook 1 #
+################
+
+echo "****Deploying busybox Application using CSI****"
+
+run_id="ext";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-busybox-csi metadata=${run_id})
+echo $test_name
+
+cd litmus
+echo "Running the litmus test for busybox Deployment.."
+cp apps/busybox/deployers/run_litmus_test.yml deploy_csi_busybox.yml
+
+sed -i -e 's/value: app-busybox-ns/value: busybox-csi/g' \
+-e 's/app: busybox-litmus/app: busybox-litmus-csi/g' \
+-e 's/generateName: litmus-busybox-deploy-/generateName: litmus-busybox-csi-/g' \
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/value: openebs-cstor-sparse/value: openebs-cstor-csi/g' deploy_csi_busybox.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' deploy_csi_busybox.yml
+
+cat deploy_csi_busybox.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-litmus-csi' job=deploy_csi_busybox.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:deploy-busybox-csi $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+exit 1;
+fi
+
+################
+# LitmusBook 2 #
+################
+
 run_id="csi";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=csi-volume-resize metadata=${run_id})
 echo $test_name
 

@@ -1,0 +1,90 @@
+#!/bin/bash
+
+pod(){
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/8-csi-functional/XSZG-block-pool-deletion-with-volume/block-pool-deletion-with-volume node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
+}
+
+node() {
+source ~/.profile
+gittoken=$(echo "$github_token")
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+releaseTag=$(echo $4)
+case_id=XSZG
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+bash Openshift-EE/utils/e2e-cr jobname:block-pool-deletion-with-volume jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:block-pool-deletion-with-volume jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
+
+################
+# LitmusBook 1 #
+################
+
+run_id="csi-volume";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-busybox-csi-volume metadata=${run_id})
+echo $test_name
+
+cd litmus
+echo "Running the litmus test for busybox Deployment.."
+cp apps/busybox/deployers/run_litmus_test.yml deploy_csi_busybox_volume.yml
+
+sed -i -e 's/value: app-busybox-ns/value: busybox-csi-volume/g' \
+-e 's/app: busybox-litmus/app: busybox-litmus-csi-volume/g' \
+-e 's/generateName: litmus-busybox-deploy-/generateName: litmus-busybox-csi-/g' \
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/value: openebs-cstor-sparse/value: openebs-cstor-csi/g' deploy_csi_busybox_volume.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' deploy_csi_busybox_volume.yml
+
+cat deploy_csi_busybox_volume.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-litmus-csi-volume' job=deploy_csi_busybox_volume.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:deploy-busybox-csi $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+exit 1;
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=block-cspc-pool-deletion-if-pool-with-volume metadata='')
+echo $test_name
+
+cd litmus
+
+cp experiments/functional/cspc-pool/block-pool-deletion-with-volume/test.yml block-pool-deletion-with-volume.yml
+sed -i -e "/name: APP_NAMESPACE/{n;s/.*/            value: busybox-csi-volume/g}" \
+-e "/name: APP_LABEL/{n;s/.*/            value: 'app=busybox-sts'/g}" block-pool-deletion-with-volume.yml
+
+cat block-pool-deletion-with-volume.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:cstor-pool-creation-with-claimed-bd' job=block-pool-deletion-with-volume.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:block-pool-deletion-with-volume $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+current_time=$(eval $time)
+
+if [ "$rc_val" != "0" ]; then
+bash Openshift-EE/utils/e2e-cr jobname:block-pool-deletion-with-volume jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" openebs_version:"$releaseTag" test_result:Fail
+python3 Openshift-EE/utils/result/result_update.py $job_id XSZG 8-csi-functional "Verify if the pool creation is failed when the blockdevice is already claimed" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+bash Openshift-EE/utils/e2e-cr jobname:block-pool-deletion-with-volume jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
+#python3 Openshift-EE/utils/result/result_update.py $job_id XSZG 8-csi-functional "Verify if the pool creation is failed when the blockdevice is already claimed" Fail $pipeline_id "$current_time" $commit_id $gittoken
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4 $5
+else
+  pod
+fi

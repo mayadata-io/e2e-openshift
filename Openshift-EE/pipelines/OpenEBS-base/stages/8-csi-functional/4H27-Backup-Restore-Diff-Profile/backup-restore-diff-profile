@@ -1,0 +1,129 @@
+#!/bin/bash
+
+pod() {
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/8-csi-functional/4H27-Backup-Restore-Diff-Profile/backup-restore-diff-profile node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"' '"'$VELERO_VERSION'"' '"'$VELERO_PLUGIN_VERSION'"' '"'$SDK_TOKEN'"'
+}
+
+node() {
+source ~/.profile
+gittoken=$(echo "$github_token")
+
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+releaseTag=$(echo $4)
+velero_version=$(echo $5)
+velero_plugin_version=$(echo $6)
+sdk_token=$(echo $7)
+case_id=4H27
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+bash Openshift-EE/utils/e2e-cr jobname:backup-restore-cstor-csi-diff-profile jobphase:Waiting
+bash Openshift-EE/utils/pooling jobname:backup-restore-cstor-csi-diff-ns
+bash Openshift-EE/utils/e2e-cr jobname:backup-restore-cstor-csi-diff-profile jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
+
+################
+# LitmusBook 1 #
+################
+
+echo "*******Deploying Percona Application using CSI****"
+
+run_id="diff-profile";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=percona-deployment metadata=${run_id})
+echo $test_name
+
+cd litmus
+echo "Running the litmus test for Percona Deployment.."
+
+# Storeing GCP service account key in file"
+#echo "$sdk_token" > key.json
+
+#echo "Creating configmap in litmus namespace for GCP token"
+#kubectl create cm gcp-key -n litmus --from-file /var/sdk/key.json
+
+cp apps/percona/deployers/run_litmus_test.yml percona_backup_restore_csi_diff_profile.yml
+
+sed -i -e 's/app: percona-deployment/app: deploy-percona-backup-restore-csi-diff-profile/g' \
+-e 's/value: openebs-standard/value: openebs-cstor-csi/g' \
+-e '/name: TARGET_AFFINITY_CHECK/{n;s/value: enable/value: disable/g}' \
+-e 's/value: app-percona-ns/value: percona-backup-csi-diff-profile/g' percona_backup_restore_csi_diff_profile.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' percona_backup_restore_csi_diff_profile.yml
+
+cat percona_backup_restore_csi_diff_profile.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:deploy-percona-backup-restore-csi-diff-profile' job=percona_backup_restore_csi_diff_ns.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:backup-restore-cstor-csi-diff-profile $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id 4H27 8-csi-functional "Create backup and restore and verify if the application is not impacted" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# LitmusBook 2 #
+################
+
+echo "*******Performing Backup and Restore on Target**********"
+
+run_id="diff-profile";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=velero-backup-restore metadata=metadata=${run_id})
+echo $test_name
+
+cd litmus
+cp experiments/functional/backup_and_restore/run_litmus_test.yml run_backuprestore_test_cstor_csi_diff_profile.yml
+
+sed -i -e 's/value: app-percona-ns/value: percona-backup-csi-diff-profile/g' \
+-e 's/app: velero-backup-restore/app: velero-backup-restore-cstor-csi-diff-profile/g' \
+-e 's/value: "cstor"/value: "cstor-csi"/g' \
+-e 's/value: "minio"/value: "GCP"/g' \
+-e '/name: DEPROVISION_VELERO/{n;s/.*/            value: "true"/}' \
+-e '/name: PROFILE/{n;s/.*/            value: "test"/}'  run_backuprestore_test_cstor_csi_diff_profile.yml
+
+sed -i "s/v1.1.0/$velero_version/g" run_backuprestore_test_cstor_csi_diff_profile.yml
+sed -i "s/plugin:ci/plugin:$velero_plugin_version/g" run_backuprestore_test_cstor_csi_diff_profile.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' run_backuprestore_test_cstor_csi_diff_profile.yml
+
+echo "Running the litmus test for Percona Backup Restore.."
+cat run_backuprestore_test_cstor_csi_diff_profile.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:velero-backup-restore-cstor-csi-diff-profile' job=run_backuprestore_test_cstor_csi_diff_profile.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:backup-restore-cstor-csi-diff-profile $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+current_time=$(eval $time)
+
+if [ "$rc_val" != "0" ]; then
+bash Openshift-EE/utils/e2e-cr jobname:backup-restore-cstor-csi-diff-profile jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Fail
+python3 Openshift-EE/utils/result/result_update.py $job_id 4H27 8-csi-functional "Create backup using non-default S3 profile and restore and verify if the application is not impacted" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+bash Openshift-EE/utils/e2e-cr jobname:backup-restore-cstor-csi-diff-profile jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
+python3 Openshift-EE/utils/result/result_update.py $job_id 4H27 8-csi-functional "Create backup using non-default S3 profile and restore and verify if the application is not impacted" Pass $pipeline_id "$current_time" $commit_id $gittoken
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4 $5 $6 $7 $8
+else
+  pod
+fi
