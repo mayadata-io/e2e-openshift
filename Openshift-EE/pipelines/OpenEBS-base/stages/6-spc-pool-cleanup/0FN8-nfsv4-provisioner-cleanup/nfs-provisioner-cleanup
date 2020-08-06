@@ -5,6 +5,7 @@ pod() {
 node_name=$(sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port kubectl get nodes | grep worker | awk 'FNR==1 {print $1}')
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port "kubectl taint nodes $node_name infra-aid:NoSchedule-"
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/6-spc-pool-cleanup/0FN8-nfsv4-provisioner-cleanup/nfs-provisioner-cleanup node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
+
 }
 
 node() {
@@ -28,7 +29,6 @@ bash Openshift-EE/utils/e2e-cr jobname:spc-striped-pool-cleanup jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:spc-mirrored-pool-cleanup jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:spc-raidz1-pool-cleanup jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:cleanup-spc-thick-provision-pool jobphase:Waiting
-bash Openshift-EE/utils/e2e-cr jobname:openebs-cleanup jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:nfsv4-deprovision jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
 run_id="cleanup";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=nfs-provision metadata=${run_id})

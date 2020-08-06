@@ -5,7 +5,7 @@ node_name=$(sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 
 echo $node_name
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port "kubectl taint nodes $node_name infra-aid-"
 
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-infra-setup/AAO9-cstor-operator/cstor-operator node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"' '"'$CSPC_OPERATOR_IMAGE'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-infra-setup/AAO9-cstor-operator/cstor-operator node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"' '"'$CSPC_RELEASE_VERSION'"' '"'$CSPC_RELEASE_BRANCH'"'
 }
 
 node() {
@@ -16,6 +16,7 @@ case_id=AAO9
 commit_id=$(echo $3)
 releaseTag=$(echo $4)
 cspc_operator_image=$(echo $5)
+release_branch=$(echo $6)
 source ~/.profile
 gittoken=$(echo "$github_token")
 
@@ -27,6 +28,7 @@ bash Openshift-EE/utils/e2e-cr jobname:cstor-operator jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:cstor-cspc-striped-pool jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:cstor-cspc-mirrored-pool jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:csi-provisioner jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:cstor-csi-storage-policies jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:cstor-operator jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
 #################
@@ -39,7 +41,9 @@ cd litmus
 
 cp providers/cstor-operator/run_litmus_test.yaml cstor_operator.yml
 
-sed -i -e "/name: CSPC_OPERATOR_IMAGE/{n;s/.*/            value: ${cspc_operator_image}/g}" cstor_operator.yml
+sed -i -e "/name: CSTOR_OPERATOR_IMAGE/{n;s/.*/            value: ${releaseTag}/g}"
+-e "/name: RELEASE_BRANCH/{n;s/.*/            value: ${release_branch}/g}" \
+-e "/name: RELEASE_VERSION/{n;s/.*/            value: ${cspc_operator_image}/g}" cstor_operator.yml
 
 cat cstor_operator.yml
 
@@ -68,7 +72,7 @@ fi
 }
 
 if [ "$1" == "node" ];then
-  node $2 $3 $4 $5 $6
+  node $2 $3 $4 $5 $6 $7
 else
   pod
 fi

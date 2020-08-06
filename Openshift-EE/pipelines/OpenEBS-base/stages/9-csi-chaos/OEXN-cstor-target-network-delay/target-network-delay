@@ -1,0 +1,197 @@
+#!/bin/bash
+
+pod() {
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/9-csi-chaos/OEXN-cstor-target-network-delay/target-network-delay node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
+}
+
+node() {
+source ~/.profile
+gittoken=$(echo "$github_token")
+
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+releaseTag=$(echo $4)
+case_id=OEXN
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+bash Openshift-EE/utils/e2e-cr jobname:csi-target-network-delay jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:csi-target-network-delay jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
+
+################
+# LitmusBook 1 #
+################
+
+echo "*******Deploying percona Application****"
+
+run_id="network-delay";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=percona-deployment metadata=${run_id})
+echo $test_name
+
+cd litmus
+echo "Running the litmus test for percona Deployment.."
+
+cp apps/percona/deployers/run_litmus_test.yml percona_target_network_delay.yml
+
+sed -i -e 's/app: percona-deployment/app: deploy-percona-target-nw-delay/g' \
+-e 's/generateName: litmus-percona-/generateName: litmus-percona-nw-delay-/g' \
+-e 's/value: openebs-standard/value: openebs-cstor-csi/g' \
+-e 's/value: app-percona-ns/value: percona-target-nw-delay/g' percona_target_network_delay.yml
+
+sed -i '/name: TARGET_AFFINITY_CHECK/{n;s/.*/            value: /g}' percona_target_network_delay.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' percona_target_network_delay.yml
+
+cat percona_target_network_delay.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:deploy-percona-target-nw-delay' job=percona_target_network_delay.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:csi-target-network-delay $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id OEXN 9-csi-chaos "Induce cstor target network delay and check if it gets recovered successfully" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# LitmusBook 2 #
+################
+
+run_id="target-nw-delay";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=percona-loadgen metadata=${run_id})
+echo $test_name
+
+cd litmus
+cp apps/percona/workload/run_litmus_test.yml percona_loadgen_target_nw_delay.yml
+
+# Update the environmental variables in litmus job spec.
+
+sed -i -e 's/value: app-percona-ns/value: percona-target-nw-delay/g' \
+-e 's/generateName: percona-loadgen-/generateName: percona-loadgen-nw-delay-/g' \
+-e 's/loadgen: percona-loadjob/loadgen: percona-loadjob-nw-delay/g' percona_loadgen_target_nw_delay.yml
+
+cat percona_loadgen_target_nw_delay.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' percona_loadgen_target_nw_delay.yml
+
+# Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
+bash ../Openshift-EE/utils/litmus_job_runner label='loadgen:percona-loadjob-nw-delay' job=percona_loadgen_target_nw_delay.yml
+cd ..
+# Get the cluster state Once the litmus jobs completed.
+bash Openshift-EE/utils/dump_cluster_state;
+# Update the e2e event for the job.
+bash Openshift-EE/utils/event_updater jobname:csi-target-network-delay $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id OEXN 9-csi-chaos "Induce cstor target network delay and check if it gets recovered successfully" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# LitmusBook 3 #
+################
+
+echo "*******Performing Network delay on target**********"
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-target-network-delay metadata="")
+echo $test_name
+
+cd litmus
+cp experiments/chaos/openebs_target_network_delay/run_litmus_test.yml run_target_nw_delay_test.yml
+
+sed -i -e 's/value: app-percona-ns/value: percona-target-nw-delay/g' \
+-e 's/name: target-network-delay/name: csi-target-network-delay-config/g' \
+-e 's/name: openebs-target-network-delay/name: openebs-csi-target-network-delay/g' \
+-e 's/value: docker/value: containerd/g' run_target_nw_delay_test.yml
+
+## Replace the value of DATA_PERSISTENCE with application name in litmus experiment. 
+sed -i '/name: DATA_PERSISTENCE/{n;s/.*/            value: mysql/}' run_target_nw_delay_test.yml
+
+## Insert the set of variables for percona data consistency util into configmap spec.
+sed -i '/parameters.yml: |/a \
+    dbuser: root\
+    dbpassword: k8sDem0\
+    dbname: targetnetworkdelay
+' run_target_nw_delay_test.yml
+
+echo "Running the litmus test for percona Deployment Scaleup.."
+cat run_target_nw_delay_test.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-csi-target-network-delay' job=run_target_nw_delay_test.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:csi-target-network-delay $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id OEXN 9-csi-chaos "Induce cstor target network delay and check if it gets recovered successfully" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# LitmusBook 4 #
+################
+ 
+kubectl delete job --all -n percona-target-nw-delay 
+
+echo "********Deprovisioning Percona Application*******"
+
+run_id="deprovision-network-delay";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=percona-deployment metadata=${run_id})
+echo $test_name
+
+cd litmus
+cp apps/percona/deployers/run_litmus_test.yml percona_deprovision_target_network_delay.yml
+
+sed -i -e 's/app: percona-deployment/app: deprovision-percona-csi-target-nw-delay/g' \
+-e 's/generateName: litmus-percona-/generateName: litmus-percona-deprovision-nw-delay/g' \
+-e 's/value: openebs-standard/value: openebs-cstor-csi/g' \
+-e 's/value: provision/value: deprovision/g' \
+-e 's/value: app-percona-ns/value: percona-target-nw-delay/g' percona_deprovision_target_network_delay.yml
+
+sed -i '/name: TARGET_AFFINITY_CHECK/{n;s/.*/            value: /g}' percona_deprovision_target_network_delay.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' percona_deprovision_target_network_delay.yml           
+
+echo "Running the litmus test for percona Deprovision.."
+cat percona_deprovision_target_network_delay.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:deprovision-percona-csi-target-nw-delay' job=percona_deprovision_target_network_delay.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:csi-target-network-delay $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+current_time=$(eval $time)
+# testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+
+if [ "$rc_val" != "0" ]; then
+bash Openshift-EE/utils/e2e-cr jobname:csi-target-network-delay jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Fail
+python3 Openshift-EE/utils/result/result_update.py $job_id OEXN 9-csi-chaos "Induce cstor target network delay and check if it gets recovered successfully" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+bash Openshift-EE/utils/e2e-cr jobname:csi-target-network-delay jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
+python3 Openshift-EE/utils/result/result_update.py $job_id OEXN 9-csi-chaos "Induce cstor target network delay and check if it gets recovered successfully" Pass $pipeline_id "$current_time" $commit_id $gittoken
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4 $5
+else
+  pod
+fi

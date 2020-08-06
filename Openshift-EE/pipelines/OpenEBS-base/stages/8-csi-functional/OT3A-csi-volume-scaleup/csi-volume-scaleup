@@ -1,0 +1,208 @@
+#!/bin/bash
+
+pod(){
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/8-csi-functional/OT3A-csi-volume-scaleup/csi-volume-scaleup node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
+}
+
+node() {
+source ~/.profile
+gittoken=$(echo "$github_token")
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+releaseTag=$(echo $4)
+case_id=OT3A
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+bash Openshift-EE/utils/e2e-cr jobname:csi-volume-scaleup jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:csi-volume-scaleup jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
+
+################
+# LitmusBook 1 #
+################
+
+echo "****Deploying busybox Application using CSI volume with single replica****"
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-csi-vol-scaleup metadata='')
+echo $test_name
+
+cd litmus
+echo "Running the litmus test for busybox Deployment.."
+cp apps/busybox/deployers/run_litmus_test.yml busybox_csi_vol_scaleup.yml
+
+sed -i -e 's/value: app-busybox-ns/value: csi-vol-scaleup/g' \
+-e 's/app: busybox-litmus/app: busybox-litmus-csi-vol-scaleup/g' \
+-e 's/generateName: litmus-busybox-deploy-/generateName: litmus-busybox-csi-vol-scaleup-/g' \
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/value: openebs-cstor-sparse/value: openebs-cstor-csi-single-replica/g' busybox_csi_vol_scaleup.yml
+
+cat busybox_csi_vol_scaleup.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-litmus-csi-vol-scaleup' job=busybox_csi_vol_scaleup.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:csi-volume-scaleup $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id OT3A 8-csi-functional "Scaling up the cstor csi volume replica" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# LitmusBook 2 #
+################
+
+echo "****Busybox liveness****"
+
+run_id="csi-vol-scaleup";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+echo $test_name
+
+cd litmus
+echo "Running the litmus test for busybox liveness..."
+cp apps/busybox/liveness/run_litmus_test.yml liveness_csi_vol_scaleup.yml
+
+sed -i -e 's/liveness: litmus-busybox-liveness/liveness: litmus-busybox-csi-vol-scaleup/g' \
+-e 's/generateName: litmus-busybox-liveness-/generateName: litmus-busybox-liveness-csi-vol-scaleup-/g' \
+-e 's/value: app-busybox-ns/value: csi-vol-scaleup/g' liveness_csi_vol_scaleup.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' liveness_csi_vol_scaleup.yml
+
+cat liveness_csi_vol_scaleup.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='liveness:litmus-busybox-csi-vol-scaleup' job=liveness_csi_vol_scaleup.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:csi-volume-scaleup $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id OT3A 8-csi-functional "Liveness on application and verify the status" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# LitmusBook 3 #
+################
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=cstor-csi-replica-scaleup metadata='')
+echo $test_name
+
+cd litmus
+cp experiments/functional/cStor/cstor-csi-volume-scaleup/run_litmus_test.yml run_cstor_csi_vol_scaleup.yml
+
+sed -i -e '/name: APP_PVC/{n;s/.*/            value: openebs-busybox/g}' \
+-e '/name: APP_LABEL/{n;s/.*/            value: app=busybox-sts/g}' \
+-e '/name: DATA_PERSISTENCE/{n;s/.*/            value: busybox/g}' \
+-e '/name: APP_NAMESPACE/{n;s/.*/            value: csi-vol-scaleup/g}' run_cstor_csi_vol_scaleup.yml
+
+## Insert the set of variables for busybox data consistency util into configmap spec.
+sed -i '/parameters.yml: |/a \
+    blocksize: 4k\
+    blockcount: 1024\
+    testfile: scaledown
+' run_cstor_csi_vol_scaleup.yml
+
+cat run_cstor_csi_vol_scaleup.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='name:cstor-csi-replica-scaleup' job=run_cstor_csi_vol_scaleup.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:csi-volume-scaleup $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id OT3A 8-csi-functional "Check if the csi volume replica is scaled up" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# LitmusBook 4 #
+################
+
+echo "****Busybox liveness deprovision****"
+
+run_id="deprovision-csi-vol-scaleup";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+echo $test_name
+
+cd litmus
+echo "Running the litmus test for busybox liveness..."
+cp apps/busybox/liveness/run_litmus_test.yml dep_liveness_csi_vol_scaleup.yml
+
+sed -i -e 's/liveness: litmus-busybox-liveness/liveness: litmus-busybox-dep-csi-vol-scaleup/g' \
+-e 's/generateName: litmus-busybox-liveness-/generateName: litmus-busybox-liveness-dep-csi-vol-scaleup-/g' \
+-e 's/value: provision/value: deprovision/g' \
+-e 's/value: app-busybox-ns/value: csi-vol-scaleup/g' dep_liveness_csi_vol_scaleup.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' dep_liveness_csi_vol_scaleup.yml
+
+cat dep_liveness_csi_vol_scaleup.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='liveness:litmus-busybox-dep-csi-vol-scaleup' job=dep_liveness_csi_vol_scaleup.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:csi-volume-scaleup $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+python3 Openshift-EE/utils/result/result_update.py $job_id OT3A 8-csi-functional "Deprovision Liveness on application and verify the status" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# LitmusBook 5 #
+################
+
+echo "****Deprovision busybox Application****"
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-csi-vol-scaleup metadata='')
+echo $test_name
+
+cd litmus
+echo "Running the litmus test for busybox Deployment.."
+cp apps/busybox/deployers/run_litmus_test.yml busybox_dep_csi_vol_scaleup.yml
+
+sed -i -e 's/value: app-busybox-ns/value: csi-vol-scaleup/g' \
+-e 's/app: busybox-litmus/app: busybox-dep-csi-vol-scaleup/g' \
+-e 's/generateName: litmus-busybox-deploy-/generateName: litmus-busybox-dep-csi-vol-scaleup-/g' \
+-e 's/value: provision/value: deprovision/g' \
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/value: openebs-cstor-sparse/value: openebs-cstor-csi-single-replica/g' busybox_dep_csi_vol_scaleup.yml
+
+cat busybox_dep_csi_vol_scaleup.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-dep-csi-vol-scaleup' job=busybox_dep_csi_vol_scaleup.yml
+cd ..
+bash Openshift-EE/utils/dump_cluster_state;
+bash Openshift-EE/utils/event_updater jobname:csi-volume-scaleup $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+return_count=$?
+current_time=$(eval $time)
+
+if [ "$return_count" != "0" ]; then
+bash Openshift-EE/utils/e2e-cr jobname:csi-volume-scaleup jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Fail
+python3 Openshift-EE/utils/result/result_update.py $job_id OT3A 8-csi-functional "Deprovision the busybox application and verify the status" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+bash Openshift-EE/utils/e2e-cr jobname:csi-volume-scaleup jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
+python3 Openshift-EE/utils/result/result_update.py $job_id OT3A 8-csi-functional "Deprovision the busybox application and verify the status" Pass $pipeline_id "$current_time" $commit_id $gittoken
+
+if [ "$return_count" != "0" ]; then
+exit 1;
+fi
+
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4 $5
+else
+  pod
+fi

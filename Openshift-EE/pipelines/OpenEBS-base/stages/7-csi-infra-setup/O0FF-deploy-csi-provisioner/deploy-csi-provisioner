@@ -1,7 +1,7 @@
 #!/bin/bash
 
 pod() {
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-infra-setup/O0FF-deploy-csi-provisioner/deploy-csi-provisioner node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-infra-setup/O0FF-deploy-csi-provisioner/deploy-csi-provisioner node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"' '"'$CSPC_RELEASE_VERSION'"' '"'$CSPC_RELEASE_BRANCH'"'
 }
 
 node() {
@@ -12,6 +12,8 @@ job_id=$(echo $1)
 pipeline_id=$(echo $2)
 commit_id=$(echo $3)
 releaseTag=$(echo $4)
+release_version=$(echo $5)
+release_branch=$(echo $6)
 case_id=O0FF
 source ~/.profile
 gittoken=$(echo "$github_token")
@@ -28,11 +30,9 @@ test_name=$(bash Openshift-EE/utils/generate_test_name testcase=csi-provision me
 echo $test_name
 
 cd litmus
-echo "Running the litmus test.."
-sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
--e 's/value: openebs-csi-cstor-sparse/value: openebs-cstor-csi/g' \
--e 's/value: "1.9.0"/value: "'$releaseTag'"/g' \
--e 's/cstor-sparse-pool/cstor-cspc-disk-pool/g' providers/csi-provisioner/run_litmus_test.yml
+sed -i -e "/name: IMAGE_TAG/{n;s/.*/            value: ${releaseTag}/g}" \
+-e "/name: RELEASE_BRANCH/{n;s/.*/            value: ${release_branch}/g}" \
+-e "/name: RELEASE_VERSION/{n;s/.*/            value: ${release_version}/g}" providers/csi-provisioner/run_litmus_test.yml
 run_test=providers/csi-provisioner/run_litmus_test.yml
 
 cat $run_test
@@ -67,7 +67,7 @@ fi
 }
 
 if [ "$1" == "node" ];then
-  node $2 $3 $4 $5
+  node $2 $3 $4 $5 $6 $7
 else
   pod
 fi

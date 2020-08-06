@@ -22,7 +22,7 @@ echo "*******Cleaning cstor-pool**************"
 bash Openshift-EE/utils/e2e-cr jobname:openebs-cleanup jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:cleanup-cspc-striped-pool jobphase:Waiting 
 bash Openshift-EE/utils/e2e-cr jobname:cleanup-cspc-mirrored-pool jobphase:Waiting
-bash Openshift-EE/utils/e2e-cr jobname:cleanup-cstor-operator jobphase:Waiting 
+#bash Openshift-EE/utils/e2e-cr jobname:cleanup-cstor-operator jobphase:Waiting 
 bash Openshift-EE/utils/e2e-cr jobname:openebs-cleanup jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:cleanup-cspc-striped-pool jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
