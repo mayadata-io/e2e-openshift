@@ -691,8 +691,8 @@ O0FF-CSI-PROVISIONER:
 RZ25-csi-storage-policies:
   extends: .csi_infra_test_template
   script:
-    - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-infra-setup/RZ25-csi-storage-policies/csi-storage-policies
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-infra-setup/RZ25-csi-storage-policies/csi-storage-policies      
+    - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-infra-setup/RZ25-csi-storage-policies/openebs-csi-sc
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-infra-setup/RZ25-csi-storage-policies/openebs-csi-sc  
 
 #########################################################################################
 
@@ -836,7 +836,7 @@ OEXN-CSTOR-TARGET-NETWORK-DELAY:
     - K9YC-OpenEBS
 
 WJ8S-NODE-FAILURE-CSI-CSTOR:
-  extends: .csi_chaos_test_template
+  extends: .csi_infra_chaos_test_template
   script:
     - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/10-csi-infra-chaos/WJ8S-node-failure-csi-cstor/node-failure-csi-cstor
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/10-csi-infra-chaos/WJ8S-node-failure-csi-cstor/node-failure-csi-cstor

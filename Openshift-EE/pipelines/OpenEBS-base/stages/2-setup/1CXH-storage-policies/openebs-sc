@@ -29,13 +29,14 @@ echo $test_name
 
 cd litmus
 echo "Running the litmus test.."
+cp providers/cstor-storage-policies/run_litmus_test.yml cstor-sc.yaml
+
 sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
--e 's/cstor-sparse-pool/cstor-block-disk-pool-stripe/g' providers/cstor-storage-policies/run_litmus_test.yml
-run_test=providers/cstor-storage-policies/run_litmus_test.yml
+-e 's/cstor-sparse-pool/cstor-block-disk-pool-stripe/g' cstor-sc.yaml
 
-cat $run_test
+cat cstor-sc.yaml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:cstor-storage-policy' job=$run_test
+bash ../Openshift-EE/utils/litmus_job_runner label='app:cstor-storage-policy' job=cstor-sc.yaml
 
 echo "Dumping state of cluster post job run"; echo ""
 bash ../Openshift-EE/utils/dump_cluster_state;
