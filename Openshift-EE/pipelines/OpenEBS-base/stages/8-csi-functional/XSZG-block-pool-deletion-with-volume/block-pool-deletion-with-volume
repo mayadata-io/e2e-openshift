@@ -49,17 +49,19 @@ cat deploy_csi_busybox_volume.yml
 bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-litmus-csi-volume' job=deploy_csi_busybox_volume.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
-bash Openshift-EE/utils/event_updater jobname:deploy-busybox-csi $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/event_updater jobname:block-pool-deletion-with-volume $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 if [ "$?" != "0" ]; then
 exit 1;
+fi
 
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=block-cspc-pool-deletion-if-pool-with-volume metadata='')
 echo $test_name
 
 cd litmus
 
-cp experiments/functional/cspc-pool/block-pool-deletion-with-volume/test.yml block-pool-deletion-with-volume.yml
+cp experiments/functional/cspc-pool/block-pool-deletion-with-volume/run_litmus_test.yml block-pool-deletion-with-volume.yml
+
 sed -i -e "/name: APP_NAMESPACE/{n;s/.*/            value: busybox-csi-volume/g}" \
 -e "/name: APP_LABEL/{n;s/.*/            value: 'app=busybox-sts'/g}" block-pool-deletion-with-volume.yml
 

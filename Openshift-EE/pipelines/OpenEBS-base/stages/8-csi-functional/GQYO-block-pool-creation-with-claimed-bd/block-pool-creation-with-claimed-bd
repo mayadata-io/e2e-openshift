@@ -31,7 +31,9 @@ echo $test_name
 
 cd litmus
 
-cp experiments/functional/cspc-pool/block-pool-creation-with-claimed-bd/test.yml block-pool-creation-with-claimed-bd.yml
+cp experiments/functional/cspc-pool/block-pool-creation-with-claimed-bd/run_litmus_test.yml block-pool-creation-with-claimed-bd.yml
+
+sed -i -e 's/value: cstor-cspc-disk-pool/value: cstor-cspc-disk-pool-calimed/g' block-pool-creation-with-claimed-bd.yml
 
 cat block-pool-creation-with-claimed-bd.yml
 

@@ -39,9 +39,9 @@ test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-cstor-op
 echo $test_name
 cd litmus
 
-cp providers/cstor-operator/run_litmus_test.yaml cstor_operator.yml
+cp providers/cstor-operator/run_litmus_test.yml cstor_operator.yml
 
-sed -i -e "/name: CSTOR_OPERATOR_IMAGE/{n;s/.*/            value: ${releaseTag}/g}"
+sed -i -e "/name: CSTOR_OPERATOR_IMAGE/{n;s/.*/            value: ${releaseTag}/g}" \
 -e "/name: RELEASE_BRANCH/{n;s/.*/            value: ${release_branch}/g}" \
 -e "/name: RELEASE_VERSION/{n;s/.*/            value: ${cspc_operator_image}/g}" cstor_operator.yml
 
