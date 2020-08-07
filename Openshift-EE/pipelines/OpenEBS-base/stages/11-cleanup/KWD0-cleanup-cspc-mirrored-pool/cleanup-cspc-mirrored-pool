@@ -32,6 +32,7 @@ cp providers/cstor/cstor-cspc-pool/run_litmus_test.yml cleanup_cspc_mirrored_poo
 sed -i -e 's/app: cstor-cspc-pool-provision/app: cstor-cspc-mirror-pool-deprovision/g' \
 -e 's/generateName: cstor-cspc-pool-provision/generateName: cstor-cspc-mirror-pool-deprovision/g' \
 -e 's/value: stripe/value: mirror/g' \
+-e 's/value: cstor-cspc-disk-pool/value: cstor-cspc-mirror-pool/g' \
 -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
 -e 's/value: create/value: delete/g' cleanup_cspc_mirrored_pool.yml
 

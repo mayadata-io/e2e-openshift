@@ -120,7 +120,7 @@ sed -i -e 's/value: percona-mysql-claim/value: openebs-bb-targetkill/g' \
 -e 's/target-zrepl-kill/target-delete/g' \
 -e 's/name: target-failure/name: csi-target-failure/g' \
 -e 's/name: openebs-target-failure/name: csi-openebs-target-failure/g' \
--e '/name: TARGET_AFFINITY_CHECK/{n;s/value: enable/value: disable/g}' \
+-e '/name: TARGET_AFFINITY_CHECK/{n;s/.*/            value: /g}' \
 -e 's/value: app-percona-ns/value: csi-target-kill/g' run_csi_target_kill_test.yml
 
 sed -i '/command:/i \
