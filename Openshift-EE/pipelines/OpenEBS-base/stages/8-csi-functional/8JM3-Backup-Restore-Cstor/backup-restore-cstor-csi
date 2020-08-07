@@ -29,6 +29,7 @@ bash Openshift-EE/utils/e2e-cr jobname:backup-restore-cstor-csi jobphase:Running
 ################
 # LitmusBook 1 #
 ################
+oc adm policy add-scc-to-user anyuid system:serviceaccount:percona-backup-csi:default
 
 echo "*******Deploying Percona Application using CSI****"
 
@@ -41,8 +42,8 @@ echo "Running the litmus test for Percona Deployment.."
 # Storeing GCP service account key in file"
 #echo "$sdk_token" > key.json
 
-#echo "Creating configmap in litmus namespace for GCP token"
-#kubectl create cm gcp-key -n litmus --from-file /var/sdk/key.json
+echo "Creating configmap in litmus namespace for GCP token"
+kubectl create cm gcp-key -n litmus --from-file /var/sdk/key.json
 
 cp apps/percona/deployers/run_litmus_test.yml percona_backup_restore_csi.yml
 

@@ -30,6 +30,7 @@ bash Openshift-EE/utils/e2e-cr jobname:backup-restore-cstor-csi-diff-profile job
 ################
 # LitmusBook 1 #
 ################
+oc adm policy add-scc-to-user anyuid system:serviceaccount:percona-backup-csi-diff-profile:default
 
 echo "*******Deploying Percona Application using CSI****"
 
@@ -59,7 +60,7 @@ sed -i '/command:/i \
 
 cat percona_backup_restore_csi_diff_profile.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:deploy-percona-backup-restore-csi-diff-profile' job=percona_backup_restore_csi_diff_ns.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='app:deploy-percona-backup-restore-csi-diff-profile' job=percona_backup_restore_csi_diff_profile.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:backup-restore-cstor-csi-diff-profile $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"

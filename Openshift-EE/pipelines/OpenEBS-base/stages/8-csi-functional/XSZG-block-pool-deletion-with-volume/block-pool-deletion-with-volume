@@ -19,8 +19,8 @@ current_time=$(eval $time)
 present_dir=$(pwd)
 echo $present_dir
 
-bash Openshift-EE/utils/e2e-cr jobname:block-pool-deletion-with-volume jobphase:Waiting
-bash Openshift-EE/utils/e2e-cr jobname:block-pool-deletion-with-volume jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
+bash Openshift-EE/utils/e2e-cr jobname:block-pool-deletion-with-volume-csi jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:block-pool-deletion-with-volume-csi jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
 ################
 # LitmusBook 1 #
@@ -49,7 +49,7 @@ cat deploy_csi_busybox_volume.yml
 bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-litmus-csi-volume' job=deploy_csi_busybox_volume.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
-bash Openshift-EE/utils/event_updater jobname:block-pool-deletion-with-volume $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/event_updater jobname:block-pool-deletion-with-volume-csi $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 if [ "$?" != "0" ]; then
 exit 1;
@@ -60,17 +60,21 @@ echo $test_name
 
 cd litmus
 
-cp experiments/functional/cspc-pool/block-pool-deletion-with-volume/run_litmus_test.yml block-pool-deletion-with-volume.yml
+################
+# LitmusBook 2 #
+################
+
+cp experiments/functional/cspc-pool/block-pool-deletion-with-volume/run_litmus_test.yml csi-block-pool-deletion-with-volume.yml
 
 sed -i -e "/name: APP_NAMESPACE/{n;s/.*/            value: busybox-csi-volume/g}" \
--e "/name: APP_LABEL/{n;s/.*/            value: 'app=busybox-sts'/g}" block-pool-deletion-with-volume.yml
+-e "/name: APP_LABEL/{n;s/.*/            value: 'app=busybox-sts'/g}" csi-block-pool-deletion-with-volume.yml
 
-cat block-pool-deletion-with-volume.yml
+cat csi-block-pool-deletion-with-volume.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:cstor-pool-creation-with-claimed-bd' job=block-pool-deletion-with-volume.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='app:pool-deletion-with-volume' job=csi-block-pool-deletion-with-volume.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
-bash Openshift-EE/utils/event_updater jobname:block-pool-deletion-with-volume $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+bash Openshift-EE/utils/event_updater jobname:block-pool-deletion-with-volume-csi $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 rc_val=$(echo $?)
 current_time=$(eval $time)
@@ -81,7 +85,7 @@ python3 Openshift-EE/utils/result/result_update.py $job_id XSZG 8-csi-functional
 exit 1;
 fi
 
-bash Openshift-EE/utils/e2e-cr jobname:block-pool-deletion-with-volume jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
+bash Openshift-EE/utils/e2e-cr jobname:block-pool-deletion-with-volume-csi jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
 #python3 Openshift-EE/utils/result/result_update.py $job_id XSZG 8-csi-functional "Verify if the pool creation is failed when the blockdevice is already claimed" Fail $pipeline_id "$current_time" $commit_id $gittoken
 }
 
