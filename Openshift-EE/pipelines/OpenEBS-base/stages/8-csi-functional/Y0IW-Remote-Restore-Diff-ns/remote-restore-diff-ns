@@ -30,6 +30,7 @@ bash Openshift-EE/utils/e2e-cr jobname:backup-restore-cstor-csi-diff-ns jobphase
 ################
 # LitmusBook 1 #
 ################
+oc adm policy add-scc-to-user anyuid system:serviceaccount:percona-backup-csi-diff-ns:default
 
 echo "*******Deploying Percona Application using CSI****"
 

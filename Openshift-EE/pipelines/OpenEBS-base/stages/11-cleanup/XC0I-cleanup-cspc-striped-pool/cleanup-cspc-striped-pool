@@ -17,6 +17,11 @@ gittoken=$(echo "$github_token")
 time="date"
 current_time=$(eval $time)
 
+
+nameSpace=$(kubectl get ns --no-headers | grep -vE "openebs|litmus|kube-service-catalog|default|kube-system|logging|openshift|kube-node-lease|kube-public" | awk {'print $1'})
+kubectl delete ns $nameSpace
+kubectl get ns
+
 #pooling over previous job to complete
 echo "*******Cleaning cstor-pool**************"
 bash Openshift-EE/utils/e2e-cr jobname:openebs-cleanup jobphase:Waiting
@@ -54,6 +59,7 @@ bash ../Openshift-EE/utils/litmus_job_runner label='app:cstor-cspc-pool-deprovis
 bash ../Openshift-EE/utils/dump_cluster_state;
 cd ..
 bash Openshift-EE/utils/event_updater jobname:cleanup-cspc-striped-pool $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
 
 #################
 ## GET RESULT  ##
