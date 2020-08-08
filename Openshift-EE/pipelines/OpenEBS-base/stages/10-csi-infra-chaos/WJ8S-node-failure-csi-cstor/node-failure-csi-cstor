@@ -118,7 +118,7 @@ sed -i -e "s|#nodeSelector|nodeSelector|g" \
 
 sed -i '/name: DATA_PERSISTENCE/{n;s/.*/            value: busybox/}' run_node_failure_csi.yml
 
-sed -i '/name: ESX_HOST_IP/{n;s/.*/            value: 10.33.1.1/}' run_node_failure_csi.yml
+sed -i '/name: ESX_HOST_IP/{n;s/.*/            value: 10.51.1.1/}' run_node_failure_csi.yml
 
 sed -i '/parameters.yml: |/a \
     blocksize: 4k\
