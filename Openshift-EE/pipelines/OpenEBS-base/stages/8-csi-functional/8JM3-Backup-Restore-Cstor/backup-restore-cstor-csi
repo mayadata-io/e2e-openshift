@@ -42,8 +42,8 @@ echo "Running the litmus test for Percona Deployment.."
 # Storeing GCP service account key in file"
 #echo "$sdk_token" > key.json
 
-echo "Creating configmap in litmus namespace for GCP token"
-kubectl create cm gcp-key -n litmus --from-file /var/sdk/key.json
+# echo "Creating configmap in litmus namespace for GCP token"
+# kubectl create cm gcp-key -n litmus --from-file /var/sdk/key.json
 
 cp apps/percona/deployers/run_litmus_test.yml percona_backup_restore_csi.yml
 
@@ -84,7 +84,6 @@ cp experiments/functional/backup_and_restore/run_litmus_test.yml run_backupresto
 sed -i -e 's/value: app-percona-ns/value: percona-backup-csi/g' \
 -e 's/app: velero-backup-restore/app: velero-backup-restore-cstor-csi/g' \
 -e 's/value: "cstor"/value: "cstor-csi"/g' \
--e 's/value: "minio"/value: "GCP"/g' \
 -e '/name: DEPROVISION_VELERO/{n;s/.*/            value: "true"/}' run_backuprestore_test_cstor_csi.yml
 
 sed -i "s/v1.1.0/$velero_version/g" run_backuprestore_test_cstor_csi.yml
