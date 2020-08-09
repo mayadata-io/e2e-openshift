@@ -22,9 +22,9 @@ current_time=$(eval $time)
 bash Openshift-EE/utils/pooling jobname:nfsv4-jiva-deprovision
 bash Openshift-EE/utils/e2e-cr jobname:spc-striped-pool-cleanup jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
-nameSpace=$(kubectl get ns --no-headers | grep -vE "openebs|litmus|kube-service-catalog|default|kube-system|logging|openshift|kube-node-lease|kube-public" | awk {'print $1'})
-kubectl delete ns $nameSpace
-kubectl get ns
+# nameSpace=$(kubectl get ns --no-headers | grep -vE "openebs|litmus|kube-service-catalog|default|kube-system|logging|openshift|kube-node-lease|kube-public" | awk {'print $1'})
+# kubectl delete ns $nameSpace
+# kubectl get ns
 
 run_id="cleanup-striped";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=cstor-block-device-pool-provision metadata=${run_id})
 echo $test_name
