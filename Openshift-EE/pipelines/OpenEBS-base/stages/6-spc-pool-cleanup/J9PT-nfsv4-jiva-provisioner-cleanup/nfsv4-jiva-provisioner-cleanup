@@ -59,6 +59,10 @@ bash Openshift-EE/utils/event_updater jobname:nfsv4-jiva-deprovision $test_name 
 #################
 rc_val=$(echo $?)
 
+nameSpace=$(kubectl get ns --no-headers | grep -vE "openebs|litmus|kube-service-catalog|default|kube-system|logging|openshift|kube-node-lease|kube-public" | awk {'print $1'})
+kubectl delete ns $nameSpace
+kubectl get ns
+
 ## Check the test status & result from the litmus result custom resource
 source ~/.profile
 gittoken=$(echo "$github_token")

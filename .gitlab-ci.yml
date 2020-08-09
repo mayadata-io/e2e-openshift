@@ -10,7 +10,7 @@ stages:
   - CSTOR-CSI-INFRA-SETUP
   - CSTOR-CSI-FUNCTIONAL
   - CSTOR-CSI-CHAOS
-  - CSTOR-CSI-INFRA-CHAOS
+  # - CSTOR-CSI-INFRA-CHAOS
   - OPENEBS-CLEANUP
   - CLUSTER-CLEANUP
   
@@ -828,18 +828,18 @@ OEXN-CSTOR-TARGET-NETWORK-DELAY:
 
 # ##########################################################################################
 
-.csi_infra_chaos_test_template:
-  image: openebs/openshift-ci:latest
-  stage: CSTOR-CSI-INFRA-CHAOS
-  when: always
-  dependencies:
-    - K9YC-OpenEBS
+# .csi_infra_chaos_test_template:
+#   image: openebs/openshift-ci:latest
+#   stage: CSTOR-CSI-INFRA-CHAOS
+#   when: always
+#   dependencies:
+#     - K9YC-OpenEBS
 
-WJ8S-NODE-FAILURE-CSI-CSTOR:
-  extends: .csi_infra_chaos_test_template
-  script:
-    - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/10-csi-infra-chaos/WJ8S-node-failure-csi-cstor/node-failure-csi-cstor
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/10-csi-infra-chaos/WJ8S-node-failure-csi-cstor/node-failure-csi-cstor
+# WJ8S-NODE-FAILURE-CSI-CSTOR:
+#   extends: .csi_infra_chaos_test_template
+#   script:
+#     - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/10-csi-infra-chaos/WJ8S-node-failure-csi-cstor/node-failure-csi-cstor
+#     - ./Openshift-EE/pipelines/OpenEBS-base/stages/10-csi-infra-chaos/WJ8S-node-failure-csi-cstor/node-failure-csi-cstor
 
 # C55O-cspc-pdb:
 #   extends: .csi_chaos_test_template
