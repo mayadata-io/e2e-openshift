@@ -62,7 +62,7 @@ fi
 # LitmusBook 2 #
 ################
 
-run_id="target-nw-loss";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=percona-loadgen metadata=${run_id})
+run_id="csi-target-nw-loss";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=percona-loadgen metadata=${run_id})
 echo $test_name
 
 cd litmus
@@ -100,7 +100,7 @@ fi
 
 echo "*******Performing Network loss on target**********"
 
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-target-network-loss metadata="")
+run_id="csi";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-target-network-loss metadata=${run_id})
 echo $test_name
 
 cd litmus
@@ -143,7 +143,7 @@ kubectl delete job --all -n csi-percona-target-nw-loss
 
 echo "********Deprovisioning Percona Application*******"
 
-run_id="deprovision";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=percona-deployment metadata=${run_id})
+run_id="csi-deprovision";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=percona-deployment metadata=${run_id})
 echo $test_name
 
 cd litmus

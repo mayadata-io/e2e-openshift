@@ -48,7 +48,7 @@ sed -i '/command:/i \
 cat cleanup_cspc_mirrored_pool.yml
 rc_val=$(echo $?)
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:cstor-cspc-pool-deprovision' job=cleanup_cspc_mirrored_pool.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='app:cstor-cspc-mirror-pool-deprovision' job=cleanup_cspc_mirrored_pool.yml
 bash ../Openshift-EE/utils/dump_cluster_state;
 cd ..
 bash Openshift-EE/utils/event_updater jobname:cleanup-cspc-mirrored-pool $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
