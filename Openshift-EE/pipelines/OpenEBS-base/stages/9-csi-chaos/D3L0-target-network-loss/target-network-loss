@@ -121,6 +121,10 @@ sed -i '/parameters.yml: |/a \
     dbname: targetnetworkloss
 ' csi-run_target_nw_loss_test.yml
 
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' csi-run_target_nw_loss_test.yml
 echo "Running the litmus test for percona Deployment Scaleup.."
 cat csi-run_target_nw_loss_test.yml
 

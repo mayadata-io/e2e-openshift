@@ -67,7 +67,7 @@ fi
 # LitmusBook 2 #
 ################
 
-run_id="target-nw-delay";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=percona-loadgen metadata=${run_id})
+run_id="csi-target-nw-delay";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=percona-loadgen metadata=${run_id})
 echo $test_name
 
 cd litmus
@@ -126,6 +126,10 @@ sed -i '/parameters.yml: |/a \
     dbname: targetnetworkdelay
 ' csi_run_target_nw_delay_test.yml
 
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' csi_run_target_nw_delay_test.yml
 echo "Running the litmus test for percona Deployment Scaleup.."
 cat csi_run_target_nw_delay_test.yml
 
