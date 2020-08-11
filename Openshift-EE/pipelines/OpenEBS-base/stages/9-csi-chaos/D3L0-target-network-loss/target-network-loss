@@ -79,7 +79,7 @@ cat csi-percona_loadgen_target_nw_loss.yml
 sed -i '/command:/i \
           - name: RUN_ID\
             value: '"$run_id"'\
-' percona_loadgen_target_nw_loss.yml
+' csi_percona_loadgen_target_nw_loss.yml
 
 # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
 bash ../Openshift-EE/utils/litmus_job_runner label='loadgen:csi-percona-loadjob-nw-loss-csi' job=csi-percona_loadgen_target_nw_loss.yml
@@ -125,7 +125,7 @@ sed -i '/command:/i \
           - name: RUN_ID\
             value: '"$run_id"'\
 ' csi-run_target_nw_loss_test.yml
-echo "Running the litmus test for percona Deployment Scaleup.."
+
 cat csi-run_target_nw_loss_test.yml
 
 bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-target-network-loss-csi' job=csi-run_target_nw_loss_test.yml
