@@ -67,7 +67,7 @@ fi
 # LitmusBook 2 #
 ################
 
-run_id="target-nw-delay";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=percona-loadgen metadata=${run_id})
+run_id="csi-target-nw-delay";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=percona-loadgen metadata=${run_id})
 echo $test_name
 
 cd litmus
@@ -77,7 +77,7 @@ cp apps/percona/workload/run_litmus_test.yml csi-percona_loadgen_target_nw_delay
 
 sed -i -e 's/value: app-percona-ns/value: csi-percona-target-nw-delay/g' \
 -e 's/generateName: percona-loadgen-/generateName: csi-percona-loadgen-nw-delay-/g' \
--e 's/loadgen: percona-loadjob/loadgen: percona-loadjob-nw-delay/g' csi-percona_loadgen_target_nw_delay.yml
+-e 's/loadgen: percona-loadjob/loadgen: csi-percona-load-nw-delay/g' csi-percona_loadgen_target_nw_delay.yml
 
 cat csi-percona_loadgen_target_nw_delay.yml
 
@@ -87,7 +87,7 @@ sed -i '/command:/i \
 ' csi-percona_loadgen_target_nw_delay.yml
 
 # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
-bash ../Openshift-EE/utils/litmus_job_runner label='loadgen:percona-loadjob-nw-delay' job=csi-percona_loadgen_target_nw_delay.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='loadgen:csi-percona-load-nw-delay' job=csi-percona_loadgen_target_nw_delay.yml
 cd ..
 # Get the cluster state Once the litmus jobs completed.
 bash Openshift-EE/utils/dump_cluster_state;
@@ -105,31 +105,35 @@ fi
 
 echo "*******Performing Network delay on target**********"
 
-test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-target-network-delay metadata="")
+run_id="csi-cstor";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-target-network-delay metadata=${run_id})
 echo $test_name
 
 cd litmus
-cp experiments/chaos/openebs_target_network_delay/run_litmus_test.yml run_target_nw_delay_test.yml
+cp experiments/chaos/openebs_target_network_delay/run_litmus_test.yml csi_run_target_nw_delay_test.yml
 
 sed -i -e 's/value: app-percona-ns/value: csi-percona-target-nw-delay/g' \
 -e 's/name: target-network-delay/name: csi-target-network-delay-config/g' \
 -e 's/name: openebs-target-network-delay/name: openebs-csi-target-network-delay/g' \
--e 's/value: docker/value: containerd/g' csi-run_target_nw_delay_test.yml
+-e 's/value: docker/value: containerd/g' csi_run_target_nw_delay_test.yml
 
 ## Replace the value of DATA_PERSISTENCE with application name in litmus experiment. 
-sed -i '/name: DATA_PERSISTENCE/{n;s/.*/            value: mysql/}' csi-run_target_nw_delay_test.yml
+sed -i '/name: DATA_PERSISTENCE/{n;s/.*/            value: mysql/}' csi_run_target_nw_delay_test.yml
 
 ## Insert the set of variables for percona data consistency util into configmap spec.
 sed -i '/parameters.yml: |/a \
     dbuser: root\
     dbpassword: k8sDem0\
     dbname: targetnetworkdelay
-' csi-run_target_nw_delay_test.yml
+' csi_run_target_nw_delay_test.yml
 
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' csi_run_target_nw_delay_test.yml
 echo "Running the litmus test for percona Deployment Scaleup.."
-cat csi-run_target_nw_delay_test.yml
+cat csi_run_target_nw_delay_test.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-csi-target-network-delay' job=csi-run_target_nw_delay_test.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-csi-target-network-delay' job=csi_run_target_nw_delay_test.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:csi-target-network-delay $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
@@ -147,29 +151,29 @@ kubectl delete job --all -n percona-target-nw-delay
 
 echo "********Deprovisioning Percona Application*******"
 
-run_id="deprovision-network-delay";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=percona-deployment metadata=${run_id})
+run_id="csi-deprovision-network-delay";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=percona-deployment metadata=${run_id})
 echo $test_name
 
 cd litmus
-cp apps/percona/deployers/run_litmus_test.yml percona_deprovision_target_network_delay.yml
+cp apps/percona/deployers/run_litmus_test.yml csi_percona_deprovision_target_network_delay.yml
 
 sed -i -e 's/app: percona-deployment/app: deprovision-percona-csi-target-nw-delay/g' \
 -e 's/generateName: litmus-percona-/generateName: litmus-percona-deprovision-nw-delay/g' \
 -e 's/value: openebs-standard/value: openebs-cstor-csi/g' \
 -e 's/value: provision/value: deprovision/g' \
--e 's/value: app-percona-ns/value: csi-percona-target-nw-delay/g' csi-percona_deprovision_target_network_delay.yml
+-e 's/value: app-percona-ns/value: csi-percona-target-nw-delay/g' csi_percona_deprovision_target_network_delay.yml
 
-sed -i '/name: TARGET_AFFINITY_CHECK/{n;s/.*/            value: /g}' csi-percona_deprovision_target_network_delay.yml
+sed -i '/name: TARGET_AFFINITY_CHECK/{n;s/.*/            value: /g}' csi_percona_deprovision_target_network_delay.yml
 
 sed -i '/command:/i \
           - name: RUN_ID\
             value: '"$run_id"'\
-' csi-percona_deprovision_target_network_delay.yml           
+' csi_percona_deprovision_target_network_delay.yml           
 
 echo "Running the litmus test for percona Deprovision.."
-cat csi-percona_deprovision_target_network_delay.yml
+cat csi_percona_deprovision_target_network_delay.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:deprovision-percona-csi-target-nw-delay' job=csi-percona_deprovision_target_network_delay.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='app:deprovision-percona-csi-target-nw-delay' job=csi_percona_deprovision_target_network_delay.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:csi-target-network-delay $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
