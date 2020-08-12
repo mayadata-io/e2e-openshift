@@ -66,23 +66,23 @@ run_id="csi-target-nw-loss";test_name=$(bash Openshift-EE/utils/generate_test_na
 echo $test_name
 
 cd litmus
-cp apps/percona/workload/run_litmus_test.yml csi-percona_loadgen_target_nw_loss.yml
+cp apps/percona/workload/run_litmus_test.yml csi_percona_loadgen_target_nw_loss.yml
 
 # Update the environmental variables in litmus job spec.
 
 sed -i -e 's/value: app-percona-ns/value: csi-percona-target-nw-loss/g' \
 -e 's/generateName: percona-loadgen-/generateName: csi-percona-loadgen-nw-loss-/g' \
--e 's/loadgen: percona-loadjob/loadgen: csi-percona-loadjob-nw-loss-csi/g' csi-percona_loadgen_target_nw_loss.yml
-
-cat csi-percona_loadgen_target_nw_loss.yml
+-e 's/loadgen: percona-loadjob/loadgen: csi-percona-loadjob-nw-loss-csi/g' csi_percona_loadgen_target_nw_loss.yml
 
 sed -i '/command:/i \
           - name: RUN_ID\
             value: '"$run_id"'\
 ' csi_percona_loadgen_target_nw_loss.yml
 
+cat csi_percona_loadgen_target_nw_loss.yml
+
 # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
-bash ../Openshift-EE/utils/litmus_job_runner label='loadgen:csi-percona-loadjob-nw-loss-csi' job=csi-percona_loadgen_target_nw_loss.yml
+bash ../Openshift-EE/utils/litmus_job_runner label='loadgen:csi-percona-loadjob-nw-loss-csi' job=csi_percona_loadgen_target_nw_loss.yml
 cd ..
 # Get the cluster state Once the litmus jobs completed.
 bash Openshift-EE/utils/dump_cluster_state;
