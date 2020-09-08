@@ -757,6 +757,12 @@ S4B9-CSI-CSTOR-SNAPSHOT:
     - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/8-csi-functional/8JM3-Backup-Restore-Cstor/backup-restore-cstor-csi
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/8-csi-functional/8JM3-Backup-Restore-Cstor/backup-restore-cstor-csi
 
+TUZX-Local-Backup-Restore:
+  extends: .csi_func_test_template
+  script:
+    - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/8-csi-functional/TUZX-Local-Backup-Restore/local-backup-restore
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/8-csi-functional/TUZX-Local-Backup-Restore/local-backup-restore    
+
 8NQ5-csi-volume-scaledown:
   extends: .csi_func_test_template
   script:
