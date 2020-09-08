@@ -31,6 +31,7 @@ bash Openshift-EE/utils/e2e-cr jobname:local-backup-restore-csi jobphase:Running
 # LitmusBook 1 #
 ################
 oc adm policy add-scc-to-user anyuid system:serviceaccount:percona-backup-csi-local:default
+oc adm policy add-scc-to-user anyuid system:serviceaccount:percona-backup-csi-local-local:default
 
 echo "*******Deploying Percona Application using CSI****"
 
