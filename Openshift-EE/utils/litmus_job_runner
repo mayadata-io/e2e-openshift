@@ -1,6 +1,7 @@
 #!/bin/bash
 set -x
 job_retry_count=0
+pod_retry_count=0
 container_retry_count=0
 job_state_retry_count=0
 litmus_job_label_key=$(echo $1 | cut -d "=" -f 2 | cut -d ":" -f 1)
@@ -15,7 +16,7 @@ job_deploy_out=$(kubectl create -f ${litmus_job_file}) && \
 job_name=$(eval ${jobNameCmd}); retcode=$?
 
 while [ -z "$job_name" ]; do
-  sleep 5
+  sleep 15
   job_retry_count=$((job_retry_count+1))
     if [[ "$job_retry_count" -eq "10" ]]; then
       echo "unable to get JOB_NAME"; exit 1;
@@ -29,6 +30,15 @@ bash ../Openshift-EE/utils/error_handler ${retcode} msg="Unable to run litmusboo
 
 litmusPodCmd="kubectl get pod --no-headers -n litmus -o jsonpath='{.items[?(@.metadata.labels.job-name==\"${job_name}\")].metadata.name}'"
 litmus_pod=$(eval ${litmusPodCmd}); retcode=$?
+while [ -z "$litmus_pod" ]; do
+  sleep 15
+  pod_retry_count=$((pod_retry_count+1))
+    if [[ "$pod_retry_count" -eq "15" ]]; then
+      echo "unable to get POD_NAME"; exit 1;
+    fi
+  pod_name=$(eval ${litmusPodCmd});
+done
+
 bash ../Openshift-EE/utils/error_handler ${retcode} msg="Unable to find litmus test runner pod, exiting" action="exit"
 
 ## Wait till the ansibletest container terminates && also confirm job completion status. This is done to ensure
@@ -43,7 +53,7 @@ jobStateCmd="kubectl get pod ${litmus_pod} --no-headers -n litmus -o custom-colu
 while true; do
   cstate=$(eval ${containerStateCmd}); rc=$?
   if [[ $rc -eq 0 && ! $cstate ]]; then
-    sleep 10
+    sleep 15
     container_retry_count=$((container_retry_count+1))
     if [[ "$container_retry_count" -eq "10" ]]; then
       echo "unable to get CONTAINER-STATUS"; exit 1;
