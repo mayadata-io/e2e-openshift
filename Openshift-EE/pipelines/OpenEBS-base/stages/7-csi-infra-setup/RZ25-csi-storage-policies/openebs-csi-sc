@@ -21,7 +21,7 @@ echo $present_dir
 
 #pooling over previous job to complete
 echo "***********Applying openebs-storage-clas********"
-bash Openshift-EE/utils/pooling jobname:csi-provisioner
+bash Openshift-EE/utils/pooling jobname:cstor-cspc-mirrored-pool
 bash Openshift-EE/utils/e2e-cr jobname:cstor-csi-storage-policies jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
 run_id="csi-sc";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=cstor-storage-policies metadata=${run_id})

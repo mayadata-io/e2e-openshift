@@ -204,11 +204,11 @@ JAIP-STS-App-Target-Affinity:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/JAIP-STS-App-Target-Affinity/sts-app-target-affinity
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/JAIP-STS-App-Target-Affinity/sts-app-target-affinity
 
-VZFL-App-Target-Affinity:
-  extends: .func_test_template
-  script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/VZFL-App-Target-affinity/app-target-affinity
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/VZFL-App-Target-affinity/app-target-affinity
+      #VZFL-App-Target-Affinity:
+      #  extends: .func_test_template
+      #  script:
+      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/VZFL-App-Target-affinity/app-target-affinity
+      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/VZFL-App-Target-affinity/app-target-affinity
 
 02EA-CAS-Performance:
   extends: .func_test_template
@@ -393,11 +393,11 @@ RQUV-cStor-spc-roThresholdlimit:
   dependencies:
     - K9YC-OpenEBS
 
-1PP5-App-Kill:
-  extends: .chaos_test_template
-  script: 
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/1PP5-app-kill/app-kill
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/1PP5-app-kill/app-kill
+      #1PP5-App-Kill:
+      #  extends: .chaos_test_template
+      #  script: 
+      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/1PP5-app-kill/app-kill
+      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/1PP5-app-kill/app-kill
 
 PG1D-cStor-istgt-Kill:
   extends: .chaos_test_template
@@ -477,11 +477,11 @@ QURH-Clone-Rebuild-post-snapshot-rebuild:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/0ACF-nfs-app-kill/nfs-app-kill
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/0ACF-nfs-app-kill/nfs-app-kill    
 
-AUZF-Jiva-App-Kill:
-  extends: .chaos_test_template
-  script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/AUZF-Jiva-app-kill/jiva-app-kill
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/AUZF-Jiva-app-kill/jiva-app-kill
+      #AUZF-Jiva-App-Kill:
+      #  extends: .chaos_test_template
+      #  script:
+      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/AUZF-Jiva-app-kill/jiva-app-kill
+      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-chaos/AUZF-Jiva-app-kill/jiva-app-kill
 
 HOSN-Jiva-single-replica-failure:
   extends: .chaos_test_template
@@ -681,12 +681,6 @@ GRLZ-CSPC-STRIPE-POOL:
   script:
     - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-infra-setup/GRLZ-create-cspc-stripe-pool/create-cspc-stripe-pool
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-infra-setup/GRLZ-create-cspc-stripe-pool/create-cspc-stripe-pool
-
-O0FF-CSI-PROVISIONER:
-  extends: .csi_infra_test_template        
-  script:
-    - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-infra-setup/O0FF-deploy-csi-provisioner/deploy-csi-provisioner
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-infra-setup/O0FF-deploy-csi-provisioner/deploy-csi-provisioner
 
 RZ25-csi-storage-policies:
   extends: .csi_infra_test_template
