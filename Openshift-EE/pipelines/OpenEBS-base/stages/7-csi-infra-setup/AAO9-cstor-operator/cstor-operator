@@ -27,7 +27,6 @@ current_time=$(eval $time)
 bash Openshift-EE/utils/e2e-cr jobname:cstor-operator jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:cstor-cspc-striped-pool jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:cstor-cspc-mirrored-pool jobphase:Waiting
-bash Openshift-EE/utils/e2e-cr jobname:csi-provisioner jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:cstor-csi-storage-policies jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:cstor-operator jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
@@ -41,7 +40,7 @@ cd litmus
 
 cp providers/cstor-operator/run_litmus_test.yml cstor_operator.yml
 
-sed -i -e "/name: CSTOR_OPERATOR_IMAGE/{n;s/.*/            value: ${releaseTag}/g}" \
+sed -i -e "/name: IMAGE_TAG/{n;s/.*/            value: ${releaseTag}/g}" \
 -e "/name: RELEASE_BRANCH/{n;s/.*/            value: ${release_branch}/g}" \
 -e "/name: RELEASE_VERSION/{n;s/.*/            value: ${cspc_operator_image}/g}" cstor_operator.yml
 
