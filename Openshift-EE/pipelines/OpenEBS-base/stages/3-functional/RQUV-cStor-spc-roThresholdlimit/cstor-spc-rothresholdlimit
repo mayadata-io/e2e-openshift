@@ -33,7 +33,7 @@ cd litmus
 
 cp experiments/functional/rothreshold-limit/run_litmus_test.yml cstor_rothreshold_limit.yml
 
-sed -i -e '/name: PV_CAPACITY/{n;s/.*/            value: 6Gi/}' cstor_rothreshold_limit.yml
+sed -i -e '/name: PV_CAPACITY/{n;s/.*/            value: 10Gi/}' cstor_rothreshold_limit.yml
 
 cat cstor_rothreshold_limit.yml 
 
