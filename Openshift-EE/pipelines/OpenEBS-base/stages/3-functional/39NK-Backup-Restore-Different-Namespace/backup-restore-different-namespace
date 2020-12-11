@@ -46,6 +46,7 @@ cp apps/percona/deployers/run_litmus_test.yml percona_backup_restore_diff_ns.yml
 
 sed -i -e 's/app: percona-deployment/app: deploy-percona-backup-restore-diff-ns/g' \
 -e 's/value: openebs-standard/value: openebs-cstor-disk/g' \
+-e '/name: TARGET_AFFINITY_CHECK/{n;s/value: enable/value: disable/g}' \
 -e 's/value: app-percona-ns/value: backup-percona-cstor-diff-ns/g' percona_backup_restore_diff_ns.yml
 
 cat percona_backup_restore_diff_ns.yml
