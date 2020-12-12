@@ -41,6 +41,7 @@ cp apps/percona/deployers/run_litmus_test.yml percona_target_network_loss.yml
 sed -i -e 's/app: percona-deployment/app: deploy-percona-target-nw-loss/g' \
 -e 's/generateName: litmus-percona-/generateName: litmus-percona-nw-loss-/g' \
 -e 's/value: openebs-standard/value: openebs-cstor-disk/g' \
+-e '/name: TARGET_AFFINITY/{n;s/value: ""/value: cstor/g}' \
 -e 's/value: app-percona-ns/value: percona-target-nw-loss/g' percona_target_network_loss.yml
 
 sed -i '/command:/i \
