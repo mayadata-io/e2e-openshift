@@ -43,7 +43,9 @@ cp apps/percona/deployers/run_litmus_test.yml deploy_run_test_percona.yml
  | storage class     | env    | openebs-cstor-sparse                | openebs-jiva-standalone                          |
   ----------------------------------------------------------------------------------------------------------------------
 EOF
-sed -i -e 's/value: openebs-standard/value: openebs-cstor-disk/g' deploy_run_test_percona.yml
+
+sed -i -e 's/value: openebs-standard/value: openebs-cstor-disk/g' \
+-e '/name: TARGET_AFFINITY/{n;s/value: ""/value: cstor/g}' deploy_run_test_percona.yml
 
 cat deploy_run_test_percona.yml
 
