@@ -81,11 +81,10 @@ run_id="local-csi";test_name=$(bash Openshift-EE/utils/generate_test_name testca
 echo $test_name
 
 cd litmus
-cp experiments/functional/backup_and_restore/run_litmus_test.yml run_backuprestore_test_cstor_csi_local.yml
+cp experiments/functional/backup_and_restore/cstor/run_litmus_test.yml run_backuprestore_test_cstor_csi_local.yml
 
 sed -i -e 's/value: app-percona-ns/value: percona-backup-csi-local/g' \
 -e 's/app: velero-backup-restore/app: velero-local-backup-restore-csi/g' \
--e 's/value: "cstor"/value: "cstor-csi"/g' \
 -e '/name: DEPROVISION_VELERO/{n;s/.*/            value: "true"/}' \
 -e '/name: LOCAL_SNAPSHOT/{n;s/.*/            value: "true"/}' run_backuprestore_test_cstor_csi_local.yml
 
