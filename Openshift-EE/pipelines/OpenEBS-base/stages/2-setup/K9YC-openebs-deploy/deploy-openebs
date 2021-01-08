@@ -2,7 +2,7 @@
 
 pod() {
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b release-branch https://github.com/mayadata-io/e2e-openshift.git'
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/K9YC-openebs-deploy/deploy-openebs node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"' '"'$RELEASE_BRANCH'"' '"'$E_USER'"' '"'$E_PASSWORD'"' '"'$OPENEBS_MAYA_APISERVER_IMAGE'"' '"'$OPENEBS_PROVISIONER_IMAGE'"' '"'$OPENEBS_SNAPSHOT_CONTROLLER_IMAGE'"' '"'$OPENEBS_SNAPSHOT_PROVISIONER_IMAGE'"' '"'$OPENEBS_IO_JIVA_IMAGE'"' '"'$OPENEBS_MAYA_EXPORTER_IMAGE'"' '"'$OPENEBS_NODE_DISK_MANAGER_IMAGE'"' '"'$OPENEBS_NODE_DISK_OPERATOR_IMAGE'"' '"'$OPENEBS_IO_CSTOR_TARGET_IMAGE'"' '"'$OPENEBS_IO_CSTOR_POOL_IMAGE'"' '"'$OPENEBS_IO_CSTOR_POOL_MGMT_IMAGE'"' '"'$OPENEBS_IO_CSTOR_VOLUME_MGMT_IMAGE'"' '"'$OPENEBS_LOCALPV_PROVISIONER_IMAGE'"' '"'$OPENEBS_ADMISSION_SERVER_IMAGE'"' '"'$OPENEBS_CLEANUP_JOB_IMAGE'"' '"'$DEPLOY_MODE'"' '"'$HELM_REPO'"' '"'$HELM_BRANCH'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/K9YC-openebs-deploy/deploy-openebs node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"' '"'$RELEASE_BRANCH'"' '"'$E_USER'"' '"'$E_PASSWORD'"' '"'$OPENEBS_MAYA_APISERVER_IMAGE'"' '"'$OPENEBS_PROVISIONER_IMAGE'"' '"'$OPENEBS_SNAPSHOT_CONTROLLER_IMAGE'"' '"'$OPENEBS_SNAPSHOT_PROVISIONER_IMAGE'"' '"'$OPENEBS_IO_JIVA_IMAGE'"' '"'$OPENEBS_MAYA_EXPORTER_IMAGE'"' '"'$OPENEBS_NODE_DISK_MANAGER_IMAGE'"' '"'$OPENEBS_NODE_DISK_OPERATOR_IMAGE'"' '"'$OPENEBS_IO_CSTOR_TARGET_IMAGE'"' '"'$OPENEBS_IO_CSTOR_POOL_IMAGE'"' '"'$OPENEBS_IO_CSTOR_POOL_MGMT_IMAGE'"' '"'$OPENEBS_IO_CSTOR_VOLUME_MGMT_IMAGE'"' '"'$OPENEBS_LOCALPV_PROVISIONER_IMAGE'"' '"'$OPENEBS_ADMISSION_SERVER_IMAGE'"' '"'$OPENEBS_CLEANUP_JOB_IMAGE'"' '"'$DEPLOY_MODE'"' '"'$COMMIT_ID'"' '"'$RC_TAG'"' '"'$HELM_REPO'"' '"'$HELM_BRANCH'"'
 }
 
 node() {
@@ -30,8 +30,10 @@ localpv_provisioner_image=$(echo ${20})
 admission_server_image=$(echo ${21})
 cleanup_job_image=$(echo ${22})
 deploy_mode=$(echo ${23})
-helm_repo=$(echo ${24})
-helm_branch=$(echo ${25})
+commit_id=$(echo ${24})
+rc_tag=$(echo ${25})
+helm_repo=$(echo ${26})
+helm_branch=$(echo ${27})
 
 time="date"
 current_time=$(eval $time)
@@ -40,13 +42,6 @@ present_dir=$(pwd)
 echo $present_dir
 
 echo "releaseTag=$releaseTag"
-
-for i in efk-vars.yml efk.yml get_url.yml; do
-  wget https://raw.githubusercontent.com/openebs/e2e-infrastructure/master/workload/efk-client/playbook/$i
-done
-
-echo "EFK: Deploying Aggregrator and Forwarder on client"
-ansible-playbook efk.yml --extra-vars "commit_id=$commit_id pipeline_id=$pipeline_id e_user=$elastic_user e_password=$elastic_password" 
 
 # Applying e2e-CRD
 echo "***Applying e2e-crd***********"
@@ -105,6 +100,9 @@ export OPENEBS_CLEANUP_JOB_IMAGE=$cleanup_job_image
 export DEPLOY_MODE=$deploy_mode
 export HELM_REPO=$helm_repo
 export HELM_BRANCH=$helm_branch
+export COMMIT_ID=$commit_id
+export RC_TAG=$rc_tag
+
 wget https://raw.githubusercontent.com/openebs/e2e-infrastructure/master/env-update/env.py
 python3 env.py -f providers/openebs/installers/operator/master/litmusbook/run_litmus_test.yml
 
@@ -121,10 +119,6 @@ cat providers/openebs/installers/operator/master/litmusbook/run_litmus_test.yml
 echo "Applying rbac.yml********************************"
 kubectl apply -f ./hack/rbac.yaml
 kubectl apply -f ./hack/crds.yaml
-
-echo "Copying kube config for litmus"
-cp ~/.kube/config admin.conf
-kubectl create cm kubeconfig --from-file=admin.conf -n litmus
 
 echo "Running litmus test for openebs deploy.."
 
@@ -145,7 +139,6 @@ test_case_id="K9YC"
 source ~/.profile
 gittoken=$(echo "$github_token")
 testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
-#python3 Openshift-EE/utils/result/result_update.py $job_id K9YC 2-setup "Deploy OpenEBS in OpenShift-EE-3.10 Cluster" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 
 current_time=$(eval $time)
 bash Openshift-EE/utils/e2e-cr jobname:s2-j1-openebs-deploy jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:$testResult
@@ -159,7 +152,7 @@ fi
 }
 
 if [ "$1" == "node" ];then
-  node $2 $3 $4 $5 $6 $7 $8 $9 ${10} ${11} ${12} ${13} ${14} ${15} ${16} ${17} ${18} ${19} ${20} ${21} ${22} ${23} ${24} ${25} ${26}
+  node $2 $3 $4 $5 $6 $7 $8 $9 ${10} ${11} ${12} ${13} ${14} ${15} ${16} ${17} ${18} ${19} ${20} ${21} ${22} ${23} ${24} ${25} ${26} ${27} ${28}
 else
   pod
 fi

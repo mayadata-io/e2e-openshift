@@ -82,11 +82,10 @@ run_id="diff-ns";test_name=$(bash Openshift-EE/utils/generate_test_name testcase
 echo $test_name
 
 cd litmus
-cp experiments/functional/backup_and_restore/run_litmus_test.yml run_backuprestore_test_cstor_csi_diff_ns.yml
+cp experiments/functional/backup_and_restore/cstor/run_litmus_test.yml run_backuprestore_test_cstor_csi_diff_ns.yml
 
 sed -i -e 's/value: app-percona-ns/value: percona-backup-csi-diff-ns/g' \
 -e 's/app: velero-backup-restore/app: velero-backup-restore-cstor-csi-diff-ns/g' \
--e 's/value: "cstor"/value: "cstor-csi"/g' \
 -e '/name: DEPROVISION_VELERO/{n;s/.*/            value: "true"/}' \
 -e '/name: RESTORE_IN_DIFF_NAMESPACE/{n;s/.*/            value: "true"/}' run_backuprestore_test_cstor_csi_diff_ns.yml
 
