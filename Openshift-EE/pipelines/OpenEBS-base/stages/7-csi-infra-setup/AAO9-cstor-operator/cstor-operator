@@ -5,7 +5,7 @@ node_name=$(sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 
 echo $node_name
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port "kubectl taint nodes $node_name infra-aid-"
 
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-infra-setup/AAO9-cstor-operator/cstor-operator node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"' '"'$CSPC_RELEASE_VERSION'"' '"'$CSPC_RELEASE_BRANCH'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-infra-setup/AAO9-cstor-operator/cstor-operator node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"' '"'$CSPC_RELEASE_BRANCH'"' '"'$COMMIT_ID'"' '"'$RC_TAG'"' '"'$CSPC_OPERATOR_IMAGE'"' '"'$CSPI_MGMT_IMAGE'"' '"'$CSPC_CSTOR_POOL_EXPORTER_IMAGE'"' '"'$CSPC_CVC_OPERATOR_IMAGE'"' '"'$CSPC_CSTOR_ISTGT_IMAGE'"' '"'$CSPC_CSTOR_VOLUME_MGMT_IMAGE'"' '"'$CSPC_CSTOR_WEBHOOK_IMAGE'"' '"'$CSTOR_CSI_DRIVER_IMAGE'"'
 }
 
 node() {
@@ -15,8 +15,19 @@ pipeline_id=$(echo $2)
 case_id=AAO9
 commit_id=$(echo $3)
 releaseTag=$(echo $4)
-cspc_operator_image=$(echo $5)
-release_branch=$(echo $6)
+release_branch=$(echo $5)
+release_commit_id=$(echo $6)
+rc_tag=$(echo $7)
+cspc_operator_image=$(echo $8)
+cspi_mgmt_image=$(echo $9)
+cspc_cstor_pool_image=$(echo ${10})
+cspc_cstor_pool_exporter_image=$(echo ${11})
+cspc_cvc_operator_image=$(echo ${12})
+cspc_cstor_istgt_image=$(echo ${13})
+cspc_cstor_volume_mgmt_image=$(echo ${14})
+cspc_cstor_webhook_image=$(echo ${15})
+cstor_csi_driver_image=$(echo ${16})
+
 source ~/.profile
 gittoken=$(echo "$github_token")
 
@@ -40,9 +51,23 @@ cd litmus
 
 cp providers/cstor-operator/run_litmus_test.yml cstor_operator.yml
 
-sed -i -e "/name: IMAGE_TAG/{n;s/.*/            value: ${releaseTag}/g}" \
--e "/name: RELEASE_BRANCH/{n;s/.*/            value: ${release_branch}/g}" \
--e "/name: RELEASE_VERSION/{n;s/.*/            value: ${cspc_operator_image}/g}" cstor_operator.yml
+export CSPC_OPERATOR_IMAGE=$cspc_operator_image
+export CSPI_MGMT_IMAGE=$cspi_mgmt_image
+export CSPC_CSTOR_POOL_IMAGE=$cspc_cstor_pool_image
+export CSPC_CSTOR_POOL_EXPORTER_IMAGE=$cspc_cstor_pool_exporter_image
+export CSPC_CVC_OPERATOR_IMAGE=$cspc_cvc_operator_image
+export CSPC_CSTOR_ISTGT_IMAGE=$cspc_cstor_istgt_image
+export CSPC_CSTOR_VOLUME_MGMT_IMAGE=$cspc_cstor_volume_mgmt_image
+export CSPC_CSTOR_WEBHOOK_IMAGE=$ccspc_cstor_webhook_image
+export CSTOR_CSI_DRIVER_IMAGE=$cstor_csi_driver_image
+export COMMIT_ID=$release_commit_id
+export RC_TAG=$rc_tag
+
+wget https://raw.githubusercontent.com/openebs/e2e-infrastructure/master/env-update/env.py
+python3 env.py -f cstor_operator.yml
+
+sed -i -e "/name: OPENEBS_VERSION/{n;s/.*/          value: ${releaseTag}/g}" \
+-e "/name: RELEASE_BRANCH/{n;s/.*/          value: ${release_branch}/g}" cstor_operator.yml
 
 cat cstor_operator.yml
 
@@ -71,7 +96,7 @@ fi
 }
 
 if [ "$1" == "node" ];then
-  node $2 $3 $4 $5 $6 $7
+  node $2 $3 $4 $5 $6 $7 $8 $9 ${10} ${11} ${12} ${13} ${14} ${15} ${16} ${17}
 else
   pod
 fi
