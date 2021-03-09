@@ -5,7 +5,7 @@ node_name=$(sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 
 echo $node_name
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port "kubectl taint nodes $node_name infra-aid-"
 
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-infra-setup/AAO9-cstor-operator/cstor-operator node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"' '"'$CSPC_RELEASE_BRANCH'"' '"'$COMMIT_ID'"' '"'$RC_TAG'"' '"'$CSPC_OPERATOR_IMAGE'"' '"'$CSPI_MGMT_IMAGE'"' '"'$CSPC_CSTOR_POOL_EXPORTER_IMAGE'"' '"'$CSPC_CVC_OPERATOR_IMAGE'"' '"'$CSPC_CSTOR_ISTGT_IMAGE'"' '"'$CSPC_CSTOR_VOLUME_MGMT_IMAGE'"' '"'$CSPC_CSTOR_WEBHOOK_IMAGE'"' '"'$CSTOR_CSI_DRIVER_IMAGE'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/7-csi-infra-setup/AAO9-cstor-operator/cstor-operator node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$CSPC_RELEASE_TAG'"' '"'$CSPC_RELEASE_BRANCH'"' '"'$COMMIT_ID'"' '"'$RC_TAG'"' '"'$CSPC_OPERATOR_IMAGE'"' '"'$CSPI_MGMT_IMAGE'"' '"'$CSPC_CSTOR_POOL_EXPORTER_IMAGE'"' '"'$CSPC_CVC_OPERATOR_IMAGE'"' '"'$CSPC_CSTOR_ISTGT_IMAGE'"' '"'$CSPC_CSTOR_VOLUME_MGMT_IMAGE'"' '"'$CSPC_CSTOR_WEBHOOK_IMAGE'"' '"'$CSTOR_CSI_DRIVER_IMAGE'"'
 }
 
 node() {
