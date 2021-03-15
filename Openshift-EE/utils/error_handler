@@ -1,0 +1,10 @@
+#!/bin/bash
+set -x
+
+rc=$1; message=$(echo $2 | cut -d "=" -f 2); act=$(echo $3 | cut -d "=" -f 2)
+if [ ${rc} -ne 0 ]; then
+  echo "${message}"
+  if [ "${act}" == "exit" ]; then
+    exit 1
+  fi
+fi

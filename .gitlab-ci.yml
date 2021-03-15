@@ -1,0 +1,237 @@
+## Define the stages & order of execution
+
+stages:
+  - CLUSTER-SETUP
+  - OPENEBS-SETUP
+  - JIVA-CSI-INFRA-SETUP
+  - JIVA-CSI-FUNCTIONAL
+  - JIVA-FUNCTIONAL
+  - CHAOS
+  - JIVA-CSI-INFRA-CLEANUP
+  - OPENEBS-CLEANUP
+  - CLUSTER-CLEANUP
+  
+##########################################################################################
+
+PCZD-OpenShift:
+  image: openebs/openshift-ci:latest
+  stage: CLUSTER-SETUP
+  script:     
+    - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/1-cluster-setup/PCZD-cluster-setup/cluster-state
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/1-cluster-setup/PCZD-cluster-setup/cluster-state
+
+##########################################################################################
+
+K9YC-OpenEBS:
+  image: openebs/openshift-ci:latest
+  stage: OPENEBS-SETUP
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/K9YC-openebs-deploy/deploy-openebs
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/K9YC-openebs-deploy/deploy-openebs
+
+##########################################################################################
+
+.jiva_csi_infra_setup_template:
+  image: openebs/openshift-ci:latest
+  stage: JIVA-CSI-INFRA-SETUP
+  when: always
+  dependencies:
+    - K9YC-OpenEBS
+
+JCSI01-JIVA-OPERATOR:
+  extends: .jiva_csi_infra_setup_template
+  script:
+    - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-jiva-csi-infra-setup/JCSI01-jiva-operator/jiva-operator
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-jiva-csi-infra-setup/JCSI01-jiva-operator/jiva-operator
+
+PBCY-NFSv4-JIVA-PROVISION:
+  extends: .jiva_csi_infra_setup_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-jiva-csi-infra-setup/JCSI02-nfsv4-jiva-provision/nfsv4-jiva-provision
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-jiva-csi-infra-setup/JCSI02-nfsv4-jiva-provision/nfsv4-jiva-provision
+
+  
+###########################################################################################
+
+.jiva_csi_func_test_template:
+  image: openebs/openshift-ci:latest
+  stage: JIVA-CSI-FUNCTIONAL
+  when: always
+  dependencies:
+    - K9YC-OpenEBS
+
+
+JCSI11-JIVA-CSI-VOLUME-RESIZE-XFS:
+  extends: .jiva_csi_func_test_template
+  script:
+    - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-jiva-csi-functional/JCSI11-jiva-csi-volume-resize-xfs/jiva-csi-volume-resize-xfs
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-jiva-csi-functional/JCSI11-jiva-csi-volume-resize-xfs/jiva-csi-volume-resize-xfs
+
+JCSI12-JIVA-CSI-VOLUME-RESIZE:
+  extends: .jiva_csi_func_test_template
+  script:
+    - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-jiva-csi-functional/JCSI12-jiva-csi-volume-resize/jiva-csi-volume-resize
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-jiva-csi-functional/JCSI12-jiva-csi-volume-resize/jiva-csi-volume-resize
+
+#########################################################################################
+
+.func_test_template:
+  image: openebs/openshift-ci:latest
+  stage: JIVA-FUNCTIONAL
+  when: always
+  dependencies:
+    - K9YC-OpenEBS
+     
+UH9A-Jiva-Data-Integrity:
+  extends: .func_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/5-jiva-functional/JCSI21-Jiva-Data-Integrity/data-integrity
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/5-jiva-functional/JCSI21-Jiva-Data-Integrity/data-integrity
+
+SN3A-Jiva-Memory-Consumption:
+  extends: .func_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/5-jiva-functional/JCSI22-Jiva-Memory-Consumption/memory-consumption
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/5-jiva-functional/JCSI22-Jiva-Memory-Consumption/memory-consumption
+
+8QQP-Jiva-delete-autogen-snapshot:
+  extends: .func_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/5-jiva-functional/JCSI23-Jiva-Snapshot-Delete/jiva-snapshot-delete
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/5-jiva-functional/JCSI23-Jiva-Snapshot-Delete/jiva-snapshot-delete
+
+WVTY-App-Deploy-Jiva-RWX:
+  extends: .func_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/5-jiva-functional/JCSI24-app-deploy-jiva-RWX/app-deploy-jiva-rwx
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/5-jiva-functional/JCSI24-app-deploy-jiva-RWX/app-deploy-jiva-rwx
+
+KUL9-Jiva-App-Scaleup:
+  extends: .func_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/5-jiva-functional/JCSI25-Jiva-sts-App-replica-scaleup/app-replica-scaleup
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/5-jiva-functional/JCSI25-Jiva-sts-App-replica-scaleup/app-replica-scaleup
+
+4E0O-Jiva-Volume-Scaleup:
+  extends: .func_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/5-jiva-functional/JCSI26-Jiva-Volume-scaleup/jiva-volume-scaleup
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/5-jiva-functional/JCSI26-Jiva-Volume-scaleup/jiva-volume-scaleup
+
+NWQB-Backup-Restore-Jiva:
+  extends: .func_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/5-jiva-functional/JCSI27-Backup-Restore-Jiva/backup-restore-jiva
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/5-jiva-functional/JCSI27-Backup-Restore-Jiva/backup-restore-jiva
+
+###########################################################################################
+.chaos_test_template:
+  image: openebs/openshift-ci:latest
+  stage: CHAOS
+  when: always
+  dependencies:
+    - K9YC-OpenEBS
+
+HOSN-Jiva-single-replica-failure:
+  extends: .chaos_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-chaos/HOSN-jiva-single-replica-failure/single-replica-failure
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-chaos/HOSN-jiva-single-replica-failure/single-replica-failure
+
+VO3D-Jiva-controller-kill:
+  extends: .chaos_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-chaos/VO3D-jiva-controller-kill/controller-kill
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-chaos/VO3D-jiva-controller-kill/controller-kill
+
+PX1D-Jiva-replica-node-affinity:
+  extends: .chaos_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-chaos/PX1D-jiva-replica-node-affinity/replica-node-affinity
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-chaos/PX1D-jiva-replica-node-affinity/replica-node-affinity
+
+TSXL-Jiva-controller-network-delay:
+  extends: .chaos_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-chaos/TSXL-Jiva-controller-network-delay/controller-network-delay
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-chaos/TSXL-Jiva-controller-network-delay/controller-network-delay
+
+VJBK-Jiva-replica-failure:
+  extends: .chaos_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-chaos/VJBK-Jiva-replica-failure/jiva-replica-failure
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-chaos/VJBK-Jiva-replica-failure/jiva-replica-failure
+
+F7BO-Jiva-Revision-Counter:
+  extends: .chaos_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-chaos/F7BO-jiva-revision-counter/jiva-revision-counter
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-chaos/F7BO-jiva-revision-counter/jiva-revision-counter
+
+N67N-nfs-App-Kill-Jiva:
+  extends: .chaos_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-chaos/N67N-nfs-app-kill-jiva/nfs-app-kill-jiva
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-chaos/N67N-nfs-app-kill-jiva/nfs-app-kill-jiva
+
+8ZWN-nfs-Ctrl-Kill-Jiva:
+  extends: .chaos_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-chaos/8ZWN-nfs-ctrl-kill-jiva/nfs-ctrl-kill-jiva
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-chaos/8ZWN-nfs-ctrl-kill-jiva/nfs-ctrl-kill-jiva
+
+NEPS-nfs-Ctrl-Container-Kill-Jiva:
+  extends: .chaos_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-chaos/NEPS-nfs-ctrl-container-kill/nfs-ctrl-container-kill
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-chaos/NEPS-nfs-ctrl-container-kill/nfs-ctrl-container-kill
+
+
+####################################################################################################################
+
+.jiva_csi_infra_cleanup_template:
+  image: openebs/openshift-ci:latest
+  stage: JIVA-CSI-INFRA-CLEANUP
+  when: always
+  dependencies:
+    - JCSI01-JIVA-OPERATOR
+
+JCSI91-JIVA-OPERATOR:
+  extends: .jiva_csi_infra_cleanup_template
+  script:
+    - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/7-jiva-csi-infra-cleanup/JCSI41-jiva-operator-cleanup/jiva-operator-cleanup
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/7-jiva-csi-infra-cleanup/JCSI41-jiva-operator-cleanup/jiva-operator-cleanup
+
+J9PT-nfsv4-jiva-provision-cleanup:
+  extends: .jiva_csi_infra_cleanup_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/7-jiva-csi-infra-cleanup/JCSI42-nfsv4-jiva-provisioner-cleanup/nfsv4-jiva-provisioner-cleanup
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/7-jiva-csi-infra-cleanup/JCSI42-nfsv4-jiva-provisioner-cleanup/nfsv4-jiva-provisioner-cleanup
+
+
+###########################################################################################
+
+.cleanup_test_template:
+  image: openebs/openshift-ci:latest
+  stage: OPENEBS-CLEANUP
+  when: always
+  dependencies:
+    - K9YC-OpenEBS
+
+GP95-openebs-Uninstall:
+  extends: .cleanup_test_template
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/8-cleanup/GP95-openebs-cleanup/openebs-cleanup
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/8-cleanup/GP95-openebs-cleanup/openebs-cleanup
+
+##########################################################################################
+
+4SMQ-cluster-Delete:
+  image: openebs/openshift-ci:latest
+  stage: CLUSTER-CLEANUP
+  when: always
+  dependencies:
+    - PCZD-OpenShift
+  script:
+    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/8-cleanup/4SMQ-cluster-cleanup/cluster-cleanup
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/8-cleanup/4SMQ-cluster-cleanup/cluster-cleanup

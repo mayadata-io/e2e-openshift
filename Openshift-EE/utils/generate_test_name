@@ -1,0 +1,12 @@
+#!/bin/bash
+set -x
+
+ltest=$(echo $1 | cut -d "=" -f 2)
+runid=$(echo $2 | cut -d "=" -f 2)
+
+if [[ -n "${runid}" ]]; then
+  testrun="${ltest}-${runid}"
+  echo ${testrun}
+else
+  echo ${ltest}
+fi
