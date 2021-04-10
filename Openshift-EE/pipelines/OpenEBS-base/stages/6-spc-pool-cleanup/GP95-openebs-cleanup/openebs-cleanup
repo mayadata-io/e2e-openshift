@@ -1,7 +1,7 @@
 #!/bin/bash
 
 pod() {
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/11-cleanup/GP95-openebs-cleanup/openebs-cleanup node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/6-spc-pool-cleanup/GP95-openebs-cleanup/openebs-cleanup node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
 }
 
 node() {
@@ -17,7 +17,7 @@ current_time=$(eval $time)
 present_dir=$(pwd)
 echo $present_dir
 
-bash Openshift-EE/utils/pooling jobname:cleanup-cspc-mirrored-pool
+bash Openshift-EE/utils/pooling jobname:cspc-raidz1-pool-cleanup
 bash Openshift-EE/utils/e2e-cr jobname:openebs-cleanup jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-deprovision metadata="")
 echo $test_name
@@ -55,13 +55,13 @@ current_time=$(eval $time)
 
 if [ "$rc_val" != "0" ]; then
 bash Openshift-EE/utils/e2e-cr jobname:openebs-cleanup jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Fail
-python3 Openshift-EE/utils/result/result_update.py $job_id GP95 11-cleanup "Cleanup OpenEBS related components" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id GP95 6-spc-pool-cleanup "Cleanup OpenEBS related components" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 exit 1;
 fi
 
 bash Openshift-EE/utils/e2e-cr jobname:openebs-cleanup jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
 
-python3 Openshift-EE/utils/result/result_update.py $job_id GP95 11-cleanup "Cleanup OpenEBS related components" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+python3 Openshift-EE/utils/result/result_update.py $job_id GP95 6-spc-pool-cleanup "Cleanup OpenEBS related components" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 
 if [ "$rc_val" != "0" ]; then
 exit 1;

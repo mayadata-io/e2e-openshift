@@ -20,7 +20,7 @@ current_time=$(eval $time)
 
 #pooling over previous job to complete
 echo "*******Creating cstor-pool**************"
-bash Openshift-EE/utils/pooling jobname:bdd-jiva-node-stickiness
+bash Openshift-EE/utils/pooling jobname:cstor-integration-test
 bash Openshift-EE/utils/e2e-cr jobname:s2-j2-cstor-striped-pool jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
 run_id="striped";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=cstor-block-device-pool-provision metadata=${run_id})
