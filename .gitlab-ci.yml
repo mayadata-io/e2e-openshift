@@ -421,7 +421,7 @@ P068-cleanup-spc-thick-provision-pool:
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-spc-pool-cleanup/P068-cleanup-spc-thick-provision-pool/cleanup-spc-pool
 
 GP95-openebs-Uninstall:
-  extends: .cleanup_test_template
+  extends: .spc_cleanup_test_template
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-spc-pool-cleanup/GP95-openebs-cleanup/openebs-cleanup
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-spc-pool-cleanup/GP95-openebs-cleanup/openebs-cleanup
