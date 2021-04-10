@@ -35,7 +35,7 @@ echo "Openshift CSR's are pending kindly approve it and take snapshot"
 exit;
 fi
 
-if [ "$ready_nodes" -eq 8 ]; then
+if [ "$ready_nodes" -eq 7 ]; then
 echo "Number of nodes in ready state is $ready_nodes"
 echo "******Cluster is in Healthy state****"
 
@@ -44,13 +44,11 @@ sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port kubectl get 
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port kubectl get pod --all-namespaces
 
 echo "cloning e2e-openshift repo*************"
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b release-branch https://github.com/mayadata-io/e2e-openshift.git'
-#sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'python3 e2e-openshift/Openshift-EE/utils/result/result_update.py '"'$CI_JOB_ID'"' PCZD 1-cluster-setup "Configure OpenShift cluster" Pass '"'$CI_PIPELINE_ID'"' '"'$current_time'"' '"'$CI_COMMIT_SHA'"' '"'$gittoken'"'' '"'$RELEASE_TAG'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b openebs-cstor https://github.com/mayadata-io/e2e-openshift.git'
 else
 echo "All nodes are not ready"
 echo "******Cluster is in Unhealthy state*******"
 echo "cloning e2e-openshift repo*************"
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b release-branch https://github.com/mayadata-io/e2e-openshift.git'
-#sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'python3 e2e-openshift/Openshift-EE/utils/result/result_update.py '"'$CI_JOB_ID'"' PCZD 1-cluster-setup "Configure OpenShift cluster" Fail '"'$CI_PIPELINE_ID'"' '"'$current_time'"' '"'$CI_COMMIT_SHA'"' '"'$gittoken'"'' '"'$RELEASE_TAG'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b openebs-cstor https://github.com/mayadata-io/e2e-openshift.git'
 exit 1;
 fi

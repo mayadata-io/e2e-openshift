@@ -1,0 +1,100 @@
+#!/bin/bash
+
+pod() {
+
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/2-csi-infra-setup/AAO9-cstor-operator/cstor-operator node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$CSPC_RELEASE_TAG'"' '"'$CSPC_RELEASE_BRANCH'"' '"'$COMMIT_ID'"' '"'$RC_TAG'"' '"'$CSPC_OPERATOR_IMAGE'"' '"'$CSPI_MGMT_IMAGE'"' '"'$CSPC_CSTOR_POOL_EXPORTER_IMAGE'"' '"'$CSPC_CVC_OPERATOR_IMAGE'"' '"'$CSPC_CSTOR_ISTGT_IMAGE'"' '"'$CSPC_CSTOR_VOLUME_MGMT_IMAGE'"' '"'$CSPC_CSTOR_WEBHOOK_IMAGE'"' '"'$CSTOR_CSI_DRIVER_IMAGE'"'
+}
+
+node() {
+
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+case_id=AAO9
+commit_id=$(echo $3)
+releaseTag=$(echo $4)
+release_branch=$(echo $5)
+release_commit_id=$(echo $6)
+rc_tag=$(echo $7)
+cspc_operator_image=$(echo $8)
+cspi_mgmt_image=$(echo $9)
+cspc_cstor_pool_image=$(echo ${10})
+cspc_cstor_pool_exporter_image=$(echo ${11})
+cspc_cvc_operator_image=$(echo ${12})
+cspc_cstor_istgt_image=$(echo ${13})
+cspc_cstor_volume_mgmt_image=$(echo ${14})
+cspc_cstor_webhook_image=$(echo ${15})
+cstor_csi_driver_image=$(echo ${16})
+
+source ~/.profile
+gittoken=$(echo "$github_token")
+
+time="date"
+current_time=$(eval $time)
+
+#pooling over previous job to complete
+bash Openshift-EE/utils/e2e-cr jobname:cstor-operator jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:cstor-cspc-striped-pool jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:cstor-cspc-mirrored-pool jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:cstor-csi-storage-policies jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:cstor-operator jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
+
+#################
+## RUNNER MAIN ##
+#################
+
+test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-cstor-operator-provision metadata="")
+echo $test_name
+git clone https://github.com/openebs/litmus
+cd litmus
+
+cp providers/cstor-operator/run_litmus_test.yml cstor_operator.yml
+
+export CSPC_OPERATOR_IMAGE=$cspc_operator_image
+export CSPI_MGMT_IMAGE=$cspi_mgmt_image
+export CSPC_CSTOR_POOL_IMAGE=$cspc_cstor_pool_image
+export CSPC_CSTOR_POOL_EXPORTER_IMAGE=$cspc_cstor_pool_exporter_image
+export CSPC_CVC_OPERATOR_IMAGE=$cspc_cvc_operator_image
+export CSPC_CSTOR_ISTGT_IMAGE=$cspc_cstor_istgt_image
+export CSPC_CSTOR_VOLUME_MGMT_IMAGE=$cspc_cstor_volume_mgmt_image
+export CSPC_CSTOR_WEBHOOK_IMAGE=$ccspc_cstor_webhook_image
+export CSTOR_CSI_DRIVER_IMAGE=$cstor_csi_driver_image
+export COMMIT_ID=$release_commit_id
+export RC_TAG=$rc_tag
+
+wget https://raw.githubusercontent.com/openebs/e2e-infrastructure/master/env-update/env.py
+python3 env.py -f cstor_operator.yml
+
+sed -i -e "/name: OPENEBS_VERSION/{n;s/.*/          value: ${releaseTag}/g}" \
+-e "/name: RELEASE_BRANCH/{n;s/.*/          value: ${release_branch}/g}" cstor_operator.yml
+
+cat cstor_operator.yml
+
+bash ../Openshift-EE/utils/litmus_job_runner label='provider:cstor-operator' job=cstor_operator.yml
+bash ../Openshift-EE/utils/dump_cluster_state;
+cd ..
+bash Openshift-EE/utils/event_updater jobname:cstor-operator $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+#################
+## GET RESULT  ##
+#################
+rc_val=$(echo $?)
+
+## Check the test status & result from the litmus result custom resource
+source ~/.profile
+gittoken=$(echo "$github_token")
+testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+
+current_time=$(eval $time)
+bash Openshift-EE/utils/e2e-cr jobname:cstor-operator jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:$testResult
+
+python3 Openshift-EE/utils/result/result_update.py $job_id AAO9 2-csi-infra-setup "install cstor-operator" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4 $5 $6 $7 $8 $9 ${10} ${11} ${12} ${13} ${14} ${15} ${16} ${17}
+else
+  pod
+fi
