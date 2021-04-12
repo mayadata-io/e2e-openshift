@@ -1,7 +1,7 @@
 #!/bin/bash
 
 pod() {
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && GOPATH="/home/devuser/go"; PATH=$PATH:"/usr/local/go/bin:$GOPATH/bin"; /bin/bash /home/devuser/e2e-openshift/Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/cstor/volume/cstor-volume-provisioning-negative node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && GOPATH="/home/openshift/go"; PATH=$PATH:"/usr/local/go/bin:$GOPATH/bin"; /bin/bash /home/openshift/e2e-openshift/Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/cstor/volume/cstor-volume-provisioning-negative node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
 }
 
 node() {
@@ -25,7 +25,7 @@ current_time=$(eval $time)
 bash Openshift-EE/utils/pooling jobname:bdd-cstor-volume-provisioning
 bash Openshift-EE/utils/e2e-cr jobname:bdd-cstor-volume-provisioning-negative jobphase:Running init_time:"$current_time" init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
-cd /home/devuser/go/src/github.com/openebs
+cd /home/openshift/go/src/github.com/openebs
 
 # Running BDD test for cstor-volume-provisioning-negative
 cd maya/tests/cstor/volume && ginkgo -v -focus="\[Cstor Volume Provisioning Negative\]" -- -kubeconfig=$HOME/.kube/config --cstor-replicas=3 --cstor-maxpools=3
@@ -35,13 +35,13 @@ cd maya/tests/cstor/volume && ginkgo -v -focus="\[Cstor Volume Provisioning Nega
 if [ "$?" != "0" ];then
   echo "cstor-negative-volume-provisioning-test-failed"
   current_time=$(eval $time)
-  cd /home/devuser/e2e-openshift
+  cd /home/openshift/e2e-openshift
   bash Openshift-EE/utils/e2e-cr jobname:bdd-cstor-volume-provisioning-negative jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Fail
   exit 1;
 else
   echo "cstor-negative-volume-provisioning-test-Passed"
   current_time=$(eval $time)
-  cd /home/devuser/e2e-openshift
+  cd /home/openshift/e2e-openshift
   bash Openshift-EE/utils/e2e-cr jobname:bdd-cstor-volume-provisioning-negative jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Pass
 fi
 }

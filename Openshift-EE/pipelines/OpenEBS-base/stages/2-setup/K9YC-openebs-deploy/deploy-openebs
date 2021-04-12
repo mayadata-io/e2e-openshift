@@ -51,11 +51,7 @@ echo "*****Deploying openebs*******"
 bash Openshift-EE/utils/e2e-cr jobname:s2-j1-openebs-deploy jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:s2-j1-openebs-deploy jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 bash Openshift-EE/utils/e2e-cr jobname:cstor-integration-test jobphase:Waiting
-bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-volume jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:bdd-cstor-negative-invalid-storage-pool-claim jobphase:Waiting
-bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-node-stickiness jobphase:Waiting
-bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-snapshot jobphase:Waiting
-bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-clone jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:bdd-cstor-volume-clone-provisioning jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:bdd-cstor-snapshot-provisioning jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:bdd-cstor-volume-provisioning jobphase:Waiting
@@ -66,9 +62,8 @@ bash Openshift-EE/utils/e2e-cr jobname:s2-j6-policies jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:s2-j2-cstor-striped-pool jobphase:Waiting 
 bash Openshift-EE/utils/e2e-cr jobname:s2-j3-cstor-mirrored-pool jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:s2-j4-cstor-raidz1-pool jobphase:Waiting
-# bash Openshift-EE/utils/e2e-cr jobname:s2-j5-cstor-raidz2-pool jobphase:Waiting
+bash Openshift-EE/utils/e2e-cr jobname:s2-j5-cstor-raidz2-pool jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:s2-j7-nfsv4-provision jobphase:Waiting
-bash Openshift-EE/utils/e2e-cr jobname:s2-j8-nfsv4-jiva-provision jobphase:Waiting
 
 source ~/.profile
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 pod() {
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && GOPATH="/home/devuser/go"; PATH=$PATH:"/usr/local/go/bin:$GOPATH/bin"; /bin/bash /home/devuser/e2e-openshift/Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/cstor/scaleup_replica/scaleup_replica_test node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && GOPATH="/home/openshift/go"; PATH=$PATH:"/usr/local/go/bin:$GOPATH/bin"; /bin/bash /home/openshift/e2e-openshift/Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/cstor/scaleup_replica/scaleup_replica_test node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
 }
 
 node() {
@@ -25,7 +25,7 @@ current_time=$(eval $time)
 bash Openshift-EE/utils/pooling jobname:bdd-cstor-negative-invalid-storage-pool-claim
 bash Openshift-EE/utils/e2e-cr jobname:bdd-cstor-scaleup-replica jobphase:Running init_time:"$current_time" init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
-cd /home/devuser/go/src/github.com/openebs
+cd /home/openshift/go/src/github.com/openebs
 
 # Running BDD test for cstor-scaleup-replica
 cd maya/tests/cstor/volume/scaleup_replica && ginkgo -v -- -kubeconfig=$HOME/.kube/config -cstor-maxpools=3
@@ -35,13 +35,13 @@ cd maya/tests/cstor/volume/scaleup_replica && ginkgo -v -- -kubeconfig=$HOME/.ku
 if [ "$?" != "0" ];then
   echo "cstor-scaleup-replica-test-Failed"
   current_time=$(eval $time)
-  cd /home/devuser/e2e-openshift
+  cd /home/openshift/e2e-openshift
   bash Openshift-EE/utils/e2e-cr jobname:bdd-cstor-scaleup-replica jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Fail
   exit 1;
 else
   echo "cstor-scaleup-replica-test-Passed"
   current_time=$(eval $time)
-  cd /home/devuser/e2e-openshift
+  cd /home/openshift/e2e-openshift
   bash Openshift-EE/utils/e2e-cr jobname:bdd-cstor-scaleup-replica jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:$testResult
 fi
 }

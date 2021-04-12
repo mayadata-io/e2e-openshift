@@ -1,7 +1,7 @@
 #!/bin/bash
 
 pod() {
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && GOPATH="/home/devuser/go"; PATH=$PATH:"/usr/local/go/bin:$GOPATH/bin"; /bin/bash /home/devuser/e2e-openshift/Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/cstor-integration-test node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && GOPATH="/home/openshift/go"; PATH=$PATH:"/usr/local/go/bin:$GOPATH/bin"; /bin/bash /home/openshift/e2e-openshift/Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/cstor-integration-test node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
 }
 
 node() {
@@ -20,7 +20,7 @@ bash Openshift-EE/utils/pooling jobname:bdd-cstor-volume-provisioning
 bash Openshift-EE/utils/e2e-cr jobname:cstor-integration-test jobphase:Running init_time:"$current_time"
 
 
-cd /home/devuser/go/src/github.com/openebs
+cd /home/openshift/go/src/github.com/openebs
 
 cd maya/tests/cstor/pool/reconciliation
 
@@ -29,13 +29,13 @@ ginkgo -v -- -kubeconfig=$HOME/.kube/config
 if [ "$?" != "0" ];then
   echo "test-failed"
   current_time=$(eval $time)
-  cd /home/devuser/e2e-openshift
+  cd /home/openshift/e2e-openshift
   bash Openshift-EE/utils/e2e-cr jobname:cstor-integration-test jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Fail
   exit 1;
 else
   echo "test-passed"
   current_time=$(eval $time)
-  cd /home/devuser/e2e-openshift
+  cd /home/openshift/e2e-openshift
   bash Openshift-EE/utils/e2e-cr jobname:cstor-integration-test jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:$testResult
 fi
   
