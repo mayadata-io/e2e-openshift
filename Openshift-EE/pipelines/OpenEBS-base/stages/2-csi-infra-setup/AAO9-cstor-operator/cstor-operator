@@ -27,6 +27,8 @@ cstor_csi_driver_image=$(echo ${16})
 
 echo "releaseTag=$release_branch"
 
+kubectl apply -f Openshift-EE/utils/e2e-crd.yml
+
 source ~/.profile
 gittoken=$(echo "$github_token")
 
@@ -48,6 +50,10 @@ test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-cstor-op
 echo $test_name
 git clone https://github.com/openebs/litmus
 cd litmus
+
+echo "Applying rbac.yml********************************"
+kubectl apply -f ./hack/rbac.yaml
+kubectl apply -f ./hack/crds.yaml
 
 cp providers/cstor-operator/run_litmus_test.yml cstor_operator.yml
 
