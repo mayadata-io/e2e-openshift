@@ -1,7 +1,7 @@
 #!/bin/bash
 
 pod() {
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && GOPATH="/home/devuser/go"; PATH=$PATH:"/usr/local/go/bin:$GOPATH/bin"; /bin/bash /home/devuser/e2e-openshift/Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/Jiva/jiva-snapshot node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && GOPATH="/home/openshift/go"; PATH=$PATH:"/usr/local/go/bin:$GOPATH/bin"; /bin/bash /home/devuser/e2e-openshift/Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/BDD/Jiva/jiva-snapshot node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
 }
 
 node() {
@@ -28,7 +28,7 @@ bash Openshift-EE/utils/pooling jobname:bdd-jiva-clone
 bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-snapshot jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 # Running BDD test for jiva-snapshot
-cd /home/devuser/go/src/github.com/openebs/maya/tests/jiva/snapshot
+cd /home/openshift/go/src/github.com/openebs/maya/tests/jiva/snapshot
 ginkgo -v -- -kubeconfig=$HOME/.kube/config --replicas=3
 
 #Evaluating result based on the return count
@@ -36,13 +36,13 @@ ginkgo -v -- -kubeconfig=$HOME/.kube/config --replicas=3
 if [ "$?" != "0" ];then
   echo "jiva-snapshot-test-failed"
   current_time=$(eval $time)
-  cd /home/devuser/e2e-openshift
+  cd /home/openshift/e2e-openshift
   bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-snapshot jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:Fail
   exit 1;
 else
   echo "jiva-snapshot-test-passed"
   current_time=$(eval $time)
-  cd /home/devuser/e2e-openshift
+  cd /home/openshift/e2e-openshift
   bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-snapshot jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" test_result:$testResult
 fi
 }
