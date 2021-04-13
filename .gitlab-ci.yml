@@ -90,11 +90,11 @@ IEZ4-CSTOR-CSPC-POOL-REPLACE-BLOCKDEVICE:
     - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-csi-functional/IEZ4-cstor-cspc-pool-replace-blockdevice/cstor-cspc-pool-replace-blockdevice
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-csi-functional/IEZ4-cstor-cspc-pool-replace-blockdevice/cstor-cspc-pool-replace-blockdevice
 
-S4B4-CSI-CSTOR-SNAPSHOT:
+S4B9-CSI-CSTOR-SNAPSHOT:
   extends: .csi_func_test_template        
   script:
-    - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-csi-functional/S4B4-csi-cstor-snapshot/csi-cstor-snapshot
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-csi-functional/S4B4-csi-cstor-snapshot/csi-cstor-snapshot
+    - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-csi-functional/S4B9-csi-cstor-snapshot/csi-cstor-snapshot
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-csi-functional/S4B9-csi-cstor-snapshot/csi-cstor-snapshot
 
 4H27-Backup-Restore-Diff-Profile:
   extends: .csi_func_test_template

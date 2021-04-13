@@ -39,7 +39,6 @@ echo $test_name
 cd litmus
 echo "Running the litmus test for Percona Deployment.."
 
-Storeing GCP service account key in file"
 echo "$sdk_token" > key.json
 
 echo "Creating configmap in litmus namespace for GCP token"
