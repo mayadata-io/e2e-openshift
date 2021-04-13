@@ -44,11 +44,11 @@ sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port kubectl get 
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port kubectl get pod --all-namespaces
 
 echo "cloning e2e-openshift repo*************"
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b openebs-cstor https://github.com/mayadata-io/e2e-openshift.git'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b openebs-cstor-csi https://github.com/mayadata-io/e2e-openshift.git'
 else
 echo "All nodes are not ready"
 echo "******Cluster is in Unhealthy state*******"
 echo "cloning e2e-openshift repo*************"
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b openebs-cstor https://github.com/mayadata-io/e2e-openshift.git'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b openebs-cstor-csi https://github.com/mayadata-io/e2e-openshift.git'
 exit 1;
 fi

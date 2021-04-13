@@ -25,6 +25,8 @@ cspc_cstor_volume_mgmt_image=$(echo ${14})
 cspc_cstor_webhook_image=$(echo ${15})
 cstor_csi_driver_image=$(echo ${16})
 
+echo "releaseTag=$release_branch"
+
 source ~/.profile
 gittoken=$(echo "$github_token")
 

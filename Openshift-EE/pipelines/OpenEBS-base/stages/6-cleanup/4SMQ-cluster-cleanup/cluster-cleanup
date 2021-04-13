@@ -77,13 +77,13 @@ $worker5_name \
 
 #Replace the snapshot name and exp ip in vars
 sed -i -e 's/snapshot_name: "oc-cluster"/snapshot_name: "cauto"/g' \
--e 's/esx_ip: "10.12.1.1"/esx_ip: "10.51.1.1"/g' k8s/on-prem/openshift-installer/vars.yml
+-e 's/esx_ip: "10.12.1.1"/esx_ip: "10.12.1.1"/g' k8s/on-prem/openshift-installer/vars.yml
 
 ansible-playbook k8s/on-prem/openshift-installer/revert_cluster_state.yml 
 
 #Removimg e2e openshift test repo
 cd  && rm -rf e2e-openshift && rm -rf infra
-cd /home/devuser/go/src/github.com/openebs && rm -rf maya
+#cd /home/devuser/go/src/github.com/openebs && rm -rf maya
 }
 
 if [ "$1" == "node" ];then
