@@ -32,7 +32,7 @@ echo $test_name
 # LitmusBook 1 #
 ################
 
-cd litmus
+cd e2e-tests
 echo "Running the litmus test for Busybox Deployment.."
 
 cp apps/busybox/deployers/run_litmus_test.yml busybox_app_kill_jiva.yml
@@ -81,7 +81,7 @@ echo $test_name
 run_id="jiva-app-kill";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
 echo $test_name
 
-cd litmus
+cd e2e-tests
 # copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
 cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_app_kill_jiva.yml
 
@@ -125,7 +125,7 @@ fi
 # LitmusBook 3 #
 ################
 
-cd litmus
+cd e2e-tests
 cp experiments/chaos/app_pod_failure/run_litmus_test.yml app_kill_jiva.yml
 
 : << EOF
@@ -185,7 +185,7 @@ echo $test_name
 run_id="deprovision-jiva-app-kill";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
 echo $test_name
 
-cd litmus
+cd e2e-tests
 # copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
 cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_deprovision_app_kill_jiva.yml
 
@@ -233,7 +233,7 @@ fi
 # LitmusBook 5 #
 ################
 
-cd litmus
+cd e2e-tests
 cp apps/busybox/deployers/run_litmus_test.yml deprovision_app_kill_jiva.yml
 
 : << EOF

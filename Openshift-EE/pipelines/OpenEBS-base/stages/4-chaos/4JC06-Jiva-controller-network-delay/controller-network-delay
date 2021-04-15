@@ -47,7 +47,7 @@ EOF
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-controller-delay-jiva metadata="")
 echo $test_name
 
-cd litmus
+cd e2e-tests
 echo "Running the litmus test for Busybox Deployment.."
 
 cp apps/busybox/deployers/run_litmus_test.yml busybox_controller_delay_jiva.yml
@@ -78,7 +78,7 @@ fi
 run_id="controller-delay-jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
 echo $test_name
 
-cd litmus
+cd e2e-tests
 # copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
 cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_controller_delay_jiva.yml
 
@@ -127,7 +127,7 @@ echo "*******Performing network delay on controller**********"
 run_id="jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-target-network-delay metadata=${run_id})
 echo $test_name
 
-cd litmus
+cd e2e-tests
 cp experiments/chaos/openebs_target_network_delay/run_litmus_test.yml run_controller_delay_test_jiva.yml
 
 : << EOF
@@ -186,7 +186,7 @@ fi
 run_id="deprovision-controller-delay-jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
 echo $test_name
 
-cd litmus
+cd e2e-tests
 # copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
 cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_deprovision_controller_delay_jiva.yml
 
@@ -239,7 +239,7 @@ echo "********Deprovisioning Busybox Application*******"
 
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-controller-delay-jiva metadata="")
 echo $test_name
-cd litmus
+cd e2e-tests
 cp apps/busybox/deployers/run_litmus_test.yml deprovision_controller_delay_jiva.yml
 
 : << EOF

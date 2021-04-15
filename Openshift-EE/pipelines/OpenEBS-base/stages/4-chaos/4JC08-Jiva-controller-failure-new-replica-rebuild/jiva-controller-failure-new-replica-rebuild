@@ -47,7 +47,7 @@ EOF
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-ctrl-kill-rep-scaleup metadata="")
 echo $test_name
 
-cd litmus
+cd e2e-tests
 echo "Running the litmus test for Busybox Deployment.."
 cp apps/busybox/deployers/run_litmus_test.yml deploy_app_jiva_replica_scale_ctrl_kill.yml
 
@@ -81,7 +81,7 @@ fi
 run_id="jiva-scaleup-ctrl-kill";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
 echo $test_name
 
-cd litmus
+cd e2e-tests
 # copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
 cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_jiva_rep_scaleup_ctrl_kill.yml
 
@@ -130,7 +130,7 @@ fi
 run_id="controller-kill";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=scaleup-jiva-replica metadata=${run_id})
 echo $test_name
 
-cd litmus
+cd e2e-tests
 # copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
 cp experiments/functional/scale_jiva_replica/run_litmus_test.yml ctrl_kill_scale_jiva_rep.yml
 
@@ -178,7 +178,7 @@ fi
 run_id="deprovision-rep-scaleup-ctrl-kill";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
 echo $test_name
 
-cd litmus
+cd e2e-tests
 # copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
 cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_deprovision_jiva_rep_scaleup_ctrl_kill.yml
 
@@ -230,7 +230,7 @@ fi
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-ctrl-kill-rep-scaleup metadata="")
 echo $test_name
 
-cd litmus
+cd e2e-tests
 cp apps/busybox/deployers/run_litmus_test.yml deprovision_busybox_jiva_replica_ctrl_kill.yml
 
 sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovision-replica-scaleup/g' \

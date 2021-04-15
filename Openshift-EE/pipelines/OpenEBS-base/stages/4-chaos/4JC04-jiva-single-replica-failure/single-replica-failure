@@ -41,7 +41,7 @@ bash Openshift-EE/utils/e2e-cr jobname:jiva-single-rep-kill jobphase:Running ini
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-single-rep-kill metadata="")
 echo $test_name
 
-cd litmus
+cd e2e-tests
 echo "Running the litmus test for Busybox Deployment.."
 
 #copy the content of deployer run_litmus_test.yml into a different file to update the test specific parametes.
@@ -92,7 +92,7 @@ fi
 run_id="single-rep-kill";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
 echo $test_name
 
-cd litmus
+cd e2e-tests
 # copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
 cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_single_rep_kill.yml
 
@@ -141,7 +141,7 @@ fi
 run_id="single";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-volume-replica-failure metadata=${run_id})
 echo $test_name
 
-cd litmus
+cd e2e-tests
 cp experiments/chaos/openebs_volume_replica_failure/run_litmus_test.yml run_single_rep_failure.yml
 
 : << EOF
@@ -197,7 +197,7 @@ fi
 run_id="deprovision-single-rep-kill";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
 echo $test_name
 
-cd litmus
+cd e2e-tests
 # copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
 cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_deprovision_single_rep_kill.yml
 
@@ -251,7 +251,7 @@ echo "********Deprovisioning Busybox Application*******"
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-single-rep-kill metadata="")
 echo $test_name
 
-cd litmus
+cd e2e-tests
 cp apps/busybox/deployers/run_litmus_test.yml deprovision_single_rep_kill.yml
 
 : << EOF

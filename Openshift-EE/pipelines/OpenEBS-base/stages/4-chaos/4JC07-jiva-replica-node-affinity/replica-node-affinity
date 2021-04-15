@@ -32,7 +32,7 @@ echo $test_name
 # LitmusBook 1 #
 ################
 
-cd litmus
+cd e2e-tests
 # copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
 cp apps/busybox/deployers/run_litmus_test.yml deploy_rep_node_affinity.yml
 
@@ -83,7 +83,7 @@ fi
 run_id="replica-node-affinity";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
 echo $test_name
 
-cd litmus
+cd e2e-tests
 # copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
 cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_replica_node_affinity.yml
 
@@ -131,7 +131,7 @@ run_id="jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=re
 echo $test_name
 
 # copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
-cd litmus
+cd e2e-tests
 # copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
 cp experiments/chaos/replica_node_affinity/run_litmus_test.yml run_rep_node_affinity_jiva.yml
 
@@ -177,7 +177,7 @@ fi
 run_id="deprovision-replica-node-affinity";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
 echo $test_name
 
-cd litmus
+cd e2e-tests
 # copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
 cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_deprovision_replica_node_affinity.yml
 
@@ -228,7 +228,7 @@ fi
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-rep-node-affinity-jiva metadata="")
 echo $test_name
 
-cd litmus
+cd e2e-tests
 # copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
 cp apps/busybox/deployers/run_litmus_test.yml deprovision_rep_node_affinity.yml
 

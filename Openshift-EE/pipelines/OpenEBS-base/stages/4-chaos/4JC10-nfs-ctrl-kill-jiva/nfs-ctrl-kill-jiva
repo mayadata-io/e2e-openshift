@@ -33,7 +33,7 @@ bash Openshift-EE/utils/e2e-cr jobname:nfs-ctrl-kill-jiva jobphase:Running init_
 run_id="nfs-ctrl-jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-target-failure metadata=${run_id})
 echo $test_name
 
-cd litmus
+cd e2e-tests
 # copy the content of chaos run_litmus_test.yml into a different file to update the test specific parameters.
 cp experiments/chaos/nfs_chaos/nfs_openebs_target_failure/run_litmus_test.yml nfs_ctrl_kill_jiva.yml
 

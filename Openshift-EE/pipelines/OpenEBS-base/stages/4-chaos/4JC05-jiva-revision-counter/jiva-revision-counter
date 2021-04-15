@@ -33,7 +33,7 @@ echo "*******Deploying percona Application****"
 run_id="jiva-revision-counter";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=percona-deployment metadata=${run_id})
 echo $test_name
 
-cd litmus
+cd e2e-tests
 echo "Running the litmus test for percona Deployment.."
 
 cp apps/percona/deployers/run_litmus_test.yml percona_jiva_revision_counter.yml
@@ -70,7 +70,7 @@ fi
 run_id="jiva-revision-counter";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=percona-loadgen metadata=${run_id})
 echo $test_name
 
-cd litmus
+cd e2e-tests
 cp apps/percona/workload/run_litmus_test.yml percona_loadgen_jiva_revision_counter.yml
 
 # Update the environmental variables in litmus job spec.
@@ -106,7 +106,7 @@ fi
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=jiva-revision-counter metadata="")
 echo $test_name
 
-cd litmus
+cd e2e-tests
 cp experiments/chaos/revision_counter/run_litmus_test.yml run_revision_counter.yml
 
 sed -i -e '/name: APP_NAMESPACE/{n;s/.*/            value: 'jiva-revision-counter'/}' \
@@ -138,7 +138,7 @@ echo "********Deprovisioning Percona Application*******"
 run_id="deprovision-jiva-revision-counter";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=percona-deployment metadata=${run_id})
 echo $test_name
 
-cd litmus
+cd e2e-tests
 cp apps/percona/deployers/run_litmus_test.yml percona_deprovision_jiva_revision_counter.yml
 
 sed -i -e 's/app: percona-deployment/app: deprovision-percona-jiva-revision-counter/g' \

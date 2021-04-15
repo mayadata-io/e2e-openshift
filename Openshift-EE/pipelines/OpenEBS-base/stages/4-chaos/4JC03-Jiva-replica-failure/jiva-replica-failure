@@ -32,7 +32,7 @@ echo $test_name
 # LitmusBook 1 #
 ################
 
-cd litmus
+cd e2e-tests
 echo "Running the litmus test for Busybox Deployment.."
 cp apps/busybox/deployers/run_litmus_test.yml deploy_run_test_jiva.yml
 
@@ -79,7 +79,7 @@ fi
 run_id="jiva-replica-failure";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
 echo $test_name
 
-cd litmus
+cd e2e-tests
 # copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
 cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_jiva_replica_failure.yml
 
@@ -126,7 +126,7 @@ fi
 run_id="jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-volume-replica-failure metadata=${run_id})
 echo $test_name
 
-cd litmus
+cd e2e-tests
 cp experiments/chaos/openebs_volume_replica_failure/run_litmus_test.yml run_rep_fail_test_jiva.yml
 
 : << EOF
@@ -179,7 +179,7 @@ fi
 run_id="deprovision-jiva-replica-failure";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
 echo $test_name
 
-cd litmus
+cd e2e-tests
 # copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
 cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_deprovision_jiva_replica_failure.yml
 
@@ -231,7 +231,7 @@ echo "********Deprovisioning Busybox Application*******"
 
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-replica-fail-jiva metadata="")
 echo $test_name
-cd litmus
+cd e2e-tests
 cp apps/busybox/deployers/run_litmus_test.yml deprovision_rep_fail_jiva.yml
 
 : << EOF

@@ -35,7 +35,7 @@ bash Openshift-EE/utils/e2e-cr jobname:nfs-ctrl-container-kill jobphase:Waiting
 run_id="nfs-jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=nfs-application-pod-failure metadata=${run_id})
 echo $test_name
 
-cd litmus
+cd e2e-tests
 # copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
 cp experiments/chaos/nfs_chaos/nfs_provisioner_pod_kill/run_litmus_test.yml nfs_app_kill_jiva.yml
 
