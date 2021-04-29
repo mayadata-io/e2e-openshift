@@ -26,7 +26,7 @@ test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-cstor-op
 echo $test_name
 cd litmus
 
-cp providers/cstor-operator/run_litmus_test.yaml cstor_operator_deprovision.yml
+cp providers/cstor-operator/run_litmus_test.yml cstor_operator_deprovision.yml
 
 sed -i -e "/name: CSPC_OPERATOR_IMAGE/{n;s/.*/            value: ${cspc_operator_image}/g}" \
 -e 's/value: provision/value: deprovision/g' \
