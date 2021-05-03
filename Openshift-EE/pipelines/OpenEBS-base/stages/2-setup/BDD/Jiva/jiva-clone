@@ -25,6 +25,7 @@ bash Openshift-EE/utils/e2e-cr jobname:openebs-deploy jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-clone jobphase:Running init_time:"$current_time" init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 cd /home/openshift/go/src/github.com/openebs
+git clone https://github.com/openebs/maya.git
 
 # Running BDD test for jiva-clone
 cd maya/tests/jiva/clone && ginkgo -v -- -kubeconfig=$HOME/.kube/config
