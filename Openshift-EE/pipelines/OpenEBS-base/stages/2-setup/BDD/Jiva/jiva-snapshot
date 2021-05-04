@@ -27,6 +27,9 @@ bash Openshift-EE/utils/pooling jobname:bdd-jiva-clone
 # Update the e2e event for the job.
 bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-snapshot jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
+cd /home/devuser/go/src/github.com/openebs
+git clone https://github.com/openebs/maya.git
+
 # Running BDD test for jiva-snapshot
 cd /home/openshift/go/src/github.com/openebs/maya/tests/jiva/snapshot
 ginkgo -v -- -kubeconfig=$HOME/.kube/config --replicas=3
