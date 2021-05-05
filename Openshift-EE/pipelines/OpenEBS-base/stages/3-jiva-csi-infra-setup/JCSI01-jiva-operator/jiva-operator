@@ -1,10 +1,6 @@
 #!/bin/bash
 
 pod() {
-node_name=$(sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port kubectl get nodes --no-headers | grep -v master | awk 'FNR==1 {print $1}')
-echo $node_name
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port "kubectl taint nodes $node_name infra-aid-"
-
 sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-jiva-csi-infra-setup/JCSI01-jiva-operator/jiva-operator node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"' '"'$JIVA_OPERATOR_RELEASE_BRANCH'"' '"'$COMMIT_ID'"' '"'$JIVA_OPERATOR_IMAGE'"' '"'$JIVA_CSI_DRIVER_IMAGE'"' '"provision"' '"'$RC_TAG'"' 
 }
 
@@ -19,8 +15,7 @@ release_branch=$(echo $5)
 release_commit_id=$(echo $6)
 jiva_operator_image=$(echo $7)
 jiva_csi_driver_image=$(echo $8)
-action=$(echo $9)
-rc_tag=$(echo ${10})
+rc_tag=$(echo $9)
 
 source ~/.profile
 gittoken=$(echo "$github_token")
@@ -46,14 +41,13 @@ export COMMIT_ID=$release_commit_id
 export RC_TAG=$rc_tag
 export JIVA_OPERATOR_IMAGE=$jiva_operator_image
 export JIVA_CSI_DRIVER_IMAGE=$jiva_csi_driver_image
-export ACTION=$action
 
 wget https://raw.githubusercontent.com/openebs/e2e-infrastructure/master/env-update/env.py
 python3 env.py -f jiva_operator.yml
 
 sed -i -e "/name: OPENEBS_VERSION/{n;s/.*/          value: ${releaseTag}/g}" \
 -e "/name: RELEASE_BRANCH/{n;s/.*/          value: ${release_branch}/g}" \
--e "/name: ACTION/{n;s/.*/          value: ${ACTION}/g}" jiva_operator.yml
+-e "/name: ACTION/{n;s/.*/          value: provision/g}" jiva_operator.yml
 
 cat jiva_operator.yml
 
@@ -82,7 +76,7 @@ fi
 }
 
 if [ "$1" == "node" ];then
-  node $2 $3 $4 $5 $6 $7 $8 $9 ${10} ${11}
+  node $2 $3 $4 $5 $6 $7 $8 $9 ${10}
 else
   pod
 fi

@@ -234,7 +234,7 @@ cp apps/busybox/deployers/run_litmus_test.yml deprovision_scaleup_jiva.yml
   ---------------------------------------------------------------------------------------------------------------------|
  | appLabel          | env    | app=busybox-sts                     | app=busybox-scale-jiva                           | 
  | appNamespace      | env    | app-busybox-ns                      | app-scale-jiva                                   | 
- | storage clas      | env    | openebs-cstor-sparse                | openebs-jiva-default                             |
+ | storage clas      | env    | openebs-cstor-sparse                | jiva-csi-sc                             |
  | deploy type       | env    | statefulset                         | deployment                                       |
  | Action            | env    | value: provision                    | value: deprovision                               |
  | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName: busybox-deprovision-target-affinity|

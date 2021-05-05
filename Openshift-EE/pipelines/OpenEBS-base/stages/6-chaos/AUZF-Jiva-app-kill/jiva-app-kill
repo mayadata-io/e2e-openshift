@@ -46,7 +46,7 @@ cp apps/busybox/deployers/run_litmus_test.yml busybox_app_kill_jiva.yml
  | appNamespace      | env    | app-busybox-ns                      | app-kill-jiva                                    | 
  | Litmus job label  | label  | app: busybox-litmus                 | app:busybox-app-kill-jiva                        |
  | appLabel          | env    | app=busybox-sts                     | app=bb-app-kill-jiva                             | 
- | storage class     | env    | openebs-cstor-sparse                | openebs-jiva-default                             |
+ | storage class     | env    | openebs-cstor-sparse                | jiva-csi-sc                             |
  | deploy type       | env    | statefulset                         | deployment                                       | 
   ----------------------------------------------------------------------------------------------------------------------
 EOF
@@ -57,7 +57,7 @@ sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
 -e 's/app: busybox-litmus/app: busybox-app-kill-jiva/g' \
 -e 's/value: statefulset/value: deployment/g' \
 -e 's/value: '\''app=busybox-sts'\''/value: '\''app=bb-app-kill-jiva'\''/g' \
--e 's/value: openebs-cstor-sparse/value: openebs-jiva-default/g' busybox_app_kill_jiva.yml
+-e 's/value: openebs-cstor-sparse/value: jiva-csi-sc/g' busybox_app_kill_jiva.yml
 
 cat busybox_app_kill_jiva.yml
 
@@ -245,7 +245,7 @@ cp apps/busybox/deployers/run_litmus_test.yml deprovision_app_kill_jiva.yml
  | appLabel          | env    | app=busybox-sts                     | app=bb-app-kill-jiva                             |
  | appNamespace      | env    | app-busybox-ns                      | app-kill-java                                    | 
  | Litmus job label  | label  | app: busybox-litmus                 | app:busybox-deprovision-app-kill-jiva             |
- | storage class     | env    | openebs-cstor-sparse                | openebs-jiva-default                             |
+ | storage class     | env    | openebs-cstor-sparse                | jiva-csi-sc                             |
  | Action            | env    | value: provision                    | value: deprovision                               |
  | deploy type       | env    | statefulset                         | deployment                                       |
   ----------------------------------------------------------------------------------------------------------------------
@@ -257,7 +257,7 @@ sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovisi
 -e 's/value: app-busybox-ns/value: app-kill-jiva/g' \
 -e 's/app: busybox-litmus/app: busybox-deprovision-app-kill-jiva/g' \
 -e 's/value: statefulset/value: deployment/g' \
--e 's/value: openebs-cstor-sparse/value: openebs-jiva-default/g' \
+-e 's/value: openebs-cstor-sparse/value: jiva-csi-sc/g' \
 -e 's/value: provision/value: deprovision/g' deprovision_app_kill_jiva.yml
 
 cat deprovision_app_kill_jiva.yml

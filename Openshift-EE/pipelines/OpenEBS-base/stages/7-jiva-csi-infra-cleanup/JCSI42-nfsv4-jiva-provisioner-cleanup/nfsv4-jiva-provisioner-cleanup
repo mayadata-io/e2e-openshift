@@ -34,7 +34,7 @@ cp providers/nfs-provisioner/run_litmus_test.yml nfsv4-jiva-deprovision.yml
 sed -i -e 's/app: nfs-litmus/app: nfsv4-jiva-deprovision-litmus/g' \
 -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
 -e 's/value: app-nfs-ns/value: app-nfsv4-jiva/g' \
--e 's/value: openebs-cstor-disk/value: openebs-jiva-default/g' \
+-e 's/value: openebs-cstor-disk/value: jiva-csi-sc/g' \
 -e 's/value: provision/value: deprovision/g' \
 -e 's/value: openebs-nfs/value: openebs-nfs4/g' nfsv4-jiva-deprovision.yml
 

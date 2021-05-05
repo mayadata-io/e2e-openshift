@@ -4,11 +4,9 @@ stages:
   - CLUSTER-SETUP
   - OPENEBS-SETUP
   - JIVA-CSI-INFRA-SETUP
-  - JIVA-CSI-FUNCTIONAL
   - JIVA-FUNCTIONAL
   - CHAOS
   - JIVA-CSI-INFRA-CLEANUP
-  - OPENEBS-CLEANUP
   - CLUSTER-CLEANUP
   
 ##########################################################################################
@@ -43,37 +41,8 @@ JCSI01-JIVA-OPERATOR:
   script:
     - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-jiva-csi-infra-setup/JCSI01-jiva-operator/jiva-operator
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-jiva-csi-infra-setup/JCSI01-jiva-operator/jiva-operator
-
-PBCY-NFSv4-JIVA-PROVISION:
-  extends: .jiva_csi_infra_setup_template
-  script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-jiva-csi-infra-setup/JCSI02-nfsv4-jiva-provision/nfsv4-jiva-provision
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-jiva-csi-infra-setup/JCSI02-nfsv4-jiva-provision/nfsv4-jiva-provision
-
   
 ###########################################################################################
-
-.jiva_csi_func_test_template:
-  image: openebs/openshift-ci:latest
-  stage: JIVA-CSI-FUNCTIONAL
-  when: always
-  dependencies:
-    - K9YC-OpenEBS
-
-
-JCSI11-JIVA-CSI-VOLUME-RESIZE-XFS:
-  extends: .jiva_csi_func_test_template
-  script:
-    - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-jiva-csi-functional/JCSI11-jiva-csi-volume-resize-xfs/jiva-csi-volume-resize-xfs
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-jiva-csi-functional/JCSI11-jiva-csi-volume-resize-xfs/jiva-csi-volume-resize-xfs
-
-JCSI12-JIVA-CSI-VOLUME-RESIZE:
-  extends: .jiva_csi_func_test_template
-  script:
-    - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-jiva-csi-functional/JCSI12-jiva-csi-volume-resize/jiva-csi-volume-resize
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-jiva-csi-functional/JCSI12-jiva-csi-volume-resize/jiva-csi-volume-resize
-
-#########################################################################################
 
 .func_test_template:
   image: openebs/openshift-ci:latest
@@ -81,6 +50,18 @@ JCSI12-JIVA-CSI-VOLUME-RESIZE:
   when: always
   dependencies:
     - K9YC-OpenEBS
+
+JCSI11-JIVA-CSI-VOLUME-RESIZE-XFS:
+  extends: .func_test_template
+  script:
+    - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-jiva-csi-functional/JCSI11-jiva-csi-volume-resize-xfs/jiva-csi-volume-resize-xfs
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-jiva-csi-functional/JCSI11-jiva-csi-volume-resize-xfs/jiva-csi-volume-resize-xfs
+
+JCSI12-JIVA-CSI-VOLUME-RESIZE:
+  extends: .func_test_template
+  script:
+    - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/4-jiva-csi-functional/JCSI12-jiva-csi-volume-resize/jiva-csi-volume-resize
+    - ./Openshift-EE/pipelines/OpenEBS-base/stages/4-jiva-csi-functional/JCSI12-jiva-csi-volume-resize/jiva-csi-volume-resize
      
 UH9A-Jiva-Data-Integrity:
   extends: .func_test_template
@@ -94,18 +75,6 @@ SN3A-Jiva-Memory-Consumption:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/5-jiva-functional/JCSI22-Jiva-Memory-Consumption/memory-consumption
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/5-jiva-functional/JCSI22-Jiva-Memory-Consumption/memory-consumption
 
-8QQP-Jiva-delete-autogen-snapshot:
-  extends: .func_test_template
-  script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/5-jiva-functional/JCSI23-Jiva-Snapshot-Delete/jiva-snapshot-delete
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/5-jiva-functional/JCSI23-Jiva-Snapshot-Delete/jiva-snapshot-delete
-
-WVTY-App-Deploy-Jiva-RWX:
-  extends: .func_test_template
-  script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/5-jiva-functional/JCSI24-app-deploy-jiva-RWX/app-deploy-jiva-rwx
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/5-jiva-functional/JCSI24-app-deploy-jiva-RWX/app-deploy-jiva-rwx
-
 KUL9-Jiva-App-Scaleup:
   extends: .func_test_template
   script:
@@ -117,12 +86,6 @@ KUL9-Jiva-App-Scaleup:
   script:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/5-jiva-functional/JCSI26-Jiva-Volume-scaleup/jiva-volume-scaleup
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/5-jiva-functional/JCSI26-Jiva-Volume-scaleup/jiva-volume-scaleup
-
-NWQB-Backup-Restore-Jiva:
-  extends: .func_test_template
-  script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/5-jiva-functional/JCSI27-Backup-Restore-Jiva/backup-restore-jiva
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/5-jiva-functional/JCSI27-Backup-Restore-Jiva/backup-restore-jiva
 
 ###########################################################################################
 .chaos_test_template:
@@ -168,25 +131,6 @@ F7BO-Jiva-Revision-Counter:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-chaos/F7BO-jiva-revision-counter/jiva-revision-counter
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-chaos/F7BO-jiva-revision-counter/jiva-revision-counter
 
-N67N-nfs-App-Kill-Jiva:
-  extends: .chaos_test_template
-  script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-chaos/N67N-nfs-app-kill-jiva/nfs-app-kill-jiva
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-chaos/N67N-nfs-app-kill-jiva/nfs-app-kill-jiva
-
-8ZWN-nfs-Ctrl-Kill-Jiva:
-  extends: .chaos_test_template
-  script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-chaos/8ZWN-nfs-ctrl-kill-jiva/nfs-ctrl-kill-jiva
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-chaos/8ZWN-nfs-ctrl-kill-jiva/nfs-ctrl-kill-jiva
-
-NEPS-nfs-Ctrl-Container-Kill-Jiva:
-  extends: .chaos_test_template
-  script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/6-chaos/NEPS-nfs-ctrl-container-kill/nfs-ctrl-container-kill
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/6-chaos/NEPS-nfs-ctrl-container-kill/nfs-ctrl-container-kill
-
-
 ####################################################################################################################
 
 .jiva_csi_infra_cleanup_template:
@@ -202,29 +146,7 @@ JCSI91-JIVA-OPERATOR:
     - chmod 755 ./Openshift-EE/pipelines/OpenEBS-base/stages/7-jiva-csi-infra-cleanup/JCSI41-jiva-operator-cleanup/jiva-operator-cleanup
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/7-jiva-csi-infra-cleanup/JCSI41-jiva-operator-cleanup/jiva-operator-cleanup
 
-J9PT-nfsv4-jiva-provision-cleanup:
-  extends: .jiva_csi_infra_cleanup_template
-  script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/7-jiva-csi-infra-cleanup/JCSI42-nfsv4-jiva-provisioner-cleanup/nfsv4-jiva-provisioner-cleanup
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/7-jiva-csi-infra-cleanup/JCSI42-nfsv4-jiva-provisioner-cleanup/nfsv4-jiva-provisioner-cleanup
-
-
 ###########################################################################################
-
-.cleanup_test_template:
-  image: openebs/openshift-ci:latest
-  stage: OPENEBS-CLEANUP
-  when: always
-  dependencies:
-    - K9YC-OpenEBS
-
-GP95-openebs-Uninstall:
-  extends: .cleanup_test_template
-  script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/8-cleanup/GP95-openebs-cleanup/openebs-cleanup
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/8-cleanup/GP95-openebs-cleanup/openebs-cleanup
-
-##########################################################################################
 
 4SMQ-cluster-Delete:
   image: openebs/openshift-ci:latest
