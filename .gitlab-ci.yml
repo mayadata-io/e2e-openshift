@@ -68,11 +68,11 @@ stages:
     - chmod 775 ./Openshift-EE/pipelines/stages/4-chaos/4LC01-localpv-device-app-kill/app-kill
     - ./Openshift-EE/pipelines/stages/4-chaos/4LC01-localpv-device-app-kill/app-kill
 
-4LC01-APP-KILL-LOCALPV-HOSTPATH:
+4LC02-APP-KILL-LOCALPV-HOSTPATH:
   extends: .chaos_test_template
   script: 
-    - chmod 775 ./Openshift-EE/pipelines/stages/4-chaos/4LC01-localpv-hostpath-app-kill/app-kill
-    - ./Openshift-EE/pipelines/stages/4-chaos/4LC01-localpv-hostpath-app-kill/app-kill
+    - chmod 775 ./Openshift-EE/pipelines/stages/4-chaos/4LC02-localpv-hostpath-app-kill/app-kill
+    - ./Openshift-EE/pipelines/stages/4-chaos/4LC02-localpv-hostpath-app-kill/app-kill
 
 ##########################################################################################
 
