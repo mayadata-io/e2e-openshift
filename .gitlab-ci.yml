@@ -55,12 +55,12 @@ G45J-MIRRORED-POOL:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/37Y6-create-raidz1-pool/create-raidz1-pool
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/37Y6-create-raidz1-pool/create-raidz1-pool
 
-9ZWW-RAIDZ2-POOL:
-  image: openebs/openshift-ci:latest
-  stage: OPENEBS-SETUP
-  script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/9ZWW-create-raidz2-pool/create-raidz2-pool
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/9ZWW-create-raidz2-pool/create-raidz2-pool
+      #9ZWW-RAIDZ2-POOL:
+      #  image: openebs/openshift-ci:latest
+      #  stage: OPENEBS-SETUP
+      #  script:
+      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/9ZWW-create-raidz2-pool/create-raidz2-pool
+      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/9ZWW-create-raidz2-pool/create-raidz2-pool
 
 BDD-STRIPED-SPARSE-SPC:
   image: openebs/openshift-ci:latest
@@ -247,11 +247,11 @@ QEXD-cStor-thick-provisioning:
     - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/QEXD-cstor-thick-provisioning/cstor-thick-provisioning
     - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/QEXD-cstor-thick-provisioning/cstor-thick-provisioning
 
-RQUV-cStor-spc-roThresholdlimit:
-  extends: .func_test_template
-  script:
-    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/RQUV-cStor-spc-roThresholdlimit/cstor-spc-rothresholdlimit
-    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/RQUV-cStor-spc-roThresholdlimit/cstor-spc-rothresholdlimit
+      #RQUV-cStor-spc-roThresholdlimit:
+      #  extends: .func_test_template
+      #  script:
+      #    - chmod 775 ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/RQUV-cStor-spc-roThresholdlimit/cstor-spc-rothresholdlimit
+      #    - ./Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/RQUV-cStor-spc-roThresholdlimit/cstor-spc-rothresholdlimit
 
 ##########################################################################################
 
