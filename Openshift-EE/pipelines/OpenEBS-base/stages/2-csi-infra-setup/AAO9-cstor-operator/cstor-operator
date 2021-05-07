@@ -1,7 +1,7 @@
 #!/bin/bash
 
 pod() {
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/2-csi-infra-setup/AAO9-cstor-operator/cstor-operator node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$CSPC_RELEASE_TAG'"' '"'$CSPC_RELEASE_BRANCH'"' '"'$COMMIT_ID'"' '"'$RC_TAG'"' '"'$CSPC_OPERATOR_IMAGE'"' '"'$CSPI_MGMT_IMAGE'"' '"'$CSPC_CSTOR_POOL_EXPORTER_IMAGE'"' '"'$CSPC_CVC_OPERATOR_IMAGE'"' '"'$CSPC_CSTOR_ISTGT_IMAGE'"' '"'$CSPC_CSTOR_VOLUME_MGMT_IMAGE'"' '"'$CSPC_CSTOR_WEBHOOK_IMAGE'"' '"'$CSTOR_CSI_DRIVER_IMAGE'"' '"'$RELEASE_TAG'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/2-csi-infra-setup/AAO9-cstor-operator/cstor-operator node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$CSPC_RELEASE_TAG'"' '"'$CSPC_RELEASE_BRANCH'"' '"'$COMMIT_ID'"' '"'$RC_TAG'"' '"'$RELEASE_TAG'"' '"'$CSPC_OPERATOR_IMAGE'"' '"'$CSPI_MGMT_IMAGE'"' '"'$CSPC_CSTOR_POOL_EXPORTER_IMAGE'"' '"'$CSPC_CVC_OPERATOR_IMAGE'"' '"'$CSPC_CSTOR_ISTGT_IMAGE'"' '"'$CSPC_CSTOR_VOLUME_MGMT_IMAGE'"' '"'$CSPC_CSTOR_WEBHOOK_IMAGE'"' '"'$CSTOR_CSI_DRIVER_IMAGE'"'
 }
 
 node() {
@@ -14,16 +14,16 @@ cspc_releaseTag=$(echo $4)
 release_branch=$(echo $5)
 release_commit_id=$(echo $6)
 rc_tag=$(echo $7)
-cspc_operator_image=$(echo $8)
-cspi_mgmt_image=$(echo $9)
-cspc_cstor_pool_image=$(echo ${10})
-cspc_cstor_pool_exporter_image=$(echo ${11})
-cspc_cvc_operator_image=$(echo ${12})
-cspc_cstor_istgt_image=$(echo ${13})
-cspc_cstor_volume_mgmt_image=$(echo ${14})
-cspc_cstor_webhook_image=$(echo ${15})
-cstor_csi_driver_image=$(echo ${16})
-openebsreleaseTag=$(echo ${17})
+cspc_operator_image=$(echo $9)
+cspi_mgmt_image=$(echo ${10})
+cspc_cstor_pool_image=$(echo ${11})
+cspc_cstor_pool_exporter_image=$(echo ${12})
+cspc_cvc_operator_image=$(echo ${13})
+cspc_cstor_istgt_image=$(echo ${14})
+cspc_cstor_volume_mgmt_image=$(echo ${15})
+cspc_cstor_webhook_image=$(echo ${16})
+cstor_csi_driver_image=$(echo ${17})
+openebsreleaseTag=$(echo $8)
 
 echo "releaseTag=$openebsreleaseTag"
 
