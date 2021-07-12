@@ -1,0 +1,295 @@
+#!/bin/bash
+
+pod() {
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash openebs-openshift-e2e/stages/4-chaos/4CJO03-jiva-app-kill node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
+}
+
+node() {
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+releaseTag=$(echo $4)
+source ~/.profile
+gittoken=$(echo "$github_token")
+case_id=4CJO03
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+oc adm policy add-scc-to-user anyuid system:serviceaccount:app-kill-jiva:default
+
+bash openebs-openshift-e2e/utils/e2e-cr jobname:jiva-app-kill jobphase:Waiting
+bash openebs-openshift-e2e/utils/e2e-cr jobname:jiva-app-kill jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
+
+echo "*******Deploying Busybox Application****"
+
+test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=busybox-provision-app-kill-jiva metadata="")
+echo $test_name
+
+################
+# e2eBook 1 #
+################
+
+cd jiva-operator/e2e-tests
+echo "Running the e2e test for Busybox Deployment.."
+
+cp apps/busybox/deployers/run_e2e_test.yml busybox_app_kill_jiva.yml
+
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+  ---------------------------------------------------------------------------------------------------------------------|
+ | imagePullPolicy   | image  |  Always                             | IfNotPresent                                     |
+ | e2e Job name   | name   | generateName: e2e-busybox-deploy | generateName: busybox-provision-app-kill-jiva    |
+ | appNamespace      | env    | app-busybox-ns                      | app-kill-jiva                                    | 
+ | e2e job label  | label  | app: busybox-e2e                 | app:busybox-app-kill-jiva                        |
+ | appLabel          | env    | app=busybox                     | app=bb-app-kill-jiva                             | 
+ | storage class     | env    | openebs-jiva-csi                | jiva-csi-sc                             |
+ | deploy type       | env    | statefulset                         | deployment                                       | 
+  ----------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
+-e 's/generateName: e2e-busybox-deploy/generateName: busybox-provision-app-kill-jiva/g' \
+-e 's/value: app-busybox-ns/value: app-kill-jiva/g' \
+-e 's/app: busybox-e2e/app: busybox-app-kill-jiva/g' \
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/value: '\''app=busybox'\''/value: '\''app=bb-app-kill-jiva'\''/g' \
+-e 's/value: openebs-jiva-csi/value: jiva-csi-sc/g' busybox_app_kill_jiva.yml
+
+cat busybox_app_kill_jiva.yml
+
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='app:busybox-app-kill-jiva' job=busybox_app_kill_jiva.yml
+cd ../..
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+bash openebs-openshift-e2e/utils/event_updater jobname:jiva-app-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+#python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 4CJO03 4-chaos "Induce application pod failure and check if it is recovered successfully" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+run_id="jiva";test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=application-pod-failure metadata=${run_id})
+echo $test_name
+
+################
+# e2eBook 2 #
+################
+
+run_id="jiva-app-kill";test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+echo $test_name
+
+cd jiva-operator/e2e-tests
+# copy the content of deployer run_e2e_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/liveness/run_e2e_test.yml busybox_loadgen_app_kill_jiva.yml
+
+# Update the environmental variables in e2e job spec.
+
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+  ---------------------------------------------------------------------------------------------------------------------|
+ | appNamespace      | env    | app-busybox-ns                      | app-kill-jiva                                    | 
+ | e2e job label  | label  | liveness: e2e-busybox-liveness   | liveness: busybox-liveness-app-kill-jiva          |
+ | appLabel          | env    | app=busybox                     | app=bb-app-kill-jiva                             | 
+  ----------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/value: app-busybox-ns/value: app-kill-jiva/g' \
+-e 's/app=busybox/app=bb-app-kill-jiva/g' \
+-e 's/liveness: e2e-busybox-liveness/liveness: busybox-liveness-app-kill-jiva/g' busybox_loadgen_app_kill_jiva.yml
+
+cat busybox_loadgen_app_kill_jiva.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' busybox_loadgen_app_kill_jiva.yml
+
+# Run the e2e job and get the details of the e2e job from e2e_job_runner utils.
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='liveness:busybox-liveness-app-kill-jiva' job=busybox_loadgen_app_kill_jiva.yml
+cd ../..
+# Get the cluster state Once the e2e jobs completed.
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+# Update the e2e event for the job.
+bash openebs-openshift-e2e/utils/event_updater jobname:jiva-app-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+#python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 4CJO03 4-chaos "Induce application pod failure and check if it is recovered successfully" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# e2eBook 3 #
+################
+
+cd jiva-operator/e2e-tests
+
+cp experiments/chaos/app_pod_failure/run_e2e_test.yml app_kill_jiva.yml
+
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+  ---------------------------------------------------------------------------------------------------------------------|
+ | appLabel          | env    | app=jenkins-app                     | app=bb-app-kill-jiva                             | 
+ | e2e Job name   | name   |generateName: application-pod-failure| generateName: application-pod-failure-jiva       |
+ | e2e job label  | label  | name: application-pod-failure       | name:  application-pod-failure-jiva              |
+ | appNamespace      | env    | app-jenkins-ns                      | app-kill-jiva                                    |  
+  ----------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/value: '\''app=jenkins-app'\''/value: '\''app=bb-app-kill-jiva'\''/g' \
+-e 's/generateName: application-pod-failure/generateName: application-pod-failure-jiva/g' \
+-e 's/name: application-pod-failure/name: application-pod-failure-jiva/g' \
+-e 's/name: app-failure/name: jiva-app-failure/g' \
+-e 's/value: docker/value: containerd/g' \
+-e 's/value: app-jenkins-ns/value: app-kill-jiva/g' app_kill_jiva.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' app_kill_jiva.yml
+
+## Replace the value of DATA_PERSISTENCE with application name in e2e experiment. 
+sed -i '/name: DATA_PERSISTENCE/{n;s/.*/            value: busybox/}' app_kill_jiva.yml
+
+## Insert the set of variables for busybox data consistency util into configmap spec.
+sed -i '/parameters.yml: |/a \
+    blocksize: 4k\
+    blockcount: 1024\
+    testfile: jivaappkill
+' app_kill_jiva.yml
+
+cat app_kill_jiva.yml
+
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='name:application-pod-failure-jiva' job=app_kill_jiva.yml
+cd ../..
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+bash openebs-openshift-e2e/utils/event_updater jobname:jiva-app-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+#python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 4CJO03 4-chaos "Induce application pod failure and check if it is recovered successfully" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+echo "********Deprovisioning Busybox Application*******"
+
+test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=busybox-deprovision-app-kill-jiva metadata="")
+echo $test_name
+
+################
+# e2eBook 4 #
+################
+
+run_id="deprovision-jiva-app-kill";test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+echo $test_name
+
+cd jiva-operator/e2e-tests
+# copy the content of deployer run_e2e_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/liveness/run_e2e_test.yml busybox_loadgen_deprovision_app_kill_jiva.yml
+
+# Update the environmental variables in e2e job spec.
+
+: << EOF
+  --------------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                                   |
+  -------------------------------------------------------------------------------------------------------------------------|
+ | appNamespace      | env    | app-busybox-ns                      | app-kill-jiva                                        | 
+ | appLabel          | env    | app=busybox                     | app=bb-app-kill-jiva                                 |
+ | e2e job label  | label  | liveness: e2e-busybox-liveness   | liveness: busybox-liveness-deprovision-app-kill-jiva |
+ | action            | env    | provision                           | deprovision                                          | 
+  --------------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/value: app-busybox-ns/value: app-kill-jiva/g' \
+-e 's/app=busybox/app=bb-app-kill-jiva/g' \
+-e 's/value: provision/value: deprovision/g' \
+-e 's/generateName: e2e-busybox-liveness/generateName: busybox-liveness-dep-app-kill-jiva/g' \
+-e 's/liveness: e2e-busybox-liveness/liveness: busybox-liveness-deprovision-app-kill-jiva/g' busybox_loadgen_deprovision_app_kill_jiva.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' busybox_loadgen_deprovision_app_kill_jiva.yml
+
+cat busybox_loadgen_deprovision_app_kill_jiva.yml
+# Run the e2e job and get the details of the e2e job from e2e_job_runner utils.
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='liveness:busybox-liveness-deprovision-app-kill-jiva' job=busybox_loadgen_deprovision_app_kill_jiva.yml
+cd ../..
+# Get the cluster state Once the e2e jobs completed.
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+bash openebs-openshift-e2e/utils/event_updater jobname:jiva-app-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+
+# Update result of the test case in github mayadata-io/e2e-openshift repository.
+if [ "$rc_val" != "0" ]; then
+#python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 4CJO03 4-chaos "Induce application pod failure and check if it is recovered successfully" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# e2eBook 5 #
+################
+
+cd jiva-operator/e2e-tests
+cp apps/busybox/deployers/run_e2e_test.yml deprovision_app_kill_jiva.yml
+
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+  ---------------------------------------------------------------------------------------------------------------------|
+ | e2e Job name   | name   | generateName: e2e-busybox-deploy | generateName: busybox-deprovision-app-kill-jiva  |
+ | imagePullPolicy   | image  | Always                              | IfNotPresent                                     |
+ | appLabel          | env    | app=busybox                     | app=bb-app-kill-jiva                             |
+ | appNamespace      | env    | app-busybox-ns                      | app-kill-java                                    | 
+ | e2e job label  | label  | app: busybox-e2e                 | app:busybox-deprovision-app-kill-jiva             |
+ | storage class     | env    | openebs-jiva-csi                | jiva-csi-sc                             |
+ | Action            | env    | value: provision                    | value: deprovision                               |
+ | deploy type       | env    | statefulset                         | deployment                                       |
+  ----------------------------------------------------------------------------------------------------------------------
+EOF
+                    
+sed -i -e 's/generateName: e2e-busybox-deploy/generateName: busybox-deprovision-app-kill-jiva/g' \
+-e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
+-e 's/value: '\''app=busybox'\''/value: '\''app=bb-app-kill-jiva'\''/g' \
+-e 's/value: app-busybox-ns/value: app-kill-jiva/g' \
+-e 's/app: busybox-e2e/app: busybox-deprovision-app-kill-jiva/g' \
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/value: openebs-jiva-csi/value: jiva-csi-sc/g' \
+-e 's/value: provision/value: deprovision/g' deprovision_app_kill_jiva.yml
+
+cat deprovision_app_kill_jiva.yml
+
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='app:busybox-deprovision-app-kill-jiva' job=deprovision_app_kill_jiva.yml
+cd ../..
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+bash openebs-openshift-e2e/utils/event_updater jobname:jiva-app-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+current_time=$(eval $time)
+
+# testResult=$(kubectl get e2eresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+
+if [ "$rc_val" != "0" ]; then
+bash openebs-openshift-e2e/utils/e2e-cr jobname:jiva-app-kill jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Fail
+#python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 4CJO03 4-chaos "Induce application pod failure and check if it is recovered successfully" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+bash openebs-openshift-e2e/utils/e2e-cr jobname:jiva-app-kill jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
+#python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 4CJO03 4-chaos "Induce application pod failure and check if it is recovered successfully" Pass $pipeline_id "$current_time" $commit_id $gittoken
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4 $5
+else
+  pod
+fi

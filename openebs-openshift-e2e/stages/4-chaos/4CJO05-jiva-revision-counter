@@ -1,0 +1,189 @@
+#!/bin/bash
+
+pod() {
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash openebs-openshift-e2e/stages/4-chaos/4CJO05-jiva-revision-counter node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
+}
+
+node() {
+source ~/.profile
+gittoken=$(echo "$github_token")
+
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+releaseTag=$(echo $4)
+case_id=4CJO05
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+oc adm policy add-scc-to-user anyuid system:serviceaccount:jiva-revision-counter:default
+
+bash openebs-openshift-e2e/utils/e2e-cr jobname:jiva-revision-counter jobphase:Waiting
+bash openebs-openshift-e2e/utils/e2e-cr jobname:jiva-revision-counter jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
+
+################
+# e2eBook 1 #
+################
+
+echo "*******Deploying percona Application****"
+
+run_id="jiva-revision-counter";test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=percona-deployment metadata=${run_id})
+echo $test_name
+
+cd jiva-operator/e2e-tests
+echo "Running the e2e test for percona Deployment.."
+
+cp apps/percona/deployers/run_e2e_test.yml percona_jiva_revision_counter.yml
+
+sed -i -e 's/app: percona-deployment/app: deploy-percona-jiva-revision-counter/g' \
+-e 's/generateName: e2e-percona-/generateName: e2e-percona-jiva-revision-counter-/g' \
+-e 's/value: openebs-jiva-csi/value: jiva-csi-sc/g' \
+-e 's/value: 5Gi/value: 20Gi/g' \
+-e 's/value: enabled/value: /g' \
+-e 's/value: app-percona-ns/value: jiva-revision-counter/g' percona_jiva_revision_counter.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' percona_jiva_revision_counter.yml
+
+cat percona_jiva_revision_counter.yml
+
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='app:deploy-percona-jiva-revision-counter' job=percona_jiva_revision_counter.yml
+cd ../..
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+bash openebs-openshift-e2e/utils/event_updater jobname:jiva-revision-counter $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+#python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 4CJO05 4-chaos "Delete anyone jiva replica continuously and verify revision counter value" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# e2eBook 2 #
+################
+
+run_id="jiva-revision-counter";test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=percona-loadgen metadata=${run_id})
+echo $test_name
+
+cd jiva-operator/e2e-tests
+cp apps/percona/workload/run_e2e_test.yml percona_loadgen_jiva_revision_counter.yml
+
+# Update the environmental variables in e2e job spec.
+
+sed -i -e 's/value: app-percona-ns/value: jiva-revision-counter/g' \
+-e 's/generateName: percona-loadgen-/generateName: percona-loadgen-jiva-revision-counter-/g' \
+-e 's/loadgen: percona-loadjob/loadgen: percona-loadjob-jiva-revision-counter/g' percona_loadgen_jiva_revision_counter.yml
+
+cat percona_loadgen_jiva_revision_counter.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' percona_loadgen_jiva_revision_counter.yml
+
+# Run the e2e job and get the details of the e2e job from e2e_job_runner utils.
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='loadgen:percona-loadjob-jiva-revision-counter' job=percona_loadgen_jiva_revision_counter.yml
+cd ../..
+# Get the cluster state Once the e2e jobs completed.
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+# Update the e2e event for the job.
+bash openebs-openshift-e2e/utils/event_updater jobname:jiva-revision-counter $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+#python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 4CJO05 4-chaos "Delete anyone jiva replica continuously and verify revision counter value" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# e2eBook 3 #
+################
+
+test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=jiva-revision-counter metadata="")
+echo $test_name
+
+cd jiva-operator/e2e-tests
+
+cp experiments/chaos/revision_counter/run_e2e_test.yml run_revision_counter.yml
+
+sed -i -e '/name: APP_NAMESPACE/{n;s/.*/            value: 'jiva-revision-counter'/}' \
+-e '/name: APP_LABEL/{n;s/.*/            value: 'name=percona'/}' \
+-e '/name: APP_PVC/{n;s/.*/            value: 'percona-mysql-claim'/}' \
+-e '/name: MOUNT_PATH/{n;s#.*#            value: '/var/lib/mysql'#}' run_revision_counter.yml
+
+echo "Running the e2e test for validation of jiva revision counter.."
+cat run_revision_counter.yml
+
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='app:jiva-revision-counter' job=run_revision_counter.yml
+cd ../..
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+bash openebs-openshift-e2e/utils/event_updater jobname:jiva-revision-counter $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+#python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 4CJO05 4-chaos "Delete anyone jiva replica continuously and verify revision counter value" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# e2eBook 4 #
+################
+
+kubectl delete job --all -n jiva-revision-counter
+
+echo "********Deprovisioning Percona Application*******"
+
+run_id="deprovision-jiva-revision-counter";test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=percona-deployment metadata=${run_id})
+echo $test_name
+
+cd jiva-operator/e2e-tests
+cp apps/percona/deployers/run_e2e_test.yml percona_deprovision_jiva_revision_counter.yml
+
+sed -i -e 's/app: percona-deployment/app: deprovision-percona-jiva-revision-counter/g' \
+-e 's/generateName: e2e-percona-/generateName: e2e-percona-deprovision-jiva-revision-counter/g' \
+-e 's/value: openebs-standard/value: jiva-csi-sc/g' \
+-e 's/value: 5Gi/value: 20Gi/g' \
+-e 's/value: enabled/value: /g' \
+-e 's/value: enable/value: /g' \
+-e 's/value: provision/value: deprovision/g' \
+-e 's/value: app-percona-ns/value: jiva-revision-counter/g' percona_deprovision_jiva_revision_counter.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' percona_deprovision_jiva_revision_counter.yml           
+
+echo "Running the e2e test for percona Deprovision.."
+cat percona_deprovision_jiva_revision_counter.yml
+
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='app:deprovision-percona-jiva-revision-counter' job=percona_deprovision_jiva_revision_counter.yml
+cd ../..
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+bash openebs-openshift-e2e/utils/event_updater jobname:jiva-revision-counter $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+current_time=$(eval $time)
+
+if [ "$rc_val" != "0" ]; then
+bash openebs-openshift-e2e/utils/e2e-cr jobname:jiva-revision-counter jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Fail
+#python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 4CJO05 4-chaos "Delete anyone jiva replica continuously and verify revision counter value" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+bash openebs-openshift-e2e/utils/e2e-cr jobname:jiva-revision-counter jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
+#python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 4CJO05 4-chaos "Delete anyone jiva replica continuously and verify revision counter value" Pass $pipeline_id "$current_time" $commit_id $gittoken
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4 $5
+else
+  pod
+fi

@@ -1,0 +1,91 @@
+#!/bin/bash
+
+
+pod() {
+echo $CI_JOB_ID
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash openebs-openshift-e2e/stages/3-functional/3FJO04-data-integrity node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
+}
+
+node() {
+source ~/.profile
+gittoken=$(echo "$github_token")
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+releaseTag=$(echo $4)
+case_id=3FJO04
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+oc adm policy add-scc-to-user anyuid system:serviceaccount:fio-jiva:default
+
+bash openebs-openshift-e2e/utils/e2e-cr jobname:data-integrity-jiva jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
+bash openebs-openshift-e2e/utils/e2e-cr jobname:data-integrity-jiva jobphase:Running
+
+################
+# e2eBook 1 #
+################
+
+run_id="jiva";test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=fio-data-integrity metadata=${run_id})
+echo $test_name
+cd jiva-operator/e2e-tests
+
+cp experiments/functional/data-integrity/run_e2e_test.yml data_integrity_test_jiva.yml
+
+: << EOF
+  --------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind     | default busybox value               | test specifc value                      |
+  --------------------------------------------------------------------------------------------------------------|
+ | imagePullPolicy   | image    | Always                              | IfNotPresent                            |
+ | e2ejobLabel       | label    | app:fio-di-e2e                   | app:fio-di-e2e-jiva                  |
+ | storage class     | env      | openebs-standard                    | jiva-csi-sc                             |
+ | appNamespace      | env      | fio                                 | fio-jiva                                | 
+  --------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
+-e 's/app: fio-di-e2e/app: fio-di-e2e-jiva/g' \
+-e 's/value: openebs-jiva-csi/value: jiva-csi-sc/g' \
+-e 's/value: fio/value: fio-jiva/g' data_integrity_test_jiva.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' data_integrity_test_jiva.yml
+
+cat data_integrity_test_jiva.yml
+
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='app:fio-di-e2e-jiva' job=data_integrity_test_jiva.yml
+cd ../..
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+bash openebs-openshift-e2e/utils/event_updater jobname:data-integrity-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+current_time=$(eval $time)
+
+testResult=$(kubectl get e2eresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+
+if [ "$rc_val" != "0" ]; then
+bash openebs-openshift-e2e/utils/e2e-cr jobname:data-integrity-jiva jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:$testResult
+##python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 3FJO04 3-functional "Ensure the data integrity in openebs volume using fio" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+fi
+
+bash openebs-openshift-e2e/utils/e2e-cr jobname:data-integrity-jiva jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:$testResult
+
+##python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 3FJO04 3-functional "Ensure the data integrity in openebs volume using fio" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4 $5
+else
+  pod
+fi
+

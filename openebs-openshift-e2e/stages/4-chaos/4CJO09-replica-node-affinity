@@ -1,0 +1,294 @@
+#!/bin/bash
+
+
+pod() {
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash openebs-openshift-e2e/stages/4-chaos/4CJO09-replica-node-affinity node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
+}
+
+node() {
+source ~/.profile
+#github token to push the test result into github mayadata-io/e2e-openshift repository.
+#This token is set as an env in ~/.profile in the test cluster.
+gittoken=$(echo "$github_token")
+job_id=$(echo $1) #Gitlab job id obtain from the gitlab env ($CI_JOB_ID).
+pipeline_id=$(echo $2) # Gitlab pipeline id obtained from gitlab env ($CI_PIPELINE_ID).
+commit_id=$(echo $3) #Gitlab commit id Obtained fron gilab env ($CI_COMMIT_SHA).
+releaseTag=$(echo $4)
+case_id=4CJO09 #test case ID.
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+#Creating e2e custom resource result for the test.
+
+oc adm policy add-scc-to-user anyuid system:serviceaccount:rep-node-affinity-jiva:default
+
+bash openebs-openshift-e2e/utils/e2e-cr jobname:jiva-replica-node-affinity jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
+bash openebs-openshift-e2e/utils/e2e-cr jobname:jiva-replica-node-affinity jobphase:Running
+
+test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=busybox-provision-rep-node-affinity-jiva metadata="") 
+echo $test_name
+
+################
+# e2eBook 1 #
+################
+
+cd jiva-operator/e2e-tests
+# copy the content of deployer run_e2e_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/deployers/run_e2e_test.yml deploy_rep_node_affinity.yml
+
+# Update the environmental variables in e2e job spec.
+: << EOF
+  ------------------------------------------------------------------------------------------------------------------------------|
+ | specAttribute     | kind   |         default value               | test specifc value                                        |
+  ------------------------------------------------------------------------------------------------------------------------------|
+ | appLabel          | env    | app=busybox                     | app=busybox-rep-node-affinity-jiva                        |
+ | appNamespace      | env    | app-busybox-ns                      | rep-node-affinity-jiva                                    |   
+ | appPVC            | env    | openebs-busybox                     | openebs-busybox-rep-affinity                              |
+ | storage class     | env    | openebs-jiva-csi                | jiva-csi-sc                                               |
+ | deploy type       | env    | statefulset                         | deployment                                                |
+ | e2e Job name   | name   | generateName: e2e-busybox-deploy | generateName: busybox-provision-replica-node-affinity-jiva|
+ | e2e job label  | label  | app: busybox-e2e                 | app: busybox-replica-node-affiniy-jiva                    |
+  ------------------------------------------------------------------------------------------------------------------------------|
+EOF
+
+sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
+-e 's/generateName: e2e-busybox-deploy/generateName: busybox-provision-replica-node-affinity-jiva/g' \
+-e 's/value: app-busybox-ns/value: rep-node-affinity-jiva/g' \
+-e 's/value: openebs-busybox/value: openebs-busybox-rep-affinity/g' \
+-e 's/app: busybox-e2e/app: busybox-replica-node-affiniy-jiva/g' \
+-e 's/value: '\''app=busybox'\''/value: '\''app=busybox-rep-node-affinity-jiva'\''/g' \
+-e 's/value: openebs-jiva-csi/value: jiva-csi-sc/g' deploy_rep_node_affinity.yml
+
+cat deploy_rep_node_affinity.yml
+
+# Run the e2e job and get the details of the e2e job from e2e_job_runner utils.
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='app:busybox-replica-node-affiniy-jiva' job=deploy_rep_node_affinity.yml
+cd ../..
+# Get the cluster state Once the e2e jobs completed.
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+# Update the e2e event for the job.
+bash openebs-openshift-e2e/utils/event_updater jobname:jiva-replica-node-affinity $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+# Update result of the test case in github mayadata-io/e2e-openshift repository.
+if [ "$?" != "0" ]; then
+#python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 4CJO09 4-chaos "Jiva replica node affinity" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# e2eBook 2 #
+################
+
+run_id="replica-node-affinity";test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+echo $test_name
+
+cd jiva-operator/e2e-tests
+# copy the content of deployer run_e2e_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/liveness/run_e2e_test.yml busybox_loadgen_replica_node_affinity.yml
+
+# Update the environmental variables in e2e job spec.
+
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+  ---------------------------------------------------------------------------------------------------------------------|
+ | appNamespace      | env    | app-busybox-ns                      | rep-node-affinity-jiva                           | 
+ | e2e job label  | label  | liveness: e2e-busybox-liveness   | liveness: busybox-liveness-rep-node-affinity     |
+ | appLabel          | env    | app=busybox                     | app=busybox-rep-node-affinity-jiva               | 
+  ----------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/value: app-busybox-ns/value: rep-node-affinity-jiva/g' \
+-e 's/app=busybox/app=busybox-rep-node-affinity-jiva/g' \
+-e 's/liveness: e2e-busybox-liveness/liveness: busybox-liveness-rep-node-affinity/g' busybox_loadgen_replica_node_affinity.yml
+
+cat busybox_loadgen_replica_node_affinity.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' busybox_loadgen_replica_node_affinity.yml
+
+# Run the e2e job and get the details of the e2e job from e2e_job_runner utils.
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='liveness:busybox-liveness-rep-node-affinity' job=busybox_loadgen_replica_node_affinity.yml
+cd ../..
+# Get the cluster state Once the e2e jobs completed.
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+# Update the e2e event for the job.
+bash openebs-openshift-e2e/utils/event_updater jobname:jiva-replica-node-affinity $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+#python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 4CJO09 4-chaos "Jiva replica node affinity" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# e2eBook 3 #
+################
+
+run_id="jiva";test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=replica-pod-stickiness metadata=${run_id})
+echo $test_name
+
+# copy the content of deployer run_e2e_test.yml into a different file to update the test specific parameters.
+cd jiva-operator/e2e-tests
+# copy the content of deployer run_e2e_test.yml into a different file to update the test specific parameters.
+cp experiments/chaos/replica_node_affinity/run_e2e_test.yml run_rep_node_affinity_jiva.yml
+
+# Update the environmental variables in e2e job spec.
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+  ---------------------------------------------------------------------------------------------------------------------|
+ | appLabel          | env    | app=pgset                           | app=busybox-rep-node-affinity-jiva               | 
+ | appPVC            | env    | value: pgdata-claim                 | value: openebs-busybox-rep-affinity              |
+ | appNamespace      | env    | app-pgres-ns                        | rep-node-affinity-jiva                           | 
+  ----------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/app=pgset/app=busybox-rep-node-affinity-jiva/g' \
+-e 's/value: '\''app-pgres-ns'\''/value: '\''rep-node-affinity-jiva'\''/g' \
+-e 's/value: '\''pgdata-claim'\''/value: '\''openebs-busybox-rep-affinity'\''/g' run_rep_node_affinity_jiva.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' run_rep_node_affinity_jiva.yml
+
+cat run_rep_node_affinity_jiva.yml
+
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='app:node-affinity' job=run_rep_node_affinity_jiva.yml
+cd ../..
+#Get the cluster state Once the e2e jobs completed.
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+#Update the e2e event for the job
+bash openebs-openshift-e2e/utils/event_updater jobname:jiva-replica-node-affinity $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+# Update the result of the test case in github mayadata-io/e2e-openshift repository.
+if [ "$?" != "0" ]; then
+#python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 4CJO09 4-chaos "Jiva replica node affinity" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# e2eBook 4 #
+################
+
+run_id="deprovision-replica-node-affinity";test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+echo $test_name
+
+cd jiva-operator/e2e-tests
+# copy the content of deployer run_e2e_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/liveness/run_e2e_test.yml busybox_loadgen_deprovision_replica_node_affinity.yml
+
+# Update the environmental variables in e2e job spec.
+
+: << EOF
+  ------------------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                                       |
+  -----------------------------------------------------------------------------------------------------------------------------|
+ | appNamespace      | env    | app-busybox-ns                      | rep-node-affinity-jiva                                   | 
+ | appLabel          | env    | app=busybox                     | app=busybox-rep-node-affinity-jiva                       |
+ | e2e job label  | label  | liveness: e2e-busybox-liveness   | liveness: busybox-liveness-deprovision-rep-node-affinity |
+ | action            | env    | provision                           | deprovision                                              | 
+  ------------------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/value: app-busybox-ns/value: rep-node-affinity-jiva/g' \
+-e 's/app=busybox/app=busybox-rep-node-affinity-jiva/g' \
+-e 's/value: provision/value: deprovision/g' \
+-e 's/generateName: e2e-busybox-liveness/generateName: busybox-liveness-dep-rep-node-affinity-jiva/g' \
+-e 's/liveness: e2e-busybox-liveness/liveness: busybox-liveness-deprovision-rep-node-affinity/g' busybox_loadgen_deprovision_replica_node_affinity.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' busybox_loadgen_deprovision_replica_node_affinity.yml
+
+cat busybox_loadgen_deprovision_replica_node_affinity.yml
+# Run the e2e job and get the details of the e2e job from e2e_job_runner utils.
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='liveness:busybox-liveness-deprovision-rep-node-affinity' job=busybox_loadgen_deprovision_replica_node_affinity.yml
+cd ../..
+# Get the cluster state Once the e2e jobs completed.
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+bash openebs-openshift-e2e/utils/event_updater jobname:jiva-replica-node-affinity $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+
+# Update result of the test case in github mayadata-io/e2e-openshift repository.
+if [ "$rc_val" != "0" ]; then
+#python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 4CJO09 4-chaos "Jiva replica node affinity" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# e2eBook 5 #
+################
+
+test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=busybox-deprovision-rep-node-affinity-jiva metadata="")
+echo $test_name
+
+cd jiva-operator/e2e-tests
+# copy the content of deployer run_e2e_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/deployers/run_e2e_test.yml deprovision_rep_node_affinity.yml
+
+# Update the environmental variables in e2e job spec.
+: << EOF
+  -----------------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                                       |
+  -----------------------------------------------------------------------------------------------------------------------------|
+ | appLabel          | env    | app=busybox                     | app=busybox-rep-node-affinity-jiva                       | 
+ | appPVC            | env    | openebs-busybox                     | openebs-busybox-rep-affinity                             |
+ | appNamespace      | env    | app-busybox-ns                      | rep-node-affinity-jiva                                   |   
+ | storage class     | env    | openebs-jiva-csi                | jiva-csi-sc                                              |
+ | deploy type       | env    | statefulset                         | deployment                                               |
+ | Action            | env    | value: provision                    | value: deprovision                                       |
+ | e2e Job name   | name   | generateName: e2e-busybox-deploy | generateName: busybox-deprovision-rep-node-affinity-jiva |
+ | e2e job label  | label  | app: busybox-e2e                 | app: busybox-deprovision-rep-node-affinity               |
+  -----------------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/generateName: e2e-busybox-deploy/generateName: busybox-deprovision-rep-node-affinity-jiva/g' \
+-e 's/value: app-busybox-ns/value: rep-node-affinity-jiva/g' \
+-e 's/value: openebs-busybox/value: openebs-busybox-rep-affinity/g' \
+-e 's/app: busybox-e2e/app: busybox-deprovision-rep-node-affinity/g' \
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/value: '\''app=busybox'\''/value: '\''app=busybox-rep-node-affinity-jiva'\''/g' \
+-e 's/value: openebs-jiva-csi/value: jiva-csi-sc/g' \
+-e 's/value: provision/value: deprovision/g' deprovision_rep_node_affinity.yml
+
+cat deprovision_rep_node_affinity.yml
+
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='app:busybox-deprovision-rep-node-affinity' job=deprovision_rep_node_affinity.yml
+cd ../..
+#Get the cluster state Once the e2e jobs completed
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+bash openebs-openshift-e2e/utils/event_updater jobname:jiva-replica-node-affinity $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+current_time=$(eval $time)
+
+# testResult=$(kubectl get e2eresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+if [ "$rc_val" != "0" ]; then
+bash openebs-openshift-e2e/utils/e2e-cr jobname:jiva-replica-node-affinity jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Fail
+#python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 4CJO09 4-chaos "Jiva replica node affinity" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+#Update the e2e event for the job
+bash openebs-openshift-e2e/utils/e2e-cr jobname:jiva-replica-node-affinity jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
+# Update the result of the test case in github mayadata-io/e2e-openshift repository.
+#python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 4CJO09 4-chaos "Jiva replica node affinity" Pass $pipeline_id "$current_time" $commit_id $gittoken
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4 $5
+else
+  pod
+fi
