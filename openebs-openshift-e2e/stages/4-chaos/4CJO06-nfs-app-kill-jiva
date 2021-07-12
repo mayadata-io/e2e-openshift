@@ -43,7 +43,7 @@ sed -i -e '/name: NFS_NAMESPACE/{n;s/.*/            value: app-nfs-ns/}' \
 -e '/name: NFS_LABEL/{n;s/.*/            value: app=nfs/}' \
 -e '/name: APP_LABEL/{n;s/.*/            value: name=minio-0/}' \
 -e '/name: APP_NAMESPACE/{n;s/.*/            value: app-minio-ns/}' \
--e '/name: CONTAINER-RUNTIME/{n;s/.*/            value: containerd/}' nfs_app_kill_jiva.yml
+-e '/name: CONTAINER-RUNTIME/{n;s/.*/            value: crio/}' nfs_app_kill_jiva.yml
 
 sed -i 's/name: nfs-app-pod-failure/name: nfs-app-pod-failure-jiva/g' nfs_app_kill_jiva.yml
 

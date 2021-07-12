@@ -171,7 +171,7 @@ sed -i '/name: DATA_PERSISTENCE/{n;s/.*/            value: busybox/}' run_ctrl_k
 
 sed -i '/name: CHAOS_TYPE/{n;s/.*/            value: jiva-ctrl-kill/}' run_ctrl_kill_test.yml
 
-sed -i '/name: CONTAINER_RUNTIME/{n;s/.*/            value: containerd/}' run_ctrl_kill_test.yml
+sed -i '/name: CONTAINER_RUNTIME/{n;s/.*/            value: crio/}' run_ctrl_kill_test.yml
 
 ## Insert the set of variables for busybox data consistency util into configmap spec.
 sed -i '/parameters.yml: |/a \
