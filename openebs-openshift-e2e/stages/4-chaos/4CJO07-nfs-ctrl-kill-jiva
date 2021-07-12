@@ -45,7 +45,7 @@ sed -i -e '/name: NFS_NAMESPACE/{n;s/.*/            value: app-nfs-ns/}' \
 -e '/name: APP_NAMESPACE/{n;s/.*/            value: app-minio-ns/}' nfs_ctrl_kill_jiva.yml
 
 sed -i -e 's/name: nfs-jiva-controller-failure/name: nfs-jiva-controller-delete/g' \
--e 's/value: docker/value: containerd/g' nfs_ctrl_kill_jiva.yml
+-e 's/value: docker/value: crio/g' nfs_ctrl_kill_jiva.yml
 
 echo "Running the e2e test for minio Deployment application controller kill.."
 
