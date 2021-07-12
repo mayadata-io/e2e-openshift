@@ -1,0 +1,233 @@
+#!/bin/bash
+
+pod(){
+
+node_name=$(sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port kubectl get nodes --no-headers | grep -v master | awk 'FNR==1 {print $1}')
+
+echo $node_name
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash openebs-openshift-e2e/stages/5-infra-chaos/5ICJO02-containerd-failure-csi-jiva node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$node_name'"' '"'$RELEASE_TAG'"'
+
+}
+
+node() {
+
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+source ~/.profile
+gittoken=$(echo "$github_token")
+case_id=5ICCO02
+observer_node=$4
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+bash openebs-openshift-e2e/utils/pooling jobname:node-failure-csi-jiva
+bash openebs-openshift-e2e/utils/e2e-cr jobname:containerd-failure-csi-jiva jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
+
+################
+# e2eBook 1 #
+################
+
+echo "*******Deploying Busybox-Deployment*******"
+
+test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=busybox-provision-cri-failure-csi-jiva metadata="")
+echo $test_name
+
+cd jiva-operator/e2e-tests
+echo "Running the e2e test for Busybox Deployment.."
+cp apps/busybox/deployers/run_e2e_test.yml busybox_deploy_cri_failure_csi_jiva.yml
+
+sed -i -e 's/value: app-busybox-ns/value: cri-failure-csi-jiva/g' \
+-e 's/app: busybox-e2e/app: busybox-deploy-cri-failure-csi-jiva/g' \
+-e 's/openebs-jiva-csi/jiva-csi-sc/g' busybox_deploy_cri_failure_csi_jiva.yml
+
+cat busybox_deploy_cri_failure_csi_jiva.yml
+
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='app:busybox-deploy-cri-failure-csi-jiva' busybox_deploy_cri_failure_csi_jiva.yml
+cd ../..
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+bash openebs-openshift-e2e/utils/event_updater jobname:containerd-failure-csi-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+##python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 5ICCO02 5-infra-chaos "stop the containerd service on the node where application is running and check the behaviour" Fail "$current_time" $gittoken
+exit 1;
+fi
+
+################
+# e2eBook 2 #
+################
+
+run_id="cri-failure-csi-jiva";test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+echo $test_name
+
+cd jiva-operator/e2e-tests
+cp apps/busybox/liveness/run_e2e_test.yml busybox_liveness_cri_failure_csi_jiva.yml
+
+# Update the environmental variables in e2e job spec.
+
+sed -i -e 's/value: app-busybox-ns/value: cri-failure-csi-jiva/g' \
+-e 's/liveness: e2e-busybox-liveness/liveness: busybox-liveness-cri-failure-csi-jiva/g' busybox_liveness_cri_failure_csi_jiva.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' busybox_liveness_cri_failure_csi_jiva.yml
+
+cat busybox_liveness_cri_failure_csi_jiva.yml
+
+# Run the e2e job and get the details of the e2e job from e2e_job_runner utils.
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='liveness:busybox-liveness-cri-failure-csi-jiva' job=busybox_liveness_cri_failure_csi_jiva.yml
+cd ../..
+# Get the cluster state Once the e2e jobs completed.
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+# Update the e2e event for the job.
+bash openebs-openshift-e2e/utils/event_updater jobname:containerd-failure-csi-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+##python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 5ICCO02 5-infra-chaos "stop the containerd service on the node where application is running and check the behaviour" Fail "$current_time" $gittoken
+exit 1;
+fi
+
+################
+# e2eBook 3 #
+################
+
+run_id="csi-jiva";test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=svc-failure-chaos metadata=${run_id})
+echo $test_name
+
+cd jiva-operator/e2e-tests
+cp experiments/infra-chaos/kubernetes/service_failure/run_e2e_test.yml run_cri_failure_test_csi_jiva.yml
+
+# Update the environmental variables in e2e job spec.
+
+sed -i -e '/name: OPERATOR_NAMESPACE/{n;s/.*/            value: openebs/g}' \
+-e 's/name: svc-failure-chaos/name: containerd-failure-chaos-csi-jiva/g' \
+-e '/name: APP_NAMESPACE/{n;s/.*/            value: cri-failure-csi-jiva/g}' \
+-e '/name: APP_LABEL/{n;s/.*/            value: app=busybox/g}' \
+-e '/name: APP_PVC/{n;s/.*/            value: openebs-busybox/g}' \
+-e '/name: SVC_TYPE/{n;s/.*/            value: containerd/g}' \
+-e '/name: USERNAME/{n;s/.*/            value: root/g}' \
+-e 's/password:/password: VGVzdEAxMjM=/g' \
+-e '/name: DATA_PERSISTENCE/{n;s/.*/            value: busybox/}' run_cri_failure_test_csi_jiva.yml
+
+sed -i -e "s|#nodeSelector|nodeSelector|g" \
+-e "s|name: svc-failure|name: csi-svc-failure|g" \
+-e "s|name: node-password|name: cri-node-password|g" \
+-e "s|#  kubernetes.io/hostname:|  kubernetes.io/hostname: ${observer_node}|g" run_cri_failure_test_csi_jiva.yml
+
+sed -i '/parameters.yml: |/a \
+    blocksize: 4k\
+    blockcount: 1024\
+    testfile: csicrifailure
+' run_cri_failure_test_csi_jiva.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' run_cri_failure_test_csi_jiva.yml
+
+cat run_cri_failure_test_csi_jiva.yml
+
+# Run the e2e job and get the details of the e2e job from e2e_job_runner utils.
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='name:containerd-failure-chaos-csi-jiva' job=run_cri_failure_test_csi_jiva.yml
+cd ../..
+# Get the cluster state Once the e2e jobs completed.
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+# Update the e2e event for the job.
+bash openebs-openshift-e2e/utils/event_updater jobname:containerd-failure-csi-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+##python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 5ICCO02 5-infra-chaos "stop the containerd service on the node where application is running and check the behaviour" Fail "$current_time" $gittoken
+exit 1;
+fi
+
+################
+# e2eBook 4 #
+################
+
+run_id="deprovision-cri-failure-csi-jiva";test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+echo $test_name
+
+cd jiva-operator/e2e-tests
+cp apps/busybox/liveness/run_e2e_test.yml busybox_liveness_deprovision_cri_failure_csi_jiva.yml
+
+# Update the environmental variables in e2e job spec.
+
+sed -i -e 's/value: app-busybox-ns/value: cri-failure-csi-jiva/g' \
+-e 's/value: provision/value: deprovision/g' \
+-e 's/generateName: e2e-busybox-liveness/generateName: busybox-liveness-dep-cri-failure/g' \
+-e 's/liveness: e2e-busybox-liveness/liveness: busybox-liveness-dep-cri-failure-csi-jiva/g' busybox_liveness_deprovision_cri_failure_csi_jiva.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' busybox_liveness_deprovision_cri_failure_csi_jiva.yml
+
+cat busybox_liveness_deprovision_cri_failure_csi_jiva.yml
+
+# Run the e2e job and get the details of the e2e job from e2e_job_runner utils.
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='liveness:busybox-liveness-dep-cri-failure-csi-jiva' job=busybox_liveness_deprovision_cri_failure_csi_jiva.yml
+cd ../..
+# Get the cluster state Once the e2e jobs completed.
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+# Update the e2e event for the job.
+bash openebs-openshift-e2e/utils/event_updater jobname:containerd-failure-csi-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+##python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 5ICCO02 5-infra-chaos "stop the containerd service on the node where application is running and check the behaviour" Fail "$current_time" $gittoken
+exit 1;
+fi
+
+################
+# e2eBook 5 #
+################
+
+echo "*******Deprovision Busybox-Deployment*******"
+
+test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=busybox-deprovision-cri-failure-csi-jiva metadata="")
+echo $test_name
+
+cd jiva-operator/e2e-tests
+echo "Running the e2e test for Busybox Application Deprovision.."
+cp apps/busybox/deployers/run_e2e_test.yml busybox_deprovision_cri_failure_csi_jiva.yml
+
+sed -i -e 's/value: app-busybox-ns/value: cri-failure-csi-jiva/g' \
+-e 's/app: busybox-e2e/app: busybox-dep-cri-failure-csi-jiva/g' \
+-e 's/value: provision/value: deprovision/g' \
+-e 's/value: openebs-jiva-csi/value: openebs-jiva-cspc-disk/g' \
+-e 's/statefulset/deployment/g' busybox_deprovision_cri_failure_csi_jiva.yml
+
+cat busybox_deprovision_cri_failure_csi_jiva.yml
+
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='app:busybox-dep-cri-failure-csi-jiva' busybox_deprovision_cri_failure_csi_jiva.yml
+cd ../..
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+bash openebs-openshift-e2e/utils/event_updater jobname:containerd-failure-csi-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+current_time=$(eval $time)
+
+# testResult=$(kubectl get e2eresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+
+if [ "$rc_val" != "0" ]; then
+bash openebs-openshift-e2e/utils/e2e-cr jobname:containerd-failure-csi-jiva jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Fail
+##python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 5ICCO02 5-infra-chaos "stop the containerd service on the node where application is running and check the behaviour" Fail "$current_time" $gittoken
+exit 1;
+fi
+
+bash openebs-openshift-e2e/utils/e2e-cr jobname:containerd-failure-csi-jiva jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
+##python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 5ICCO02 5-infra-chaos "stop the containerd service on the node where application is running and check the behaviour" Pass "$current_time" $gittoken
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4 $5 $6
+else
+  pod
+fi

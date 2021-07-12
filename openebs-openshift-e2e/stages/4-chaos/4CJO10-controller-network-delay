@@ -1,0 +1,289 @@
+#!/bin/bash
+
+
+pod() {
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash openebs-openshift-e2e/stages/4-chaos/4CJO10-controller-network-delay node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
+}
+
+node() {
+source ~/.profile
+gittoken=$(echo "$github_token")
+
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+releaseTag=$(echo $4)
+case_id=4CJO10
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+oc adm policy add-scc-to-user anyuid system:serviceaccount:controller-delay-jiva:default
+bash openebs-openshift-e2e/utils/e2e-cr jobname:controller-network-delay-jiva jobphase:Waiting
+bash openebs-openshift-e2e/utils/e2e-cr jobname:controller-network-delay-jiva jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
+
+echo "*******Deploying Busybox Application****"
+
+################
+# e2eBook 1 #
+################
+
+: << EOF
+  --------------------------------------------------------------------------------------------------------------------     
+ | specAttribute     | kind   |         default value               | test specifc value                              |
+  ------------------------------------------------------------------------------------------------------------------- |
+ | appLabel          | env    | app=busybox-sts                     | app=busybox-controller-delay-jiva               |
+ | deploy type       | env    | statefulset                         | deployment                                      |
+ | appNamespace      | env    | app-busybox-ns                      | controller-delay-jiva                           |
+ | pvcName           | env    | openebs-busybox                     | openebs-bb-controller-delay                     | 
+ | storage clas      | env    | openebs-cstor-sparse                | jiva-csi-sc                            |
+ | e2e Job name   | name   | generateName: e2e-busybox-deploy | generateName: busybox-provision-controller-delay-jiva|
+ | e2e job label  | label  | app: busybox-e2e                 | deploy-busybox-controller-delay-jiva            |
+  ---------------------------------------------------------------------------------------------------------------------
+EOF
+
+test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=busybox-provision-controller-delay-jiva metadata="")
+echo $test_name
+
+cd jiva-operator/e2e-tests
+echo "Running the e2e test for Busybox Deployment.."
+
+cp apps/busybox/deployers/run_e2e_test.yml busybox_controller_delay_jiva.yml
+
+sed -i -e 's/generateName: e2e-busybox-deploy/generateName: busybox-provision-controller-delay-jiva/g' \
+-e 's/app: busybox-e2e/app: deploy-busybox-controller-delay-jiva/g' \
+-e 's/app=busybox-sts/app=busybox-controller-delay-jiva/g' \
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/value: openebs-jiva-csi/value: jiva-csi-sc/g' \
+-e 's/value: openebs-busybox/value: openebs-bb-controller-delay/g' \
+-e 's/value: app-busybox-ns/value: controller-delay-jiva/g' busybox_controller_delay_jiva.yml
+cat busybox_controller_delay_jiva.yml
+
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='app:deploy-busybox-controller-delay-jiva' job=busybox_controller_delay_jiva.yml
+cd ../..
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+bash openebs-openshift-e2e/utils/event_updater jobname:controller-network-delay-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+exit 1;
+fi
+
+################
+# e2eBook 2 #
+################
+
+run_id="controller-delay-jiva";test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+echo $test_name
+
+cd jiva-operator/e2e-tests
+# copy the content of deployer run_e2e_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/liveness/run_e2e_test.yml busybox_loadgen_controller_delay_jiva.yml
+
+# Update the environmental variables in e2e job spec.
+
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+  ---------------------------------------------------------------------------------------------------------------------|
+ | appNamespace      | env    | app-busybox-ns                      | controller-delay-jiva                            | 
+ | e2e job label  | label  | liveness: e2e-busybox-liveness   | liveness: busybox-liveness-controller-delay-jiva               |
+ | appLabel          | env    | app=busybox-sts                     | app=busybox-controller-delay-jiva                | 
+  ----------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/value: app-busybox-ns/value: controller-delay-jiva/g' \
+-e 's/app=busybox-sts/app=busybox-controller-delay-jiva/g' \
+-e 's/liveness: e2e-busybox-liveness/liveness: busybox-liveness-controller-delay-jiva/g' busybox_loadgen_controller_delay_jiva.yml
+
+cat busybox_loadgen_controller_delay_jiva.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' busybox_loadgen_controller_delay_jiva.yml
+
+# Run the e2e job and get the details of the e2e job from e2e_job_runner utils.
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='liveness:busybox-liveness-controller-delay-jiva' job=busybox_loadgen_controller_delay_jiva.yml
+cd ../..
+# Get the cluster state Once the e2e jobs completed.
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+# Update the e2e event for the job.
+bash openebs-openshift-e2e/utils/event_updater jobname:controller-network-delay-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+exit 1;
+fi
+
+################
+# e2eBook 3 #
+################
+
+echo "*******Performing network delay on controller**********"
+
+run_id="jiva";test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=openebs-target-network-delay metadata=${run_id})
+echo $test_name
+
+cd jiva-operator/e2e-tests
+cp experiments/chaos/openebs_controller_network_delay/run_e2e_test.yml run_controller_delay_test_jiva.yml
+
+: << EOF
+  --------------------------------------------------------------------------------------------------------------------     
+ | specAttribute     | kind   |         default value               | test specifc value                              |
+  ------------------------------------------------------------------------------------------------------------------- |
+ | appLabel          | env    | name=percona                        | app=busybox-controller-delay-jiva               |
+ | pvcName           | env    | percona-mysql-claim                 | openebs-bb-controller-delay                     | 
+ | appNamespace      | env    | app-percona-ns                      | controller-delay-jiva                           |
+ | storage clas      | env    | openebs-cstor-sparse                | jiva-csi-sc                            |
+ | e2e Job name   | name   | generateName: openebs-target-network-delay- | generateName: openebs-controller-network-delay|
+ | e2e job label  | label  | app: openebs-target-network-delay            | openebs-controller-network-delay                              |
+  ---------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/value: percona-mysql-claim/value: openebs-bb-controller-delay/g' \
+-e 's/value: docker/value: cri-o/g' \
+-e 's/value: '\''name=percona'\''/value: '\''app=busybox-controller-delay-jiva'\''/g' \
+-e 's/value: app-percona-ns/value: controller-delay-jiva/g' run_controller_delay_test_jiva.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' run_controller_delay_test_jiva.yml
+
+## Replace the value of DATA_PERSISTENCE with application name in e2e experiment.
+sed -i '/name: DATA_PERSISTENCE/{n;s/.*/            value: busybox/}' run_controller_delay_test_jiva.yml
+
+## Insert the set of variables for busybox data consistency util into configmap spec.
+sed -i '/parameters.yml: |/a \
+    blocksize: 4k \
+    blockcount: 1024 \
+    testfile: ctrlnwdelaytest
+' run_controller_delay_test_jiva.yml
+
+cat run_controller_delay_test_jiva.yml
+
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='name:openebs-controller-network-delay' job=run_controller_delay_test_jiva.yml
+cd ../..
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+bash openebs-openshift-e2e/utils/event_updater jobname:controller-network-delay-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+exit 1;
+fi
+
+################
+# e2eBook 4 #
+################
+
+run_id="deprovision-controller-delay-jiva";test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+echo $test_name
+
+cd jiva-operator/e2e-tests
+# copy the content of deployer run_e2e_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/liveness/run_e2e_test.yml busybox_loadgen_deprovision_controller_delay_jiva.yml
+
+# Update the environmental variables in e2e job spec.
+
+: << EOF
+  -----------------------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                                            |
+  ----------------------------------------------------------------------------------------------------------------------------------|
+ | appNamespace      | env    | app-busybox-ns                      | controller-delay-jiva                                         | 
+ | appLabel          | env    | app=busybox-sts                     | app=busybox-controller-delay-jiva                             |
+ | e2e job label  | label  | liveness: e2e-busybox-liveness   | liveness: busybox-liveness-deprovision-controller-delay-jiva   |
+ | action            | env    | provision                           | deprovision                                                   | 
+  -----------------------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/value: app-busybox-ns/value: controller-delay-jiva/g' \
+-e 's/app=busybox-sts/app=busybox-controller-delay-jiva/g' \
+-e 's/value: provision/value: deprovision/g' \
+-e 's/generateName: e2e-busybox-liveness/generateName: busybox-liveness-dep-controller-delay-jiva/g' \
+-e 's/liveness: e2e-busybox-liveness/liveness: busybox-liveness-deprovision-controller-delay-jiva/g' busybox_loadgen_deprovision_controller_delay_jiva.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' busybox_loadgen_deprovision_controller_delay_jiva.yml
+
+cat busybox_loadgen_deprovision_controller_delay_jiva.yml
+# Run the e2e job and get the details of the e2e job from e2e_job_runner utils.
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='liveness:busybox-liveness-deprovision-controller-delay-jiva' job=busybox_loadgen_deprovision_controller_delay_jiva.yml
+cd ../..
+# Get the cluster state Once the e2e jobs completed.
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+bash openebs-openshift-e2e/utils/event_updater jobname:controller-network-delay-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+
+# Update result of the test case in github mayadata-io/e2e-openshift repository.
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+
+################
+# e2eBook 5 #
+################
+
+echo "********Deprovisioning Busybox Application*******"
+
+test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=busybox-deprovision-controller-delay-jiva metadata="")
+echo $test_name
+cd jiva-operator/e2e-tests
+cp apps/busybox/deployers/run_e2e_test.yml deprovision_controller_delay_jiva.yml
+
+: << EOF
+  -----------------------------------------------------------------------------------------------------------------------------     
+ | specAttribute     | kind   |         default value               | test specifc value                                      |
+  ----------------------------------------------------------------------------------------------------------------------------|
+ | appLabel          | env    | app=busybox-sts                     | app=busybox-controller-delay-jiva                       |
+ | pvcName           | env    | openebs-busybox                     | openebs-bb-controller-delay                             | 
+ | appNamespace      | env    | app-busybox-ns                      | controller-delay-jiva                                   | 
+ | storage clas      | env    | openebs-cstor-sparse                | jiva-csi-sc                                             |
+ | deploy type       | env    | statefulset                         | deployment                                              |
+ | Action            | env    | value: provision                    | value: deprovision                                      |
+ | e2e Job name   | name   | generateName: e2e-busybox-deploy | generateName: busybox-deprovision-controller-delay-jiva |
+ | e2e job label  | label  | app: busybox-e2e                 | bb-controller-delay-jiva                                |
+  -----------------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/generateName: e2e-busybox-deploy/generateName: busybox-deprovision-controller-delay-jiva/g' \
+-e 's/app: busybox-e2e/app: bb-deprovision-controller-delay-jiva/g' \
+-e 's/app=busybox-sts/app=busybox-controller-delay-jiva/g' \
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/value: openebs-cstor-sparse/value: jiva-csi-sc/g' \
+-e 's/value: openebs-busybox/value: openebs-bb-controller-delay/g' \
+-e 's/value: app-busybox-ns/value: controller-delay-jiva/g' \
+-e 's/value: provision/value: deprovision/g' deprovision_controller_delay_jiva.yml  
+
+echo "Running the e2e test for Busybox Deployment.."
+cat deprovision_controller_delay_jiva.yml
+
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='app:bb-deprovision-controller-delay-jiva' job=deprovision_controller_delay_jiva.yml
+cd ../..
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+bash openebs-openshift-e2e/utils/event_updater jobname:controller-network-delay-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+current_time=$(eval $time)
+
+# testResult=$(kubectl get e2eresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+
+if [ "$rc_val" != "0" ]; then
+bash openebs-openshift-e2e/utils/e2e-cr jobname:controller-network-delay-jiva jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Fail
+exit 1;
+fi
+
+bash openebs-openshift-e2e/utils/e2e-cr jobname:controller-network-delay-jiva jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4 $5
+else
+  pod
+fi

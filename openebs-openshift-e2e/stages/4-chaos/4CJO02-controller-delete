@@ -1,0 +1,315 @@
+#!/bin/bash
+
+pod() {
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash openebs-openshift-e2e/stages/4-chaos/4CJO02-controller-delete node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
+}
+
+node() {
+source ~/.profile
+#github token to push the test result into github openebs/e2e-openshift repository. 
+#This token is set as an env in ~/.profile in the test cluster.
+gittoken=$(echo "$github_token")
+
+job_id=$(echo $1) #Gitlab job id obtain from the gitlab env ($CI_JOB_ID).
+pipeline_id=$(echo $2) # Gitlab pipeline id obtained from gitlab env ($CI_PIPELINE_ID).
+commit_id=$(echo $3) #Gitlab commit id Obtained fron gilab env ($CI_COMMIT_SHA).
+releaseTag=$(echo $4)
+case_id=4CJO02 #test case ID.
+gitlab_stage=4-chaos # Gitlab stage where this test case is running.
+#job_description="'Induce failure on JIVA controller pod and check if it gets scheduled immediately and the application is available'"
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+oc adm policy add-scc-to-user anyuid system:serviceaccount:ctrl-delete:default
+
+#Creating e2e custom resoure result fot the each stage of the test.
+bash openebs-openshift-e2e/utils/e2e-cr jobname:controller-delete jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
+bash openebs-openshift-e2e/utils/e2e-cr jobname:controller-delete jobphase:Running init_time:"$current_time"
+
+################
+# e2eBook 1 #
+################
+#### Deploy BusyBox application
+
+#testcase name for the busybox deployers will be append with busybox-{{ action }}- {{ app-namespace }}
+#action will be provision or deprovision.
+#app namespaces is the name to deploy the busybox application.
+test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=busybox-provision-ctrl-delete metadata="")
+echo $test_name
+
+cd jiva-operator/e2e-tests
+echo "Running the e2e test for Busybox Deployment.."
+
+#copy the content of deployer run_e2e_test.yml into a different file to update the test specific parametes.
+cp apps/busybox/deployers/run_e2e_test.yml busybox_ctrl_delete.yml
+
+: << EOF
+  --------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind     | default busybox value               | test specifc value                     |
+  -----------------------------------------------------------------------------------------------------        |
+ | e2e job label  | label    | app: busybox-e2e                 | app: deploy-busybox-ctrl-delete          | 
+ | e2e job Name   | job name | generateName: e2e-busybox-deploy | generateName: busybox-deploy-ctrl-delete |
+ | appLabel          | env      | app=busybox                     | app=ctrl-delete                          |
+ | deploy type       | env      | statefulset                         | deployment                             |
+ | storage class     | env      | openebs-jiva-csi                | jiva-csi-sc                            |
+ | pvcName           | env      | openebs-busybox                     | busybox-ctrl-delete                      | 
+ | appNamespace      | env      | app-busybox-ns                      | ctrl-delete	                           | 
+  --------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/app: busybox-e2e/app: deploy-busybox-ctrl-delete/g' \
+-e 's/generateName: e2e-busybox-deploy/generateName: busybox-deploy-ctrl-delete/g' \
+-e 's/app=busybox/app=ctrl-delete/g' \
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/value: openebs-jiva-csi/value: jiva-csi-sc/g' \
+-e 's/value: openebs-busybox/value: busybox-ctrl-delete/g' \
+-e 's/value: app-busybox-ns/value: ctrl-delete/g' busybox_ctrl_delete.yml
+
+cat busybox_ctrl_delete.yml
+
+# Run the e2e job and get the details of the e2e job from e2e_job_runner utils.
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='app:deploy-busybox-ctrl-delete' job=busybox_ctrl_delete.yml
+cd ../..
+
+#Get the cluster state Once the e2e jobs completed.
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+#Update the e2e event for the job
+bash openebs-openshift-e2e/utils/event_updater jobname:controller-delete $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+#Update the result of the test case in github openebs/e2e-openshift repository.
+if [ "$?" != "0" ]; then
+#python3 openebs-openshift-e2e/utils/result/result_update.py $job_id $case_id $gitlab_stage 'Induce failure on JIVA controller pod and check if it gets scheduled immediately and the application is available' Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# e2eBook 2 #
+################
+
+run_id="controller-delete";test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+echo $test_name
+
+cd jiva-operator/e2e-tests
+# copy the content of deployer run_e2e_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/liveness/run_e2e_test.yml busybox_loadgen_controller_delete.yml
+
+# Update the environmental variables in e2e job spec.
+
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                               |
+  ---------------------------------------------------------------------------------------------------------------------|
+ | appNamespace      | env    | app-busybox-ns                      | ctrl-delete                                        | 
+ | e2e job label  | label  | liveness: e2e-busybox-liveness   | liveness: busybox-liveness-controller-delete       |
+ | appLabel          | env    | app=busybox                     | app=ctrl-delete                                    | 
+  ----------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/value: app-busybox-ns/value: ctrl-delete/g' \
+-e 's/app=busybox/app=ctrl-delete/g' \
+-e 's/liveness: e2e-busybox-liveness/liveness: busybox-liveness-controller-delete/g' busybox_loadgen_controller_delete.yml
+
+cat busybox_loadgen_controller_delete.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' busybox_loadgen_controller_delete.yml
+
+# Run the e2e job and get the details of the e2e job from e2e_job_runner utils.
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='liveness:busybox-liveness-controller-delete' job=busybox_loadgen_controller_delete.yml
+cd ../..
+# Get the cluster state Once the e2e jobs completed.
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+# Update the e2e event for the job.
+bash openebs-openshift-e2e/utils/event_updater jobname:controller-delete $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+#python3 openebs-openshift-e2e/utils/result/result_update.py $job_id $case_id 4-chaos "Induce failure on JIVA controller pod and check if it gets scheduled immediately and the application is available" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# e2eBook 3 #
+################
+##### Run the e2e book to perform the controller failure on JIVA
+
+## testcase name is defined in test_vars of e2eBook.
+run_id="delete";test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=openebs-target-failure metadata=${run_id})
+echo $test_name
+
+cd jiva-operator/e2e-tests
+cp experiments/chaos/openebs_controller_failure/run_e2e_test.yml run_ctrl_delete_test.yml
+
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value                 | test specifc value                       |
+  ---------------------------------------------------------------------------------------------------------------|
+ | pvcName           | env    | value: percona-mysql-claim            | value: busybox-ctrl-delete                 | 
+ | e2e Job name   | name   | generateName: openebs-target-failure  | generateName: openebs-controller-failure |
+ | e2e job label  | label  | openebs-target-failure                | openebs-controller-failure               |
+ | appLabel          | env    | value: name=percona                   | value:     app=ctrl-delete                 |
+ | appNamespace      | env    | app-percon-ns                         | ctrl-delete                                | 
+  ----------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/value: percona-mysql-claim/value: busybox-ctrl-delete/g' \
+-e "/name: TARGET_AFFINITY_CHECK/{n;s/value: 'enable'/value: 'disable'/g}" \
+-e 's/value: '\''name=percona'\''/value: '\''app=ctrl-delete'\''/g' \
+-e 's/name: openebs-controller-failure/name: openebs-controller-delete /g' \
+-e 's/value: app-percona-ns/value: ctrl-delete/g' run_ctrl_delete_test.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' run_ctrl_delete_test.yml
+
+## Replace the value of DATA_PERSISTENCE with application name in e2e experiment.
+sed -i '/name: DATA_PERSISTENCE/{n;s/.*/            value: busybox/}' run_ctrl_delete_test.yml
+
+sed -i '/name: CHAOS_TYPE/{n;s/.*/            value: jiva-ctrl-delete/}' run_ctrl_delete_test.yml
+
+sed -i '/name: CONTAINER_RUNTIME/{n;s/.*/            value: containerd/}' run_ctrl_delete_test.yml
+
+## Insert the set of variables for busybox data consistency util into configmap spec.
+sed -i '/parameters.yml: |/a \
+    blocksize: 4k\
+    blockcount: 1024\
+    testfile: ctrldeletetest
+' run_ctrl_delete_test.yml
+
+cat run_ctrl_delete_test.yml
+
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='name:openebs-controller-delete' job=run_ctrl_delete_test.yml
+cd ../..
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+bash openebs-openshift-e2e/utils/event_updater jobname:controller-delete $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+#python3 openebs-openshift-e2e/utils/result/result_update.py $job_id $case_id $gitlab_stage 'Induce failure on JIVA controller pod and check if it gets scheduled immediately and the application is available' Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# e2eBook 4 #
+################
+
+run_id="deprovision-controller-delete";test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+echo $test_name
+
+cd jiva-operator/e2e-tests
+# copy the content of deployer run_e2e_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/liveness/run_e2e_test.yml busybox_loadgen_deprovision_controller_delete.yml
+
+# Update the environmental variables in e2e job spec.
+
+: << EOF
+  -----------------------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                                      |
+  ----------------------------------------------------------------------------------------------------------------------------|
+ | appNamespace      | env    | app-busybox-ns                      | ctrl-delete                                               | 
+ | appLabel          | env    | app=busybox                     | app=ctrl-delete                                           |
+ | e2e job label  | label  | liveness: e2e-busybox-liveness   | liveness: busybox-liveness-deprovision-controller-delete   |
+ | action            | env    | provision                           | deprovision                                             | 
+  -----------------------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/value: app-busybox-ns/value: ctrl-delete/g' \
+-e 's/app=busybox/app=ctrl-delete/g' \
+-e 's/value: provision/value: deprovision/g' \
+-e 's/generateName: e2e-busybox-liveness/generateName: busybox-liveness-dep-controller-delete/g' \
+-e 's/liveness: e2e-busybox-liveness/liveness: busybox-liveness-deprovision-controller-delete/g' busybox_loadgen_deprovision_controller_delete.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' busybox_loadgen_deprovision_controller_delete.yml
+
+cat busybox_loadgen_deprovision_controller_delete.yml
+# Run the e2e job and get the details of the e2e job from e2e_job_runner utils.
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='liveness:busybox-liveness-deprovision-controller-delete' job=busybox_loadgen_deprovision_controller_delete.yml
+cd ../..
+# Get the cluster state Once the e2e jobs completed.
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+bash openebs-openshift-e2e/utils/event_updater jobname:controller-delete $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+
+# Update result of the test case in github mayadata-io/e2e-openshift repository.
+if [ "$rc_val" != "0" ]; then
+#python3 openebs-openshift-e2e/utils/result/result_update.py $job_id $case_id 4-chaos "Induce failure on JIVA controller pod and check if it gets scheduled immediately and the application is available" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+################
+# e2eBook 5 #
+################
+# Run the e2e book to Deprovison the busybox deployment
+
+echo "********Deprovisioning Busybox Application*******"
+
+test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=busybox-deprovision-ctrl-delete metadata="")
+echo $test_name
+
+cd jiva-operator/e2e-tests
+cp apps/busybox/deployers/run_e2e_test.yml deprovision_ctrl_delete.yml
+
+: << EOF
+  ---------------------------------------------------------------------------------------------------------------
+ | specAttribute     | kind   |         default value               | test specifc value                         |
+  ---------------------------------------------------------------------------------------------------------------|
+ | e2e Job name   | name   | generateName: e2e-busybox-deploy | generateName: busybox-deprovision-ctrl-delete|
+ | e2e job label  | label  | app: busybox-e2e                 | app: busybox-deprovision-ctrl-delete         |
+ | appLabel          | env    | app=busybox                     | app=ctrl-delete                              |
+ | deploy type       | env    | statefulset                         | deployment                                 |
+ | storage clas      | env    | openebs-jiva-csi                | jiva-csi-sc                       |
+ | pvcName           | env    | openebs-busybox                     | busybox-ctrl-delete                          | 
+ | appNamespace      | env    | app-busybox-ns                      | ctrl-delete                                  | 
+ | Action            | env    | value: provision                    | value: deprovision                         |
+  ----------------------------------------------------------------------------------------------------------------
+EOF
+
+sed -i -e 's/generateName: e2e-busybox-deploy/generateName: busybox-deprovision-ctrl-delete/g' \
+-e 's/app: busybox-e2e/app: busybox-deprovision-ctrl-delete/g' \
+-e 's/app=busybox/app=ctrl-delete/g' \
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/value: openebs-jiva-csi/value: jiva-csi-sc/g' \
+-e 's/value: openebs-busybox/value: busybox-ctrl-delete/g' \
+-e 's/value: app-busybox-ns/value: ctrl-delete/g' \
+-e 's/value: provision/value: deprovision/g' deprovision_ctrl_delete.yml
+
+cat deprovision_ctrl_delete.yml
+
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='app:busybox-deprovision-ctrl-delete' job=deprovision_ctrl_delete.yml
+cd ../..
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+bash openebs-openshift-e2e/utils/event_updater jobname:controller-delete $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+current_time=$(eval $time)
+
+# testResult=$(kubectl get e2eresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+
+if [ "$rc_val" != "0" ]; then
+bash openebs-openshift-e2e/utils/e2e-cr jobname:controller-delete jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Fail
+#python3 openebs-openshift-e2e/utils/result/result_update.py $job_id $case_id $gitlab_stage 'Induce failure on JIVA controller pod and check if it gets scheduled immediately and the application is available' Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+bash openebs-openshift-e2e/utils/e2e-cr jobname:controller-delete jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
+
+#python3 openebs-openshift-e2e/utils/result/result_update.py $job_id $case_id $gitlab_stage 'Induce failure on JIVA controller pod and check if it gets scheduled immediately and the application is available' Pass $pipeline_id "$current_time" $commit_id $gittoken
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4 $5
+else
+  pod
+fi

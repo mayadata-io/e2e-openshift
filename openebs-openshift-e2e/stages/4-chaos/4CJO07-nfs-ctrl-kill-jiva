@@ -1,0 +1,88 @@
+#!/bin/bash
+
+
+pod() {
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash openebs-openshift-e2e/stages/4-chaos/4CJO07-nfs-ctrl-kill-jiva node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
+}
+
+node() {
+job_id=$(echo $1) #Gitlab job id obtain from the gitlab env ($CI_JOB_ID).
+pipeline_id=$(echo $2) # Gitlab pipeline id obtained from gitlab env ($CI_PIPELINE_ID).
+commit_id=$(echo $3) #Gitlab commit id Obtained fron gilab env ($CI_COMMIT_SHA).
+releaseTag=$(echo $4)
+source ~/.profile
+#github token to push the test result into github mayadata-io/e2e-openshift repository.
+#This token is set as an env in ~/.profile in the test cluster.
+gittoken=$(echo "$github_token")
+case_id=4CJO07  #test case ID.
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+#Creating e2e custom resource result for the test.
+bash openebs-openshift-e2e/utils/pooling jobname:nfs-app-kill-jiva
+bash openebs-openshift-e2e/utils/e2e-cr jobname:nfs-ctrl-kill-jiva jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
+
+################
+# e2eBook 1 #
+################
+# Performing Application controller Chaos
+
+run_id="delete";test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=openebs-jiva-nfs-controller-failure metadata=${run_id})
+echo $test_name
+
+cd jiva-operator/e2e-tests
+# copy the content of chaos run_e2e_test.yml into a different file to update the test specific parameters.
+cp experiments/chaos/nfs_chaos/nfs_openebs_controller_failure/run_e2e_test.yml nfs_ctrl_kill_jiva.yml
+
+sed -i -e '/name: NFS_NAMESPACE/{n;s/.*/            value: app-nfs-ns/}' \
+-e '/name: NFS_LABEL/{n;s/.*/            value: app=nfs/}' \
+-e '/name: NFS_PVC/{n;s/.*/            value: nfs-pvc-claim/}' \
+-e '/name: APP_LABEL/{n;s/.*/            value: name=minio-0/}' \
+-e '/name: CHAOS_TYPE/{n;s/.*/            value: ctrl-delete/}' \
+-e '/name: APP_NAMESPACE/{n;s/.*/            value: app-minio-ns/}' nfs_ctrl_kill_jiva.yml
+
+sed -i -e 's/name: nfs-jiva-controller-failure/name: nfs-jiva-controller-delete/g' \
+-e 's/value: docker/value: containerd/g' nfs_ctrl_kill_jiva.yml
+
+echo "Running the e2e test for minio Deployment application controller kill.."
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' nfs_ctrl_kill_jiva.yml
+
+cat nfs_ctrl_kill_jiva.yml
+
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='name:nfs-jiva-controller-delete' job=nfs_ctrl_kill_jiva.yml
+cd ../..
+# Get the cluster state Once the e2e jobs completed.
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+bash openebs-openshift-e2e/utils/event_updater jobname:nfs-ctrl-kill-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+current_time=$(eval $time)
+
+# Update result of the test case in github mayadata-io/e2e-openshift repository.
+if [ "$rc_val" != "0" ]; then
+bash openebs-openshift-e2e/utils/e2e-cr jobname:nfs-ctrl-kill-jiva jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Fail
+#python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 4CJO07 4-chaos "Induce application ctrl kill and check if it is recovered successfully" Fail $pipeline_id "$current_time" $commit_id $gittoken
+exit 1;
+fi
+
+bash openebs-openshift-e2e/utils/e2e-cr jobname:nfs-ctrl-kill-jiva jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
+#python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 4CJO07 4-chaos "Induce application ctrl kill and check if it is recovered successfully" Pass $pipeline_id "$current_time" $commit_id $gittoken
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4 $5
+else
+  pod
+fi
+

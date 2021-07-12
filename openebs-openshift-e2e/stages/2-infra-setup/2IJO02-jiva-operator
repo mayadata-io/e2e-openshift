@@ -1,0 +1,93 @@
+#!/bin/bash
+
+pod() {
+
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash openebs-openshift-e2e/stages/2-infra-setup/2IJO02-jiva-operator node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"' '"'$JIVA_OPERATOR_RELEASE_BRANCH'"' '"'$JIVA_OPERATOR_IMAGE_TYPE'"' '"'$COMMIT_ID'"' '"'$RC_TAG'"' '"'$JIVA_OPERATOR_IMAGE'"' '"'$JIVA_CSI_DRIVER_IMAGE'"'
+}
+
+node() {
+
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+case_id=2IJO02
+commit_id=$(echo $3)
+releaseTag=$(echo $4)
+release_branch=$(echo $5)
+release_image_type=$(echo $6)
+release_commit_id=$(echo $7)
+rc_tag=$(echo $8)
+jiva_operator_image=$(echo $9)
+jiva_csi_driver_image=$(echo ${10})
+
+
+source ~/.profile
+gittoken=$(echo "$github_token")
+
+time="date"
+current_time=$(eval $time)
+kubectl apply -f openebs-openshift-e2e/utils/e2e-crd.yml
+
+#pooling over previous job to complete
+bash openebs-openshift-e2e/utils/pooling jobname:openebs-deploy
+bash openebs-openshift-e2e/utils/e2e-cr jobname:jiva-operator jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
+
+#################
+## RUNNER MAIN ##
+#################
+
+kubectl create ns openebs
+
+test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=openebs-jiva-operator-provision metadata="")
+echo $test_name
+
+git clone https://github.com/openebs/jiva-operator
+cd jiva-operator/e2e-tests
+
+cp experiments/jiva-operator/jiva-csi-provisioner/run_e2e_test.yml jiva_operator.yml
+
+kubectl apply -f ./hack/rbac.yaml
+kubectl apply -f ./hack/crds.yaml
+
+export COMMIT_ID=$release_commit_id
+export RC_TAG=$rc_tag
+export JIVA_OPERATOR_IMAGE=$jiva_operator_image
+export JIVA_CSI_DRIVER_IMAGE=$jiva_csi_driver_image
+
+wget https://raw.githubusercontent.com/openebs/e2e-infrastructure/master/env-update/env.py
+python3 env.py -f jiva_operator.yml
+
+sed -i -e "/name: OPENEBS_VERSION/{n;s/.*/          value: ${release_branch}/g}" \
+-e "/name: IMAGE_TYPE/{n;s/.*/          value: ${release_image_type}/g}" \
+-e "/name: ACTION/{n;s/.*/          value: provision/g}" jiva_operator.yml
+
+cat jiva_operator.yml
+
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='provider:jiva-operator' job=jiva_operator.yml
+bash ../../openebs-openshift-e2e/utils/dump_cluster_state;
+cd ../..
+bash openebs-openshift-e2e/utils/event_updater jobname:jiva-operator $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+#################
+## GET RESULT  ##
+#################
+rc_val=$(echo $?)
+
+## Check the test status & result from the e2e result custom resource
+source ~/.profile
+gittoken=$(echo "$github_token")
+testResult=$(kubectl get e2eresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+
+current_time=$(eval $time)
+bash openebs-openshift-e2e/utils/e2e-cr jobname:jiva-operator jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:$testResult
+
+#python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 2IJO02 jiva-csi-infra-setup "install jiva-operator" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4 $5 $6 $7 $8 $9 ${10} ${11}
+else
+  pod
+fi
