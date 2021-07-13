@@ -109,7 +109,7 @@ cp experiments/chaos/openebs_target_network_loss/run_litmus_test.yml csi-run_tar
 sed -i -e 's/value: app-percona-ns/value: csi-percona-target-nw-loss/g' \
 -e 's/name: target-network-loss/name: target-network-loss-csi-config/g' \
 -e 's/name: openebs-target-network-loss/name: openebs-target-network-loss-csi/g' \
--e 's/value: docker/value: containerd/g' csi-run_target_nw_loss_test.yml
+-e 's/value: docker/value: cri-o/g' csi-run_target_nw_loss_test.yml
 
 ## Replace the value of DATA_PERSISTENCE with application name in litmus experiment. 
 sed -i '/name: DATA_PERSISTENCE/{n;s/.*/            value: mysql/}' csi-run_target_nw_loss_test.yml

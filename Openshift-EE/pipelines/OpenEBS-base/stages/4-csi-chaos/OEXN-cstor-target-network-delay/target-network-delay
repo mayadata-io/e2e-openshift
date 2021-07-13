@@ -114,7 +114,7 @@ cp experiments/chaos/openebs_target_network_delay/run_litmus_test.yml csi_run_ta
 sed -i -e 's/value: app-percona-ns/value: csi-percona-target-nw-delay/g' \
 -e 's/name: target-network-delay/name: csi-target-network-delay-config/g' \
 -e 's/name: openebs-target-network-delay/name: openebs-csi-target-network-delay/g' \
--e 's/value: docker/value: containerd/g' csi_run_target_nw_delay_test.yml
+-e 's/value: docker/value: cri-o/g' csi_run_target_nw_delay_test.yml
 
 ## Replace the value of DATA_PERSISTENCE with application name in litmus experiment. 
 sed -i '/name: DATA_PERSISTENCE/{n;s/.*/            value: mysql/}' csi_run_target_nw_delay_test.yml
