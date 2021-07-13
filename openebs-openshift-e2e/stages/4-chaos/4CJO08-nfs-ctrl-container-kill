@@ -42,7 +42,7 @@ sed -i -e '/name: NFS_NAMESPACE/{n;s/.*/            value: app-nfs-ns/}' \
 -e '/name: APP_LABEL/{n;s/.*/            value: name=minio-0/}' \
 -e '/name: APP_NAMESPACE/{n;s/.*/            value: app-minio-ns/}' nfs_ctrl_container_kill.yml
 
-sed -i -e 's/value: docker/value: crio/g' nfs_ctrl_container_kill.yml
+sed -i -e 's/value: docker/value: cri-o/g' nfs_ctrl_container_kill.yml
 
 echo "Running the e2e test for minio Deployment Container Volume mgmt kill.."
 
