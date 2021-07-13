@@ -135,7 +135,7 @@ cd litmus
 cp experiments/chaos/app_pod_failure/run_litmus_test.yml csi_app_kill.yml
 
 sed -i -e 's/app=jenkins-app/app=app-kill/g' \
--e 's/value: docker/value: containerd/g' \
+-e 's/value: docker/value: cri-o/g' \
 -e 's/name: application-pod-failure/name: csi-application-pod-failure/g' \
 -e 's/name: app-failure/name: csi-app-kill/g' \
 -e 's/value: app-jenkins-ns/value: csi-app-kill/g' csi_app_kill.yml
