@@ -1,0 +1,62 @@
+#!/bin/bash
+
+pod(){
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash openebs-openshift-e2e/stages/3-functional/3FCO15-block-pool-creation-with-claimed-bd node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
+}
+
+node() {
+source ~/.profile
+#gittoken=$(echo "$github_token")
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+releaseTag=$(echo $4)
+case_id=3FCO15
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+bash openebs-openshift-e2e/utils/e2e-cr jobname:block-pool-creation-with-claimed-bd jobphase:Waiting
+bash openebs-openshift-e2e/utils/e2e-cr jobname:block-pool-creation-with-claimed-bd jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
+
+################
+# e2eBook 1 #
+################
+
+test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=block-pool-creation-with-claimed-bd metadata='')
+echo $test_name
+
+cd cstor-operators/e2e-tests
+
+cp experiments/functional/cspc-pool/block-pool-creation-with-claimed-bd/run_e2e_test.yml block-pool-creation-with-claimed-bd.yml
+
+sed -i -e 's/value: cstor-cspc-disk-pool/value: cstor-cspc-disk-pool-claimed/g' block-pool-creation-with-claimed-bd.yml
+
+cat block-pool-creation-with-claimed-bd.yml
+
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='app:cstor-pool-creation-with-claimed-bd' job=block-pool-creation-with-claimed-bd.yml
+cd ../..
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+bash openebs-openshift-e2e/utils/event_updater jobname:block-pool-creation-with-claimed-bd $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+current_time=$(eval $time)
+
+if [ "$rc_val" != "0" ]; then
+bash openebs-openshift-e2e/utils/e2e-cr jobname:block-pool-creation-with-claimed-bd jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" openebs_version:"$releaseTag" test_result:Fail
+#python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 3FCO15 3-functional "Verify if the pool creation is failed when the blockdevice is already claimed" Fail "$current_time" $#gittoken
+exit 1;
+fi
+
+bash openebs-openshift-e2e/utils/e2e-cr jobname:block-pool-creation-with-claimed-bd jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
+##python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 3FCO15 3-functional "Verify if the pool creation is failed when the blockdevice is already claimed" Fail "$current_time" $#gittoken
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4 $5
+else
+  pod
+fi
