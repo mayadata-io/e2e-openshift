@@ -1,0 +1,195 @@
+#!/bin/bash
+
+pod() {
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash openebs-openshift-e2e/stages/4-chaos/4CCO04-target-network-loss node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
+}
+
+node() {
+source ~/.profile
+#gittoken=$(echo "$github_token")
+
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+releaseTag=$(echo $4)
+case_id=4CCO04
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+bash openebs-openshift-e2e/utils/e2e-cr jobname:target-loss jobphase:Waiting
+bash openebs-openshift-e2e/utils/e2e-cr jobname:target-loss jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
+
+################
+# e2eBook 1 #
+################
+
+echo "*******Deploying percona Application****"
+
+test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=percona-deployment metadata="")
+echo $test_name
+
+oc adm policy add-scc-to-user anyuid system:serviceaccount:percona-target-nw-loss:default
+
+cd cstor-operators/e2e-tests
+echo "Running the e2e test for percona Deployment.."
+
+cp apps/percona/deployers/run_e2e_test.yml percona_target_network_loss.yml
+
+sed -i -e 's/app: percona-deployment/app: deploy-percona-target-nw-loss/g' \
+-e 's/generateName: e2e-percona-/generateName: e2e-percona-nw-loss-/g' \
+-e 's/value: openebs-cstor-csi/value: openebs-cstor-csi/g' \
+-e 's/value: app-percona-ns/value: percona-target-nw-loss/g' percona_target_network_loss.yml
+
+sed -i '/name: TARGET_AFFINITY_CHECK/{n;s/.*/            value: /g}' percona_target_network_loss.yml
+
+cat percona_target_network_loss.yml
+
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='app:deploy-percona-target-nw-loss' job=percona_target_network_loss.yml
+cd ../..
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+bash openebs-openshift-e2e/utils/event_updater jobname:target-loss $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+#python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 4CCO04 4-chaos "Induce cstor target network loss and check if it gets recovered successfully" Fail "$current_time" $#gittoken
+exit 1;
+fi
+
+################
+# e2eBook 2 #
+################
+
+run_id="target-nw-loss";test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=percona-loadgen metadata=${run_id})
+echo $test_name
+
+cd cstor-operators/e2e-tests
+cp apps/percona/workload/run_e2e_test.yml percona_loadgen_target_nw_loss.yml
+
+# Update the environmental variables in e2e job spec.
+
+sed -i -e 's/value: app-percona-ns/value: percona-target-nw-loss/g' \
+-e 's/generateName: percona-loadgen-/generateName: percona-loadgen-nw-loss-/g' \
+-e 's/loadgen: percona-loadjob/loadgen: percona-loadjob-nw-loss/g' percona_loadgen_target_nw_loss.yml
+
+cat percona_loadgen_target_nw_loss.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' percona_loadgen_target_nw_loss.yml
+
+# Run the e2e job and get the details of the e2e job from e2e_job_runner utils.
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='loadgen:percona-loadjob-nw-loss' job=percona_loadgen_target_nw_loss.yml
+cd ../..
+# Get the cluster state Once the e2e jobs completed.
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+# Update the e2e event for the job.
+bash openebs-openshift-e2e/utils/event_updater jobname:target-loss $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+#python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 4CCO04 4-chaos "Induce cstor target network loss and check if it gets recovered successfully" Fail "$current_time" $#gittoken
+exit 1;
+fi
+
+################
+# e2eBook 3 #
+################
+
+echo "*******Performing Network loss on target**********"
+
+test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=openebs-target-network-loss metadata="")
+echo $test_name
+
+cd cstor-operators/e2e-tests
+cp experiments/chaos/openebs_target_network_loss/run_e2e_test.yml run_target_nw_loss_test.yml
+
+sed -i -e '/name: APP_NAMESPACE/{n;s/.*/            value: percona-target-nw-loss/}' \
+-e '/name: APP_LABEL/{n;s/.*/            value: '\''name=percona'\''/}' \
+-e '/name: CONTAINER_RUNTIME/{n;s/.*/            value: cri-o/}' \
+-e '/name: DEPLOY_TYPE/{n;s/.*/            value: deployment/}' \
+-e '/name: APP_PVC/{n;s/.*/            value: percona-mysql-claim/}' \
+-e "/name: TARGET_AFFINITY_CHECK/{n;s/value: 'enable'/value: 'disable'/g}" \
+-e '/name: DATA_PERSISTENCE/{n;s/.*/            value: mysql/}'  run_target_nw_loss_test.yml
+
+## Insert the set of variables for percona data consistency util into configmap spec.
+sed -i '/parameters.yml: |/a \
+    dbuser: root\
+    dbpassword: k8sDem0\
+    dbname: targetnetworkloss
+' run_target_nw_loss_test.yml
+
+echo "Running the e2e test for percona Deployment Scaleup.."
+cat run_target_nw_loss_test.yml
+
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='name:openebs-target-network-loss' job=run_target_nw_loss_test.yml
+cd ../..
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+bash openebs-openshift-e2e/utils/event_updater jobname:target-loss $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+#python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 4CCO04 4-chaos "Induce cstor target network loss and check if it gets recovered successfully" Fail "$current_time" $#gittoken
+exit 1;
+fi
+
+
+################
+# e2eBook 4 #
+################
+ 
+kubectl delete job --all -n percona-target-nw-loss 
+
+echo "********Deprovisioning Percona Application*******"
+
+run_id="deprovision";test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=percona-deployment metadata=${run_id})
+echo $test_name
+
+cd cstor-operators/e2e-tests
+cp apps/percona/deployers/run_e2e_test.yml percona_deprovision_target_network_loss.yml
+
+sed -i -e 's/app: percona-deployment/app: deprovision-percona-target-nw-loss/g' \
+-e 's/generateName: e2e-percona-/generateName: e2e-percona-deprovision-nw-loss/g' \
+-e 's/value: openebs-cstor-csi/value: openebs-cstor-csi/g' \
+-e 's/value: provision/value: deprovision/g' \
+-e 's/value: app-percona-ns/value: percona-target-nw-loss/g' percona_deprovision_target_network_loss.yml
+
+sed -i '/name: TARGET_AFFINITY_CHECK/{n;s/.*/            value: /g}' percona_deprovision_target_network_loss.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' percona_deprovision_target_network_loss.yml           
+
+echo "Running the e2e test for percona Deprovision.."
+cat percona_deprovision_target_network_loss.yml
+
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='app:deprovision-percona-target-nw-loss' job=percona_deprovision_target_network_loss.yml
+cd ../..
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+bash openebs-openshift-e2e/utils/event_updater jobname:target-loss $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+current_time=$(eval $time)
+# testResult=$(kubectl get e2eresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+
+if [ "$rc_val" != "0" ]; then
+bash openebs-openshift-e2e/utils/e2e-cr jobname:target-loss jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Fail
+#python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 4CCO04 4-chaos "Induce cstor target network loss and check if it gets recovered successfully" Fail "$current_time" $#gittoken
+exit 1;
+fi
+
+bash openebs-openshift-e2e/utils/e2e-cr jobname:target-loss jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
+#python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 4CCO04 4-chaos "Induce cstor target network loss and check if it gets recovered successfully" Pass "$current_time" $#gittoken
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4 $5
+else
+  pod
+fi

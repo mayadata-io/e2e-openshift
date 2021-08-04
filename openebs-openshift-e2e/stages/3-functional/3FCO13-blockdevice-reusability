@@ -1,0 +1,167 @@
+#!/bin/bash
+
+pod(){
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash openebs-openshift-e2e/stages/3-functional/3FCO13-blockdevice-reusability node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
+}
+
+node() {
+source ~/.profile
+#gittoken=$(echo "$github_token")
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+releaseTag=$(echo $4)
+case_id=3FCO13
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+bash openebs-openshift-e2e/utils/pooling jobname:cstor-cspc-pool-replace-blockdevice
+bash openebs-openshift-e2e/utils/e2e-cr jobname:blockdevice-reusability jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
+
+################
+# e2eBook 1 #
+################
+
+test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=verify-blockdevice-reusability metadata='')
+echo $test_name
+
+cd cstor-operators/e2e-tests
+
+cp experiments/functional/cspc-pool/blockdevice-reusability/run_e2e_test.yml blockdevice-reusability.yml
+
+sed -i -e "/name: OLD_CSPC_POOL_NAME/{n;s/.*/            value: cstor-block-disk-pool-mirror/g}" \
+-e "/name: NEW_CSPC_POOL_NAME/{n;s/.*/            value: cspc-blockdevice-reusability-pool/g}" \
+-e "/name: POOL_TYPE/{n;s/.*/            value: mirror/g}" blockdevice-reusability.yml
+
+cat blockdevice-reusability.yml
+
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='app:verify-blockdevice-reusability' job=blockdevice-reusability.yml
+cd ../..
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+bash openebs-openshift-e2e/utils/event_updater jobname:blockdevice-reusability $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+#python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 3FCO13 3-functional "Verify the reusability of blockdevice" Fail "$current_time" $#gittoken
+exit 1;
+fi
+
+################
+# e2eBook 2 #
+################
+
+echo "****Deploying busybox Application using CSI****"
+
+test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=busybox-provision-bd-reusability metadata='')
+echo $test_name
+oc adm policy add-scc-to-user anyuid system:serviceaccount:bd-reusability:default
+
+cd cstor-operators/e2e-tests
+echo "Running the e2e test for busybox Deployment.."
+cp apps/busybox/deployers/run_e2e_test.yml deploy_blockdevice-reusability.yml
+
+sed -i -e 's/value: app-busybox-ns/value: bd-reusability/g' \
+-e 's/app: busybox-e2e/app: busybox-e2e-csi-bd-reusability/g' \
+-e 's/generateName: e2e-busybox-deploy-/generateName: e2e-busybox-csi-bd-reusability-/g' \
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/value: openebs-cstor-csi/value: openebs-bd-reusability-sc/g' deploy_blockdevice-reusability.yml
+
+cat deploy_blockdevice-reusability.yml
+
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='app:busybox-e2e-csi-bd-reusability' job=deploy_blockdevice-reusability.yml
+cd ../..
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+bash openebs-openshift-e2e/utils/event_updater jobname:blockdevice-reusability $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+current_time=$(eval $time)
+
+if [ "$rc_val" != "0" ]; then
+bash openebs-openshift-e2e/utils/e2e-cr jobname:blockdevice-reusability jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" openebs_version:"$releaseTag" test_result:Fail
+exit 1;
+fi
+
+################
+# e2eBook 3 #
+################
+
+echo "****Deprovision the busybox Application using CSI****"
+
+test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=busybox-deprovision-bd-reusability metadata='')
+echo $test_name
+
+cd cstor-operators/e2e-tests
+echo "Running the e2e test for busybox Deployment.."
+cp apps/busybox/deployers/run_e2e_test.yml deprovision-blockdevice-reusability.yml
+
+sed -i -e 's/value: app-busybox-ns/value: bd-reusability/g' \
+-e 's/app: busybox-e2e/app: busybox-csi-bd-reusability-deprovision/g' \
+-e 's/value: provision/value: deprovision/g' \
+-e 's/generateName: e2e-busybox-deploy-/generateName: e2e-busybox-csi-bd-reusability-deprovision-/g' \
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/value: openebs-cstor-csi/value: openebs-bd-reusability-sc/g' deprovision-blockdevice-reusability.yml
+
+cat deprovision-blockdevice-reusability.yml
+
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='app:busybox-csi-bd-reusability-deprovision' job=deprovision-blockdevice-reusability.yml
+cd ../..
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+bash openebs-openshift-e2e/utils/event_updater jobname:blockdevice-reusability $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+current_time=$(eval $time)
+
+if [ "$rc_val" != "0" ]; then
+bash openebs-openshift-e2e/utils/e2e-cr jobname:blockdevice-reusability jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" openebs_version:"$releaseTag" test_result:Fail
+exit 1;
+fi
+
+################
+# e2eBook 4 #
+################
+
+run_id="deprovision";test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=verify-blockdevice-reusability metadata=${run_id})
+echo $test_name
+
+cd cstor-operators/e2e-tests
+
+cp experiments/functional/cspc-pool/blockdevice-reusability/run_e2e_test.yml deprovision-blockdevice-reusability.yml
+
+sed -i -e "/name: SPC_POOL_NAME/{n;s/.*/            value: cstor-block-disk-pool-mirror/g}" \
+-e "s/value: provision/value: deprovision/g" \
+-e "s/generateName: verify-blockdevice-reusability-/generateName: verify-blockdevice-reusability-deprovision-/g" \
+-e "s/app: verify-blockdevice-reusability/app: verify-blockdevice-reusability-deprovision/g" \
+-e "/name: NEW_CSPC_POOL_NAME/{n;s/.*/            value: cspc-blockdevice-reusability-pool/g}" \
+-e "/name: POOL_TYPE/{n;s/.*/            value: mirror/g}" deprovision-blockdevice-reusability.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' deprovision-blockdevice-reusability.yml
+
+cat deprovision-blockdevice-reusability.yml
+
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='app:verify-blockdevice-reusability-deprovision' job=deprovision-blockdevice-reusability.yml
+cd ../..
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+bash openebs-openshift-e2e/utils/event_updater jobname:blockdevice-reusability $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$rc_val" != "0" ]; then
+bash openebs-openshift-e2e/utils/e2e-cr jobname:blockdevice-reusability jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" openebs_version:"$releaseTag" test_result:Fail
+#python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 3FCO13 3-functional "Verify the reusability of blockdevice" Fail "$current_time" $#gittoken
+exit 1;
+fi
+
+bash openebs-openshift-e2e/utils/e2e-cr jobname:blockdevice-reusability jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
+##python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 3FCO13 3-functional "Verify the reusability of blockdevice" Fail "$current_time" $#gittoken
+
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4 $5
+else
+  pod
+fi

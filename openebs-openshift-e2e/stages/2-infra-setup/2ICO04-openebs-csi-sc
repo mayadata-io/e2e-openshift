@@ -1,0 +1,73 @@
+#!/bin/bash
+
+pod() {
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash openebs-openshift-e2e/stages/2-infra-setup/2ICO04-openebs-csi-sc node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
+}
+
+node() {
+
+time="date"
+current_time=$(eval $time)
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+releaseTag=$(echo $4)
+case_id=2ICO04
+source ~/.profile
+#gittoken=$(echo "$github_token")
+
+present_dir=$(pwd)
+echo $present_dir
+
+#pooling over previous job to complete
+echo "***********Applying openebs-storage-clas********"
+bash openebs-openshift-e2e/utils/pooling jobname:cstor-cspc-mirrored-pool
+bash openebs-openshift-e2e/utils/e2e-cr jobname:cstor-csi-storage-policies jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
+
+run_id="csi-sc";test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=cstor-storage-policies metadata=${run_id})
+echo $test_name
+
+cd cstor-operators/e2e-tests
+echo "Running the e2e test.."
+cp experiments/cstor-operator/cstor-storage-policies/run_e2e_test.yml cstor-csi-sc.yaml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' cstor-csi-sc.yaml
+
+cat cstor-csi-sc.yaml
+
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='app:cstor-storage-policy' job=cstor-csi-sc.yaml
+
+echo "Dumping state of cluster post job run"; echo ""
+bash ../../openebs-openshift-e2e/utils/dump_cluster_state;
+
+cd ../..
+bash openebs-openshift-e2e/utils/event_updater jobname:cstor-csi-storage-policies $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+#################
+## GET RESULT  ##
+#################
+rc_val=$(echo $?)
+
+## Check the test status & result from the e2e result custom resource
+source ~/.profile
+#gittoken=$(echo "$github_token")
+testResult=$(kubectl get e2eresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+
+current_time=$(eval $time)
+bash openebs-openshift-e2e/utils/e2e-cr jobname:cstor-csi-storage-policies jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:$testResult 
+
+##python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 2ICO04 2-infra-setup "Create K8s storage classes adhering the policies supported by OpenEBS" $testResult "$current_time" $#gittoken
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4 $5
+else
+  pod
+fi

@@ -1,0 +1,210 @@
+#!/bin/bash
+
+pod() {
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash openebs-openshift-e2e/stages/3-functional/3FCO04-csi-cstor-clone node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
+}
+
+node() {
+source ~/.profile
+#gittoken=$(echo "$github_token")
+
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+releaseTag=$(echo $4)
+case_id=3FCO04
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+bash openebs-openshift-e2e/utils/pooling jobname:csi-cstor-snapshot
+bash openebs-openshift-e2e/utils/e2e-cr jobname:csi-cstor-clone jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
+
+################
+# e2eBook 1 #
+################
+
+echo "*******Performing clone e2e test**********"
+
+oc adm policy add-scc-to-user anyuid system:serviceaccount:cstor-snap-clone:default
+
+test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=cstor-csi-clone metadata="")
+echo $test_name
+
+cd cstor-operators/e2e-tests
+cp experiments/functional/csi-clone/run_e2e_test.yml run_clone_test.yml
+
+## Insert the value of Environment variables in e2e experiment. 
+sed -i -e '/name: APP_NAMESPACE/{n;s/.*/            value: cstor-snap-clone/}' \
+-e '/name: DATA_PERSISTENCE/{n;s/.*/            value: busybox/}' \
+-e '/name: STORAGE_CLASS_NAME/{n;s/.*/            value: openebs-cstor-csi/}' \
+-e '/name: APP_NAME/{n;s/.*/            value: busybox-clone/}' \
+-e '/name: CLONED_PVC/{n;s/.*/            value: csi-clone/}' \
+-e '/name: APP_PVC/{n;s/.*/            value: csi-vol/}' run_clone_test.yml
+
+## Insert the set of variables for busybox data consistency util into configmap spec.
+sed -i '/parameters.yml: |/a \
+    blocksize: 4k\
+    blockcount: 1024\
+    testfile: csisnapclonetest
+' run_clone_test.yml
+
+echo "Running the e2e test for creation of clone.."
+cat run_clone_test.yml
+
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='name:cstor-csi-clone' job=run_clone_test.yml
+cd ../..
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+bash openebs-openshift-e2e/utils/event_updater jobname:csi-cstor-clone $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+#python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 3FCO04 3-functional "Create clone and verify if the clone is created successfully" Fail "$current_time" $#gittoken
+exit 1;
+fi
+
+################
+# e2eBook 2 #
+################
+
+echo "*******Performing deprovision clone e2e test**********"
+
+run_id="deprovision";test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=cstor-csi-clone metadata=${run_id})
+echo $test_name
+
+cd cstor-operators/e2e-tests
+cp experiments/functional/csi-clone/run_e2e_test.yml run_dep_clone_test.yml
+
+## Insert the value of Environment variables in e2e experiment. 
+sed -i -e '/name: APP_NAMESPACE/{n;s/.*/            value: cstor-snap-clone/}' \
+-e '/name: DATA_PERSISTENCE/{n;s/.*/            value: busybox/}' \
+-e '/name: STORAGE_CLASS_NAME/{n;s/.*/            value: openebs-cstor-csi/}' \
+-e '/name: APP_NAME/{n;s/.*/            value: busybox-clone/}' \
+-e '/name: CLONED_PVC/{n;s/.*/            value: csi-clone/}' \
+-e '/name: APP_PVC/{n;s/.*/            value: csi-vol/}' run_dep_clone_test.yml
+
+## Replace the job runner label for deprovision of clone
+sed -i -e 's/name: cstor-csi-clone/name: cstor-csi-clone-dep/g' \
+-e 's/value: '\''provision'\''/value: '\''deprovision'\''/g' run_dep_clone_test.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' run_dep_clone_test.yml
+
+## Insert the set of variables for busybox data consistency util into configmap spec.
+sed -i '/parameters.yml: |/a \
+    blocksize: 4k\
+    blockcount: 1024\
+    testfile: csisnapclonetest
+' run_dep_clone_test.yml
+
+echo "Running the e2e test for deletion of clone.."
+cat run_dep_clone_test.yml
+
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='name:cstor-csi-clone-dep' job=run_dep_clone_test.yml
+cd ../..
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+bash openebs-openshift-e2e/utils/event_updater jobname:csi-cstor-clone $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+#python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 3FCO04 3-functional "Create clone and verify if the clone is created successfully" Fail "$current_time" $#gittoken
+exit 1;
+fi
+
+################
+# e2eBook 3 #
+################
+
+echo "*******Performing deprovision snapshot e2e test**********"
+
+run_id="deprovision";test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=cstor-csi-snapshot metadata=${run_id})
+echo $test_name
+
+cd cstor-operators/e2e-tests
+cp experiments/functional/csi-snapshot/run_e2e_test.yml run_dep_snapshot_test.yml
+
+sed -i -e 's/name: cstor-csi-snapshot/name: cstor-csi-snapshot-dep/g' \
+-e 's/value: '\''provision'\''/value: '\''deprovision'\''/g' run_dep_snapshot_test.yml
+
+## Replace the value of DATA_PERSISTENCE with application name in e2e experiment. 
+sed -i -e '/name: DATA_PERSISTENCE/{n;s/.*/            value: busybox/}' \
+-e '/name: APP_NAMESPACE/{n;s/.*/            value: cstor-snap-clone/}' \
+-e '/name: APP_PVC/{n;s/.*/            value: csi-vol/}' run_dep_snapshot_test.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' run_dep_snapshot_test.yml
+
+## Insert the set of variables for busybox data consistency util into configmap spec.
+sed -i '/parameters.yml: |/a \
+    blocksize: 4k\
+    blockcount: 1024\
+    testfile: csisnapclonetest
+' run_dep_snapshot_test.yml
+
+echo "Running the e2e test for deletion of snapshot.."
+cat run_dep_snapshot_test.yml
+
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='name:cstor-csi-snapshot-dep' job=run_dep_snapshot_test.yml
+cd ../..
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+bash openebs-openshift-e2e/utils/event_updater jobname:csi-cstor-snapshot $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+if [ "$?" != "0" ]; then
+#python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 3FCO04 3-functional "Create clone and verify if the clone is created successfully" Fail "$current_time" $#gittoken
+exit 1;
+fi
+
+################
+# e2eBook 4 #
+################
+
+echo "*******Deprovisioning Busybox Application****"
+
+test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=busybox-deprovision-cstor-snap-clone metadata="")
+echo $test_name
+
+cd cstor-operators/e2e-tests
+echo "Running the e2e test for Busybox Deprovision.."
+
+cp apps/busybox/deployers/run_e2e_test.yml busybox_dep_snap_clone.yml
+
+sed -i -e 's/app: busybox-e2e/app: deprovision-busybox-snap-clone/g' \
+-e 's/value: openebs-cstor-csi/value: openebs-cstor-csi/g' \
+-e 's/value: openebs-busybox/value: csi-vol/g' \
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/value: provision/value: deprovision/g' \
+-e 's/value: app-busybox-ns/value: cstor-snap-clone/g' busybox_dep_snap_clone.yml
+cat busybox_dep_snap_clone.yml
+
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='app:deprovision-busybox-snap-clone' job=busybox_dep_snap_clone.yml
+cd ../..
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+bash openebs-openshift-e2e/utils/event_updater jobname:csi-cstor-clone $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+current_time=$(eval $time)
+
+if [ "$rc_val" != "0" ]; then
+bash openebs-openshift-e2e/utils/e2e-cr jobname:csi-cstor-clone jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Fail
+#python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 3FCO04 3-functional "Create clone and verify if the clone is created successfully" Fail "$current_time" $#gittoken
+exit 1;
+fi
+
+bash openebs-openshift-e2e/utils/e2e-cr jobname:csi-cstor-clone jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
+#python3 openebs-openshift-e2e/utils/result/result_update.py $job_id 3FCO04 3-functional "Create clone and verify if the clone is created successfully" Pass "$current_time" $#gittoken
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4 $5
+else
+  pod
+fi
