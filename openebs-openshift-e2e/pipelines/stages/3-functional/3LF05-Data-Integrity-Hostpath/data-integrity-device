@@ -1,0 +1,76 @@
+#!/bin/bash
+
+
+pod() {
+echo $CI_JOB_ID
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-konvoy && bash openebs-openshift-e2e/pipelines/stages/3-functional/3LF04-Data-Integrity-Device/data-integrity-hostpath node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
+}
+
+node() {
+source ~/.profile
+gittoken=$(echo "$github_token")
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+releaseTag=$(echo $4)
+case_id=3LF04
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+oc adm policy add-scc-to-user anyuid system:serviceaccount:fio-hostpath:default
+
+bash openebs-openshift-e2e/utils/e2e-cr jobname:data-integrity-hostpath jobphase:Waiting init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
+bash openebs-openshift-e2e/utils/e2e-cr jobname:data-integrity-hostpath jobphase:Running
+
+################
+# e2eBook 1 #
+################
+
+run_id="hostpath";test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=fio-data-integrity metadata=${run_id})
+echo $test_name
+cd dynamic-localpv-provisioner/e2e-tests
+
+cp experiments/functional/data-integrity/run_e2e_test.yml data_integrity_test_hostpath.yml
+
+sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
+-e 's/app: fio-di-e2e/app: fio-di-e2e-hostpath/g' \
+-e 's/value: openebs-hostpath/value: openebs-hostpath/g' \
+-e 's/value: fio/value: fio-hostpath/g' data_integrity_test_hostpath.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' data_integrity_test_hostpath.yml
+
+cat data_integrity_test_hostpath.yml
+
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='app:fio-di-e2e-hostpath' job=data_integrity_test_hostpath.yml
+cd ../..
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+bash openebs-openshift-e2e/utils/event_updater jobname:data-integrity-hostpath $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+current_time=$(eval $time)
+
+testResult=$(kubectl get e2eresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+
+if [ "$rc_val" != "0" ]; then
+bash openebs-openshift-e2e/utils/e2e-cr jobname:data-integrity-hostpath jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:$testResult
+fi
+
+bash openebs-openshift-e2e/utils/e2e-cr jobname:data-integrity-hostpath jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:$testResult
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4 $5
+else
+  pod
+fi

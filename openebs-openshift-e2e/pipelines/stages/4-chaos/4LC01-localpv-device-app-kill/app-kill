@@ -1,0 +1,236 @@
+#!/bin/bash
+
+pod() {
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-konvoy && bash openebs-openshift-e2e/pipelines/stages/4-chaos/4LC01-localpv-device-app-kill/app-kill node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
+}
+
+node() {
+job_id=$(echo $1) #Gitlab job id obtain from the gitlab env ($CI_JOB_ID).
+pipeline_id=$(echo $2) # Gitlab pipeline id obtained from gitlab env ($CI_PIPELINE_ID).
+commit_id=$(echo $3) #Gitlab commit id Obtained fron gilab env ($CI_COMMIT_SHA).
+releaseTag=$(echo $4)
+source ~/.profile
+#github token to push the test result into github mayadata-io/e2e-konvoy repository.
+#This token is set as an env in ~/.profile in the test cluster.
+gittoken=$(echo "$github_token")
+case_id=4LC01  #test case ID.
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+#Creating e2e custom resource result for the test.
+bash openebs-openshift-e2e/utils/e2e-cr jobname:localpv-device-app-kill jobphase:Waiting
+bash openebs-openshift-e2e/utils/e2e-cr jobname:localpv-device-app-kill jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
+
+################
+# e2eBook 1 #
+################
+
+run_id="localpv-device";test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=busybox-provision-device-app-kill metadata=${run_id})
+echo $test_name
+
+cd dynamic-localpv-provisioner/e2e-tests
+echo "Running the e2e test for Busybox Deployment.."
+# copy the content of deployer run_e2e_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/deployers/run_e2e_test.yml busybox_device_app_kill.yml
+
+sed -i -e 's/app: busybox-e2e/app: busybox-localpv-device-app-kill/g' \
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/value: openebs-hostpath/value: openebs-device/g' \
+-e 's/value: app-busybox-ns/value: device-app-kill/g' busybox_device_app_kill.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' busybox_device_app_kill.yml
+
+cat busybox_device_app_kill.yml
+
+# Run the e2e job and get the details of the e2e job from e2e_job_runner utils.
+
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='app:busybox-localpv-device-app-kill' job=busybox_device_app_kill.yml
+cd ../..
+# Get the cluster state Once the e2e jobs completed.
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+# Update the e2e event for the job.
+bash openebs-openshift-e2e/utils/event_updater jobname:localpv-device-app-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+exit 1;
+fi
+
+################
+# e2eBook 2 #
+################
+
+run_id="localpv-device-app-kill";test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+echo $test_name
+
+cd dynamic-localpv-provisioner/e2e-tests
+# copy the content of deployer run_e2e_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/liveness/run_e2e_test.yml liveness_device_localpv_app_kill.yml
+
+# Update the environmental variables in e2e job spec.
+
+sed -i -e 's/value: app-busybox-ns/value: device-app-kill/g' \
+-e 's/liveness: e2e-busybox-liveness/liveness: device-localpv-app-kill/g' liveness_device_localpv_app_kill.yml
+
+cat liveness_device_localpv_app_kill.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' liveness_device_localpv_app_kill.yml
+
+# Run the e2e job and get the details of the e2e job from e2e_job_runner utils.
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='liveness:device-localpv-app-kill' job=liveness_device_localpv_app_kill.yml
+cd ../..
+# Get the cluster state Once the e2e jobs completed.
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+# Update the e2e event for the job.
+bash openebs-openshift-e2e/utils/event_updater jobname:localpv-device-app-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+if [ "$?" != "0" ]; then
+exit 1;
+fi
+
+################
+# e2eBook 3 #
+################
+
+# Performing Application Pod Chaos
+
+run_id="localpv-device";test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=application-pod-failure metadata=${run_id})
+echo $test_name
+
+cd dynamic-localpv-provisioner/e2e-tests
+# copy the content of deployer run_e2e_test.yml into a different file to update the test specific parameters.
+cp experiments/chaos/app_pod_failure/run_e2e_test.yml device_app_kill.yml
+
+sed -i -e 's/name: app-failure/name: device-app-kill-cm/g' \
+-e 's/name: application-pod-failure/name: localpv-device-app-kill/g' \
+-e 's/value: docker/value: containerd/g' device_app_kill.yml
+
+sed -i -e "/name: APP_LABEL/{n;s/.*/            value: app=busybox-sts/g}" \
+-e "/name: APP_NAMESPACE/{n;s/.*/            value: device-app-kill/g}" device_app_kill.yml
+
+## Replace the value of DATA_PERSISTENCE with application name in e2e experiment. 
+sed -i '/name: DATA_PERSISTENCE/{n;s/.*/            value: busybox/}' device_app_kill.yml
+
+## Insert the set of variables for busybox data consistency util into configmap spec.
+sed -i '/parameters.yml: |/a \
+    blocksize: 4k\
+    blockcount: 1024\
+    testfile: device_app_kill
+' device_app_kill.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' device_app_kill.yml
+
+echo "Running the e2e test for Busybox Deployment application pod kill.."
+cat device_app_kill.yml
+
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='name:localpv-device-app-kill' job=device_app_kill.yml
+cd ../..
+# Get the cluster state Once the e2e jobs completed.
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+bash openebs-openshift-e2e/utils/event_updater jobname:localpv-device-app-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+# Update result of the test case in github mayadata-io/e2e-konvoy repository.
+if [ "$?" != "0" ]; then
+exit 1;
+fi
+
+################
+# e2eBook 4 #
+################
+
+run_id="deprovision-device-app-kill";test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+echo $test_name
+
+cd dynamic-localpv-provisioner/e2e-tests
+# copy the content of deployer run_e2e_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/liveness/run_e2e_test.yml liveness_dep_device_app_kill.yml
+
+sed -i -e 's/value: app-busybox-ns/value: device-app-kill/g' \
+-e 's/value: provision/value: deprovision/g' \
+-e 's/generateName: e2e-busybox-liveness/generateName: liveness-dep-device-app-kill/g' \
+-e 's/liveness: e2e-busybox-liveness/liveness: liveness-dep-device-app-kill/g' liveness_dep_device_app_kill.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' liveness_dep_device_app_kill.yml
+
+cat liveness_dep_device_app_kill.yml
+# Run the e2e job and get the details of the e2e job from e2e_job_runner utils.
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='liveness:liveness-dep-device-app-kill' job=liveness_dep_device_app_kill.yml
+cd ../..
+# Get the cluster state Once the e2e jobs completed.
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+bash openebs-openshift-e2e/utils/event_updater jobname:localpv-device-app-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+
+# Update result of the test case in github mayadata-io/e2e-konvoy repository.
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+
+################
+# e2eBook 5 #
+################
+
+run_id="localpv-device";test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=busybox-deprovision-device-app-kill metadata=${run_id})
+echo $test_name
+
+cd dynamic-localpv-provisioner/e2e-tests
+# copy the content of deployer run_e2e_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/deployers/run_e2e_test.yml deprovision_device_app_kill.yml
+
+sed -i -e 's/generateName: e2e-busybox-deploy/generateName: busybox-deprovision-device-app-kill/g' \
+-e 's/app: busybox-e2e/app: busybox-deprovision-device-app-kill/g' \
+-e 's/value: statefulset/value: deployment/g' \
+-e 's/value: openebs-cstor-sparse/value: openebs-device/g' \
+-e 's/value: app-busybox-ns/value: device-app-kill/g' \
+-e 's/value: provision/value: deprovision/g' deprovision_device_app_kill.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' deprovision_device_app_kill.yml
+
+# Running the e2e test for Busybox Deprovision
+cat deprovision_device_app_kill.yml
+# Run the e2e job and get the details of the e2e job from e2e_job_runner utils.
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='app:busybox-deprovision-device-app-kill' job=deprovision_device_app_kill.yml
+cd ../..
+# Get the cluster state Once the e2e jobs completed.
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+bash openebs-openshift-e2e/utils/event_updater jobname:localpv-device-app-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+rc_val=$(echo $?)
+current_time=$(eval $time)
+
+# Update result of the test case in github mayadata-io/e2e-konvoy repository.
+if [ "$rc_val" != "0" ]; then
+bash openebs-openshift-e2e/utils/e2e-cr jobname:localpv-device-app-kill jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Fail
+exit 1;
+fi
+
+bash openebs-openshift-e2e/utils/e2e-cr jobname:localpv-device-app-kill jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4 $5
+else
+  pod
+fi
