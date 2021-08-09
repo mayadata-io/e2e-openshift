@@ -30,7 +30,7 @@ bash Openshift-EE/utils/e2e-cr jobname:cas-performance jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:cas-performance jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
 ################
-# LitmusBook 1 #
+# e2eBook 1 #
 ################
 
 #### Deploy BusyBox application
@@ -41,17 +41,17 @@ bash Openshift-EE/utils/e2e-cr jobname:cas-performance jobphase:Running init_tim
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-cas-performance metadata="")
 echo $test_name
 
-cd litmus
-# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
-cp apps/busybox/deployers/run_litmus_test.yml deploy_busybox_cas_performance.yml
+cd e2e-tests
+# copy the content of deployer run_e2e_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/deployers/run_e2e_test.yml deploy_busybox_cas_performance.yml
 
-# Update the environmental variables in litmus job spec.
+# Update the environmental variables in e2e job spec.
 : << EOF
   --------------------------------------------------------------------------------------------------------------------     
  | specAttribute     | kind   |         default value               | test specifc value                              |
   ------------------------------------------------------------------------------------------------------------------- |
- | Litmus job label  | label  | app: busybox-litmus                 | app: deploy-busybox-cas                         |
- | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName: busybox-provision-cas-performance |
+ | e2e job label  | label  | app: busybox-e2e                 | app: deploy-busybox-cas                         |
+ | e2e Job name   | name   | generateName: e2e-busybox-deploy | generateName: busybox-provision-cas-performance |
  | appLabel          | env    | app=busybox-sts                     | app=busybox-cas-performance                     |
  | deploy type       | env    | statefulset                         | deployment                                      |
  | ImagePullPolicy   | value  | Always                              | IfNotPresent                                    |
@@ -61,8 +61,8 @@ cp apps/busybox/deployers/run_litmus_test.yml deploy_busybox_cas_performance.yml
   ---------------------------------------------------------------------------------------------------------------------
 EOF
 
-sed -i -e 's/app: busybox-litmus/app: deploy-busybox-cas/g' \
--e 's/generateName: litmus-busybox-deploy/generateName: busybox-provision-cas-performance/g' \
+sed -i -e 's/app: busybox-e2e/app: deploy-busybox-cas/g' \
+-e 's/generateName: e2e-busybox-deploy/generateName: busybox-provision-cas-performance/g' \
 -e 's/app=busybox-sts/app=busybox-cas-performance/g' \
 -e 's/value: statefulset/value: deployment/g' \
 -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
@@ -72,17 +72,17 @@ sed -i -e 's/app: busybox-litmus/app: deploy-busybox-cas/g' \
 
 cat deploy_busybox_cas_performance.yml
 
-# Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
-bash ../Openshift-EE/utils/litmus_job_runner label='app:deploy-busybox-cas' job=deploy_busybox_cas_performance.yml
+# Run the e2e job and get the details of the e2e job from e2e_job_runner utils.
+bash ../Openshift-EE/utils/e2e_job_runner label='app:deploy-busybox-cas' job=deploy_busybox_cas_performance.yml
 cd ..
 
-# Get the cluster state Once the litmus jobs completed.
+# Get the cluster state Once the e2e jobs completed.
 bash Openshift-EE/utils/dump_cluster_state;
 # Update the e2e event for the job.
 bash Openshift-EE/utils/event_updater jobname:cas-performance $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 rc_val=$(echo $?)
-# Obtain the status of the test using litmusresult(lr) 
-testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+# Obtain the status of the test using e2eresult(lr) 
+testResult=$(kubectl get e2eresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
 
 # Update result of the test case in github mayadata-io/e2e-openshift repository.
 if [ "$rc_val" != "0" ]; then
@@ -93,17 +93,17 @@ fi
 ##Deploying loadgen and liveness
 
 ################
-# LitmusBook 2 #
+# e2eBook 2 #
 ################
 
 run_id="cas-perform";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
 echo $test_name
 
-cd litmus
-# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
-cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_cas_performance.yml
+cd e2e-tests
+# copy the content of deployer run_e2e_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/liveness/run_e2e_test.yml busybox_loadgen_cas_performance.yml
 
- # Update the environmental variables in litmus job spec.
+ # Update the environmental variables in e2e job spec.
 
 : << EOF
   ---------------------------------------------------------------------------------------------------------------------
@@ -111,13 +111,13 @@ cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_cas_performance.yml
   ---------------------------------------------------------------------------------------------------------------------|
  | appNamespace      | env    | app-busybox-ns                      |  cas-performance                                 | 
  | appLabel          | env    | app=busybox-sts                     |  app=busybox-cas-performance                     | 
- | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: bb-liveness-cas-perform                | 
+ | e2e job label  | label  | liveness: e2e-busybox-liveness   | liveness: bb-liveness-cas-perform                | 
   ----------------------------------------------------------------------------------------------------------------------
 EOF
 
 sed -i -e 's/value: app-busybox-ns/value: cas-performance/g' \
 -e 's/app=busybox-sts/app=busybox-cas-performance/g' \
--e 's/liveness: litmus-busybox-liveness/liveness: bb-liveness-cas-perform/g' busybox_loadgen_cas_performance.yml
+-e 's/liveness: e2e-busybox-liveness/liveness: bb-liveness-cas-perform/g' busybox_loadgen_cas_performance.yml
 
 sed -i '/command:/i \
           - name: RUN_ID\
@@ -126,10 +126,10 @@ sed -i '/command:/i \
 
 cat busybox_loadgen_cas_performance.yml
 
- # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
-bash ../Openshift-EE/utils/litmus_job_runner label='liveness:bb-liveness-cas-perform' job=busybox_loadgen_cas_performance.yml
+ # Run the e2e job and get the details of the e2e job from e2e_job_runner utils.
+bash ../Openshift-EE/utils/e2e_job_runner label='liveness:bb-liveness-cas-perform' job=busybox_loadgen_cas_performance.yml
 cd ..
-# Get the cluster state Once the litmus jobs completed.
+# Get the cluster state Once the e2e jobs completed.
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:cas-performance $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
@@ -141,17 +141,17 @@ fi
 ##Deprovisioning loadgen and liveness 
 
 ################
-# LitmusBook 3 #
+# e2eBook 3 #
 ################
 
 run_id="cas";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
 echo $test_name
 
-cd litmus
-# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
-cp apps/busybox/liveness/run_litmus_test.yml bb_loadgen_deprovision_cas_performance.yml
+cd e2e-tests
+# copy the content of deployer run_e2e_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/liveness/run_e2e_test.yml bb_loadgen_deprovision_cas_performance.yml
 
- # Update the environmental variables in litmus job spec.
+ # Update the environmental variables in e2e job spec.
 
 : << EOF
   ---------------------------------------------------------------------------------------------------------------------
@@ -160,15 +160,15 @@ cp apps/busybox/liveness/run_litmus_test.yml bb_loadgen_deprovision_cas_performa
  | appNamespace      | env    | app-busybox-ns                      | cas-performance                                  | 
  | action            | env    | provision                           | deprovision                                      | 
  | appLabel          | env    | app=busybox-sts                     | app=busybox-cas-performance                      |
- | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: bb-liveness-dep-cas-perform            |
+ | e2e job label  | label  | liveness: e2e-busybox-liveness   | liveness: bb-liveness-dep-cas-perform            |
  ----------------------------------------------------------------------------------------------------------------------
 EOF
 
 sed -i -e 's/value: app-busybox-ns/value: cas-performance/g' \
 -e 's/value: provision/value: deprovision/g' \
 -e 's/app=busybox-sts/app=busybox-cas-performance/g' \
--e 's/generateName: litmus-busybox-liveness/generateName: busybox-liveness-deprovision-cas-performance/g' \
--e 's/liveness: litmus-busybox-liveness/liveness: bb-liveness-dep-cas-perform/g' bb_loadgen_deprovision_cas_performance.yml
+-e 's/generateName: e2e-busybox-liveness/generateName: busybox-liveness-deprovision-cas-performance/g' \
+-e 's/liveness: e2e-busybox-liveness/liveness: bb-liveness-dep-cas-perform/g' bb_loadgen_deprovision_cas_performance.yml
 
 sed -i '/command:/i \
           - name: RUN_ID\
@@ -176,10 +176,10 @@ sed -i '/command:/i \
 ' bb_loadgen_deprovision_cas_performance.yml
 
 cat bb_loadgen_deprovision_cas_performance.yml
-# Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
-bash ../Openshift-EE/utils/litmus_job_runner label='liveness:bb-liveness-dep-cas-perform' job=bb_loadgen_deprovision_cas_performance.yml
+# Run the e2e job and get the details of the e2e job from e2e_job_runner utils.
+bash ../Openshift-EE/utils/e2e_job_runner label='liveness:bb-liveness-dep-cas-perform' job=bb_loadgen_deprovision_cas_performance.yml
 cd ..
-# Get the cluster state Once the litmus jobs completed.
+# Get the cluster state Once the e2e jobs completed.
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:cas-performance $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
@@ -195,7 +195,7 @@ fi
 
 #### Deprovision BusyBox application
 ################
-# LitmusBook 4 #
+# e2eBook 4 #
 ################
 
 #testcase name for the busybox deployer will be appended with busybox-{{ action }}- {{ app-namespace }}.
@@ -205,18 +205,18 @@ fi
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-cas-performance metadata="")
 echo $test_name
 
-cd litmus
-# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
-cp apps/busybox/deployers/run_litmus_test.yml deprovision_busybox_cas_performance.yml
+cd e2e-tests
+# copy the content of deployer run_e2e_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/deployers/run_e2e_test.yml deprovision_busybox_cas_performance.yml
 
-# Update the environmental variables in litmus job spec.
+# Update the environmental variables in e2e job spec.
 
 : << EOF
   ---------------------------------------------------------------------------------------------------------------------     
  | specAttribute     | kind   |         default value               | test specifc value                               |
   -------------------------------------------------------------------------------------------------------------------- |
- | Litmus job label  | label  | app: busybox-litmus                 | app: deprovision-busybox-cas                     |
- | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName: busybox-deprovision-cas-performance|
+ | e2e job label  | label  | app: busybox-e2e                 | app: deprovision-busybox-cas                     |
+ | e2e Job name   | name   | generateName: e2e-busybox-deploy | generateName: busybox-deprovision-cas-performance|
  | appLabel          | env    | app=busybox-sts                     | app=busybox-cas-performance                      |
  | deploy type       | env    | statefulset                         | deployment                                       |
  | action            | env    | provision                           | deprovision                                      |
@@ -227,8 +227,8 @@ cp apps/busybox/deployers/run_litmus_test.yml deprovision_busybox_cas_performanc
   ----------------------------------------------------------------------------------------------------------------------
 EOF
 
-sed -i -e 's/app: busybox-litmus/app: deprovision-busybox-cas/g' \
--e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovision-cas-performance/g' \
+sed -i -e 's/app: busybox-e2e/app: deprovision-busybox-cas/g' \
+-e 's/generateName: e2e-busybox-deploy/generateName: busybox-deprovision-cas-performance/g' \
 -e 's/app=busybox-sts/app=busybox-cas-performance/g' \
 -e 's/value: statefulset/value: deployment/g' \
 -e 's/value: provision/value: deprovision/g' \
@@ -239,19 +239,19 @@ sed -i -e 's/app: busybox-litmus/app: deprovision-busybox-cas/g' \
 
 cat deprovision_busybox_cas_performance.yml
 
-# Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
-bash ../Openshift-EE/utils/litmus_job_runner label='app:deprovision-busybox-cas' job=deprovision_busybox_cas_performance.yml
+# Run the e2e job and get the details of the e2e job from e2e_job_runner utils.
+bash ../Openshift-EE/utils/e2e_job_runner label='app:deprovision-busybox-cas' job=deprovision_busybox_cas_performance.yml
 cd ..
 
-#Get the cluster state Once the litmus jobs completed.
+#Get the cluster state Once the e2e jobs completed.
 bash Openshift-EE/utils/dump_cluster_state;
 
 #Update the e2e event for the job
 bash Openshift-EE/utils/event_updater jobname:cas-performance $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 rc_val=$(echo $?)
 
-# Obtain the status of the test using litmusresult(lr) 
-testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+# Obtain the status of the test using e2eresult(lr) 
+testResult=$(kubectl get e2eresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
 current_time=$(eval $time)
 
 # Update the result of the test case in github mayadata-io/e2e-openshift repository.

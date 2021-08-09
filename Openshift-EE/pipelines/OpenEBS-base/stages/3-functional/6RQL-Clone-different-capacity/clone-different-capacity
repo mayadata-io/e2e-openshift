@@ -24,14 +24,14 @@ bash Openshift-EE/utils/pooling jobname:snapshot-clone
 bash Openshift-EE/utils/e2e-cr jobname:clone-different-capacity jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
 ################
-# LitmusBook 1 #
+# e2eBook 1 #
 ################
 
 run_id="different-capacity";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=create-clone metadata=${run_id})
 echo $test_name
 
-cd litmus
-cp experiments/functional/clone-creation/run_litmus_test.yml run_diff_vol_size_clone.yml
+cd e2e-tests
+cp experiments/functional/clone-creation/run_e2e_test.yml run_diff_vol_size_clone.yml
 
 : << EOF
   ---------------------------------------------------------------------------------------------------------------------
@@ -41,8 +41,8 @@ cp experiments/functional/clone-creation/run_litmus_test.yml run_diff_vol_size_c
  | appPVC            | env    | openebs-busybox                     | busybox-snapshot                                 |
  | clonePVC          | env    | clone-busybox                       | clone-different-capacity                         |
  | volume size       | env    | value: 5G                           | value: 4G                                        |
- | Litmus job label  | label  | app: litmus-clone                   | app: clone-different-capacity                    |
- | Litmus Job name   | name   | generateName: litmus-clone-         | generateName: litmus-clone-different-capacity-   |
+ | e2e job label  | label  | app: e2e-clone                   | app: clone-different-capacity                    |
+ | e2e Job name   | name   | generateName: e2e-clone-         | generateName: e2e-clone-different-capacity-   |
   ----------------------------------------------------------------------------------------------------------------------
 EOF
 
@@ -50,25 +50,25 @@ sed -i -e 's/value: app-busybox-ns/value: busybox-snap/g' \
 -e 's/value: openebs-busybox/value: busybox-snapshot/g' \
 -e 's/value: clone-busybox/value: clone-different-capacity/g' \
 -e 's/value: 5G/value: 4G/g' \
--e 's/app: litmus-clone/app: clone-different-capacity/g' \
--e 's/generateName: litmus-clone-/generateName: litmus-clone-different-capacity-/g' run_diff_vol_size_clone.yml
+-e 's/app: e2e-clone/app: clone-different-capacity/g' \
+-e 's/generateName: e2e-clone-/generateName: e2e-clone-different-capacity-/g' run_diff_vol_size_clone.yml
 
 sed -i '/command:/i \
           - name: RUN_ID\
             value: '"$run_id"'\
 ' run_diff_vol_size_clone.yml
 
-echo "Running the litmus test for Busybox Deployment Clone.."
+echo "Running the e2e test for Busybox Deployment Clone.."
 cat run_diff_vol_size_clone.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:clone-different-capacity' job=run_diff_vol_size_clone.yml
+bash ../Openshift-EE/utils/e2e_job_runner label='app:clone-different-capacity' job=run_diff_vol_size_clone.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:clone-different-capacity $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 rc_val=$(echo $?)
 
-# Obtain the status of the test using litmusresult(lr) 
-testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+# Obtain the status of the test using e2eresult(lr) 
+testResult=$(kubectl get e2eresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
 current_time=$(eval $time)
 
 if [ "$rc_val" != "0" ]; then

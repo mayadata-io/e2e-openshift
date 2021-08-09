@@ -27,21 +27,21 @@ bash Openshift-EE/utils/e2e-cr jobname:memory-consumption jobphase:Running init_
 ###Deploying Busybox Application
 
 ################
-# LitmusBook 1 #
+# e2eBook 1 #
 ################
 
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-mem-check metadata="")
 echo $test_name
-cd litmus
-echo "Running the litmus test for Busybox Deployment.."
+cd e2e-tests
+echo "Running the e2e test for Busybox Deployment.."
 
-cp apps/busybox/deployers/run_litmus_test.yml busybox_memcheck.yml
+cp apps/busybox/deployers/run_e2e_test.yml busybox_memcheck.yml
 
 : << EOF
   ---------------------------------------------------------------------------------------------------------------------
  | specAttribute     | kind   |         default value               | test specifc value                               |
   ---------------------------------------------------------------------------------------------------------------------|
- | Litmus job label  | label  | app: busybox-litmus                 | app: deploy-busybox-litmus                       |
+ | e2e job label  | label  | app: busybox-e2e                 | app: deploy-busybox-e2e                       |
  | appLabel          | env    | app=busybox-sts                     | app=busybox-mem                                  |
  | deploy type       | env    | statefulset                         | deployment                                       |
  | storage class     | env    | openebs-cstor-sparse                | openebs-cstor-disk                               |
@@ -49,7 +49,7 @@ cp apps/busybox/deployers/run_litmus_test.yml busybox_memcheck.yml
   ----------------------------------------------------------------------------------------------------------------------
 EOF
 
-sed -i -e 's/app: busybox-litmus/app: deploy-busybox-litmus/g' \
+sed -i -e 's/app: busybox-e2e/app: deploy-busybox-e2e/g' \
 -e 's/app=busybox-sts/app=busybox-mem/g' \
 -e 's/value: statefulset/value: deployment/g' \
 -e 's/value: openebs-cstor-sparse/value: openebs-cstor-disk/g' \
@@ -57,7 +57,7 @@ sed -i -e 's/app: busybox-litmus/app: deploy-busybox-litmus/g' \
 
 cat busybox_memcheck.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:deploy-busybox-litmus' job=busybox_memcheck.yml
+bash ../Openshift-EE/utils/e2e_job_runner label='app:deploy-busybox-e2e' job=busybox_memcheck.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:memory-consumption $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
@@ -70,17 +70,17 @@ fi
 ##Deploying loadgen and liveness
 
 #################
-# LitmusBook 2 #
+# e2eBook 2 #
 ################
 
 run_id="mem";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
 echo $test_name
 
-cd litmus
-# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
-cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_mem_consumption.yml
+cd e2e-tests
+# copy the content of deployer run_e2e_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/liveness/run_e2e_test.yml busybox_loadgen_mem_consumption.yml
 
- # Update the environmental variables in litmus job spec.
+ # Update the environmental variables in e2e job spec.
 
  : << EOF
   ---------------------------------------------------------------------------------------------------------------------
@@ -88,13 +88,13 @@ cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_mem_consumption.yml
   ---------------------------------------------------------------------------------------------------------------------|
  | appNamespace      | env    | app-busybox-ns                      | mem-check                                        | 
  | appLabel          | env    | app=busybox-sts                     | app=busybox-mem                                  | 
- | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: bb-liveness-mem-consumption            | 
+ | e2e job label  | label  | liveness: e2e-busybox-liveness   | liveness: bb-liveness-mem-consumption            | 
   ----------------------------------------------------------------------------------------------------------------------
 EOF
 
 sed -i -e 's/value: app-busybox-ns/value: mem-check/g' \
 -e 's/app=busybox-sts/app=busybox-mem/g' \
--e 's/liveness: litmus-busybox-liveness/liveness: bb-liveness-mem-consumption/g' busybox_loadgen_mem_consumption.yml
+-e 's/liveness: e2e-busybox-liveness/liveness: bb-liveness-mem-consumption/g' busybox_loadgen_mem_consumption.yml
 
 sed -i '/command:/i \
           - name: RUN_ID\
@@ -102,10 +102,10 @@ sed -i '/command:/i \
 ' busybox_loadgen_mem_consumption.yml
 
 cat busybox_loadgen_mem_consumption.yml
- # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
-bash ../Openshift-EE/utils/litmus_job_runner label='liveness:bb-liveness-mem-consumption' job=busybox_loadgen_mem_consumption.yml
+ # Run the e2e job and get the details of the e2e job from e2e_job_runner utils.
+bash ../Openshift-EE/utils/e2e_job_runner label='liveness:bb-liveness-mem-consumption' job=busybox_loadgen_mem_consumption.yml
 cd ..
-# Get the cluster state Once the litmus jobs completed.
+# Get the cluster state Once the e2e jobs completed.
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:memory-consumption $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
@@ -117,14 +117,14 @@ fi
 ###Checking Memory Consumption
 
 #################
-# LitmusBook 3 #
+# e2eBook 3 #
 ################
 
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=memcheck-test metadata="")
 echo $test_name
-cd litmus
+cd e2e-tests
 
-cp experiments/functional/memcheck/run_litmus_test.yml memcheck_test.yml
+cp experiments/functional/memcheck/run_e2e_test.yml memcheck_test.yml
 
 : << EOF
   ---------------------------------------------------------------------------------------------------------------------
@@ -140,10 +140,10 @@ sed -i -e 's/name=prometheus/app=busybox-mem/g' \
 -e 's/prometheus-claim/openebs-busybox/g' \
 -e 's/value: app-prometheus/value: mem-check/g' memcheck_test.yml
 
-echo "Running the litmus test for Busybox Deployment Scaleup.."
+echo "Running the e2e test for Busybox Deployment Scaleup.."
 cat memcheck_test.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:memcheck-cstor-test' job=memcheck_test.yml
+bash ../Openshift-EE/utils/e2e_job_runner label='app:memcheck-cstor-test' job=memcheck_test.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:memory-consumption $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
@@ -156,17 +156,17 @@ fi
 ##Deprovisioning loadgen and liveness 
 
 ################
-# LitmusBook 4 #
+# e2eBook 4 #
 ################
 
 run_id="dep-mem";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
 echo $test_name
 
-cd litmus
-# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
-cp apps/busybox/liveness/run_litmus_test.yml deprovision_loadgen_mem_consumption.yml
+cd e2e-tests
+# copy the content of deployer run_e2e_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/liveness/run_e2e_test.yml deprovision_loadgen_mem_consumption.yml
 
- # Update the environmental variables in litmus job spec.
+ # Update the environmental variables in e2e job spec.
 
  : << EOF
   ---------------------------------------------------------------------------------------------------------------------
@@ -175,15 +175,15 @@ cp apps/busybox/liveness/run_litmus_test.yml deprovision_loadgen_mem_consumption
  | appNamespace      | env    | app-busybox-ns                      | mem-check                                        | 
  | action            | env    | provision                           | deprovision                                      | 
  | appLabel          | env    | app=busybox-sts                     | app=busybox-mem                                  | 
- | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: liveness-deprovision-mem-consumption   |
+ | e2e job label  | label  | liveness: e2e-busybox-liveness   | liveness: liveness-deprovision-mem-consumption   |
  ----------------------------------------------------------------------------------------------------------------------
 EOF
 
 sed -i -e 's/value: app-busybox-ns/value: mem-check/g' \
 -e 's/value: provision/value: deprovision/g' \
 -e 's/app=busybox-sts/app=busybox-mem/g' \
--e 's/generateName: litmus-busybox-liveness/generateName: busybox-liveness-dep-mem-consumption/g' \
--e 's/liveness: litmus-busybox-liveness/liveness: liveness-deprovision-mem-consumption/g'  deprovision_loadgen_mem_consumption.yml
+-e 's/generateName: e2e-busybox-liveness/generateName: busybox-liveness-dep-mem-consumption/g' \
+-e 's/liveness: e2e-busybox-liveness/liveness: liveness-deprovision-mem-consumption/g'  deprovision_loadgen_mem_consumption.yml
 
 sed -i '/command:/i \
           - name: RUN_ID\
@@ -191,10 +191,10 @@ sed -i '/command:/i \
 ' deprovision_loadgen_mem_consumption.yml
 
 cat deprovision_loadgen_mem_consumption.yml
-# Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
-bash ../Openshift-EE/utils/litmus_job_runner label='liveness:liveness-deprovision-mem-consumption' job=deprovision_loadgen_mem_consumption.yml
+# Run the e2e job and get the details of the e2e job from e2e_job_runner utils.
+bash ../Openshift-EE/utils/e2e_job_runner label='liveness:liveness-deprovision-mem-consumption' job=deprovision_loadgen_mem_consumption.yml
 cd ..
-# Get the cluster state Once the litmus jobs completed.
+# Get the cluster state Once the e2e jobs completed.
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:memory-consumption $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
@@ -210,19 +210,19 @@ fi
 ###Deprovisioning Busybox Application
 
 ################
-# LitmusBook 5 #
+# e2eBook 5 #
 ################
 
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-mem-check metadata="")
 echo $test_name
-cd litmus
+cd e2e-tests
 
 : << EOF
   ---------------------------------------------------------------------------------------------------------------------
  | specAttribute     | kind   |         default value               | test specifc value                               |
   ---------------------------------------------------------------------------------------------------------------------|
- | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName:busybox-mem-check-deprovision       |
- | Litmus job label  | label  | app: busybox-litmus                 | app: busybox-deprovision-mem-check               |
+ | e2e Job name   | name   | generateName: e2e-busybox-deploy | generateName:busybox-mem-check-deprovision       |
+ | e2e job label  | label  | app: busybox-e2e                 | app: busybox-deprovision-mem-check               |
  | appLabel          | env    | app=busybox-sts                     | app=busybox-mem                                  | 
  | deploy type       | env    | statefulset                         | deployment                                       |
  | storage clas      | env    | openebs-cstor-sparse                | openebs-cstor-disk                               |
@@ -231,19 +231,19 @@ cd litmus
   ----------------------------------------------------------------------------------------------------------------------
 EOF
 
-cp apps/busybox/deployers/run_litmus_test.yml deprovision_mem_check.yml
-sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-mem-check-deprovision/g' \
--e 's/app: busybox-litmus/app: busybox-deprovision-mem-check/g' \
+cp apps/busybox/deployers/run_e2e_test.yml deprovision_mem_check.yml
+sed -i -e 's/generateName: e2e-busybox-deploy/generateName: busybox-mem-check-deprovision/g' \
+-e 's/app: busybox-e2e/app: busybox-deprovision-mem-check/g' \
 -e 's/app=busybox-sts/app=busybox-mem/g' \
 -e 's/value: statefulset/value: deployment/g' \
 -e 's/value: openebs-cstor-sparse/value: openebs-cstor-disk/g' \
 -e 's/value: app-busybox-ns/value: mem-check/g' \
 -e 's/value: provision/value: deprovision/g' deprovision_mem_check.yml
 
-echo "Running the litmus test for Busybox Deployment Scaleup.."
+echo "Running the e2e test for Busybox Deployment Scaleup.."
 cat deprovision_mem_check.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-deprovision-mem-check' job=deprovision_mem_check.yml
+bash ../Openshift-EE/utils/e2e_job_runner label='app:busybox-deprovision-mem-check' job=deprovision_mem_check.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:memory-consumption $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
@@ -251,7 +251,7 @@ bash Openshift-EE/utils/event_updater jobname:memory-consumption $test_name jobi
 rc_val=$(echo $?)
 current_time=$(eval $time)
 
-# testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+# testResult=$(kubectl get e2eresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
 
 if [ "$rc_val" != "0" ]; then
 bash Openshift-EE/utils/e2e-cr jobname:memory-consumption jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Fail

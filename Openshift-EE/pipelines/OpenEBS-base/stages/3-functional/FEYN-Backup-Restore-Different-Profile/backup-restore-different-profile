@@ -30,7 +30,7 @@ bash Openshift-EE/utils/pooling jobname:backup-restore-cstor-diff-ns
 bash Openshift-EE/utils/e2e-cr jobname:backup-restore-cstor-diff-profile jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
 ################
-# LitmusBook 1 #
+# e2eBook 1 #
 ################
 
 echo "*******Deploying Percona Application****"
@@ -38,10 +38,10 @@ echo "*******Deploying Percona Application****"
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=percona-deployment metadata="")
 echo $test_name
 
-cd litmus
-echo "Running the litmus test for Percona Deployment.."
+cd e2e-tests
+echo "Running the e2e test for Percona Deployment.."
 
-cp apps/percona/deployers/run_litmus_test.yml percona_backup_restore_diff_profile.yml
+cp apps/percona/deployers/run_e2e_test.yml percona_backup_restore_diff_profile.yml
 
 sed -i -e 's/app: percona-deployment/app: deploy-percona-backup-restore-diff-profile/g' \
 -e 's/value: openebs-standard/value: openebs-cstor-disk/g' \
@@ -50,7 +50,7 @@ sed -i -e 's/app: percona-deployment/app: deploy-percona-backup-restore-diff-pro
 
 cat percona_backup_restore_diff_profile.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:deploy-percona-backup-restore-diff-profile' job=percona_backup_restore_diff_profile.yml
+bash ../Openshift-EE/utils/e2e_job_runner label='app:deploy-percona-backup-restore-diff-profile' job=percona_backup_restore_diff_profile.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:backup-restore-cstor-diff-profile $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
@@ -61,7 +61,7 @@ exit 1;
 fi
 
 ################
-# LitmusBook 2 #
+# e2eBook 2 #
 ################
 
 echo "*******Performing Backup and Restore on percona Application using local snapshot**********"
@@ -69,8 +69,8 @@ echo "*******Performing Backup and Restore on percona Application using local sn
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=velero-backup-restore metadata="")
 echo $test_name
 
-cd litmus
-cp experiments/functional/backup_and_restore/cstor/run_litmus_test.yml run_backuprestore_test_diff_profile.yml
+cd e2e-tests
+cp experiments/functional/backup_and_restore/cstor/run_e2e_test.yml run_backuprestore_test_diff_profile.yml
 
 sed -i -e 's/value: app-percona-ns/value: backup-percona-cstor-diff-profile/g' \
 -e 's/app: velero-backup-restore/app: velero-backup-restore-diff-profile/g' \
@@ -82,10 +82,10 @@ sed -i -e 's/value: app-percona-ns/value: backup-percona-cstor-diff-profile/g' \
 sed -i "s/v1.1.0/$velero_version/g" run_backuprestore_test_diff_profile.yml
 sed -i "s/plugin:ci/plugin:$velero_plugin_version/g" run_backuprestore_test_diff_profile.yml
 
-echo "Running the litmus test for Percona Backup Restore.."
+echo "Running the e2e test for Percona Backup Restore.."
 cat run_backuprestore_test_diff_profile.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:velero-backup-restore-diff-profile' job=run_backuprestore_test_diff_profile.yml
+bash ../Openshift-EE/utils/e2e_job_runner label='app:velero-backup-restore-diff-profile' job=run_backuprestore_test_diff_profile.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:backup-restore-cstor-diff-profile $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"

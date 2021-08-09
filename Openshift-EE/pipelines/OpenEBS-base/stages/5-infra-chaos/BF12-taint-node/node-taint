@@ -33,7 +33,7 @@ bash Openshift-EE/utils/e2e-cr jobname:node-failure-cstor jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:taint-node jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
 ################
-# LitmusBook 1 #
+# e2eBook 1 #
 ################
 
 echo "*******Deploying Busybox-Deployment****"
@@ -41,16 +41,16 @@ echo "*******Deploying Busybox-Deployment****"
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-taint-node metadata="")
 echo $test_name
 
-cd litmus
-echo "Running the litmus test for Busybox Deployment.."
-cp apps/busybox/deployers/run_litmus_test.yml deploy_evict_test.yml
+cd e2e-tests
+echo "Running the e2e test for Busybox Deployment.."
+cp apps/busybox/deployers/run_e2e_test.yml deploy_evict_test.yml
 
 : << EOF
   -------------------------------------------------------------------------------------------------------------------
  | specAttribute     | kind   |         default value               | test specifc value                             |
   -------------------------------------------------------------------------------------------------------------------|
  | appNamespace      | env    | app-busybox-ns                      | taint-node                                     |
- | Litmus job label  | label  | app: busybox-litmus                 | app: busybox-evict                             |
+ | e2e job label  | label  | app: busybox-e2e                 | app: busybox-evict                             |
  | appLabel          | env    | app=busybox-sts                     | app=taint-node                                 | 
  | storage class     | env    | openebs-cstor-sparse                | openebs-cstor-disk                             |
  | deploy type       | env    | statefulset                         | deployment                                     |
@@ -58,14 +58,14 @@ cp apps/busybox/deployers/run_litmus_test.yml deploy_evict_test.yml
 EOF
 
 sed -i -e 's/app-busybox-ns/taint-node/g' \
--e 's/busybox-litmus/busybox-evict/g' \
+-e 's/busybox-e2e/busybox-evict/g' \
 -e 's/app=busybox-sts/app=taint-node/g' \
 -e 's/openebs-cstor-sparse/openebs-cstor-disk/g' \
 -e 's/statefulset/deployment/g' deploy_evict_test.yml
 
 cat deploy_evict_test.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-evict' deploy_evict_test.yml
+bash ../Openshift-EE/utils/e2e_job_runner label='app:busybox-evict' deploy_evict_test.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:taint-node $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
@@ -76,31 +76,31 @@ exit 1;
 fi
 
 ################
-# LitmusBook 2 #
+# e2eBook 2 #
 ################
 
 run_id="taint-node";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
 echo $test_name
 
-cd litmus
-# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
-cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_taint_node.yml
+cd e2e-tests
+# copy the content of deployer run_e2e_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/liveness/run_e2e_test.yml busybox_loadgen_taint_node.yml
 
-# Update the environmental variables in litmus job spec.
+# Update the environmental variables in e2e job spec.
 
 : << EOF
   ---------------------------------------------------------------------------------------------------------------------
  | specAttribute     | kind   |         default value               | test specifc value                               |
   ---------------------------------------------------------------------------------------------------------------------|
  | appNamespace      | env    | app-busybox-ns                      | taint-node                                       | 
- | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: busybox-liveness-taintnode             |
+ | e2e job label  | label  | liveness: e2e-busybox-liveness   | liveness: busybox-liveness-taintnode             |
  | appLabel          | env    | app=busybox-sts                     | app=taint-node                                   | 
   ----------------------------------------------------------------------------------------------------------------------
 EOF
 
 sed -i -e 's/value: app-busybox-ns/value: taint-node/g' \
 -e 's/app=busybox-sts/app=taint-node/g' \
--e 's/liveness: litmus-busybox-liveness/liveness: busybox-liveness-taintnode/g' busybox_loadgen_taint_node.yml
+-e 's/liveness: e2e-busybox-liveness/liveness: busybox-liveness-taintnode/g' busybox_loadgen_taint_node.yml
 
 cat busybox_loadgen_taint_node.yml
 
@@ -109,10 +109,10 @@ sed -i '/command:/i \
             value: '"$run_id"'\
 ' busybox_loadgen_taint_node.yml
 
-# Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
-bash ../Openshift-EE/utils/litmus_job_runner label='liveness:busybox-liveness-taintnode' job=busybox_loadgen_taint_node.yml
+# Run the e2e job and get the details of the e2e job from e2e_job_runner utils.
+bash ../Openshift-EE/utils/e2e_job_runner label='liveness:busybox-liveness-taintnode' job=busybox_loadgen_taint_node.yml
 cd ..
-# Get the cluster state Once the litmus jobs completed.
+# Get the cluster state Once the e2e jobs completed.
 bash Openshift-EE/utils/dump_cluster_state;
 # Update the e2e event for the job.
 bash Openshift-EE/utils/event_updater jobname:taint-node $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
@@ -123,7 +123,7 @@ exit 1;
 fi
 
 ################
-# LitmusBook 3 #
+# e2eBook 3 #
 ################
 
 echo "******TAINT NODE**********"
@@ -131,8 +131,8 @@ echo "******TAINT NODE**********"
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=node-failure-taint metadata="")
 echo $test_name
 
-cd litmus
-cp experiments/chaos/taint_node/run_litmus_test.yml run_evict_test.yml
+cd e2e-tests
+cp experiments/chaos/taint_node/run_e2e_test.yml run_evict_test.yml
 
 sed -i -e 's/value: app-percona-ns/value: taint-node/g' \
 -e 's/name=percona/app=taint-node/g' \
@@ -144,7 +144,7 @@ sed -i -e "s|#nodeSelector|nodeSelector|g" \
 
 cat run_evict_test.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='name:node-failure-taint' run_evict_test.yml
+bash ../Openshift-EE/utils/e2e_job_runner label='name:node-failure-taint' run_evict_test.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:taint-node $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
@@ -155,17 +155,17 @@ exit 1;
 fi
 
 ################
-# LitmusBook 4 #
+# e2eBook 4 #
 ################
 
 run_id="deprovision-taint-node";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
 echo $test_name
 
-cd litmus
-# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
-cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_deprovision_taint_node.yml
+cd e2e-tests
+# copy the content of deployer run_e2e_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/liveness/run_e2e_test.yml busybox_loadgen_deprovision_taint_node.yml
 
-# Update the environmental variables in litmus job spec.
+# Update the environmental variables in e2e job spec.
 
 : << EOF
   ---------------------------------------------------------------------------------------------------------------------
@@ -173,7 +173,7 @@ cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_deprovision_taint_n
   ---------------------------------------------------------------------------------------------------------------------|
  | appNamespace      | env    | app-busybox-ns                      | taint-node                                       | 
  | appLabel          | env    | app=busybox-sts                     | app=taint-node                                   |
- | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: busybox-liveness-deprovision-taintnode |
+ | e2e job label  | label  | liveness: e2e-busybox-liveness   | liveness: busybox-liveness-deprovision-taintnode |
  | action            | env    | provision                           | deprovision                                      | 
   ----------------------------------------------------------------------------------------------------------------------
 EOF
@@ -181,8 +181,8 @@ EOF
 sed -i -e 's/value: app-busybox-ns/value: taint-node/g' \
 -e 's/app=busybox-sts/app=taint-node/g' \
 -e 's/value: provision/value: deprovision/g' \
--e 's/generateName: litmus-busybox-liveness/generateName: busybox-liveness-dep-taintnode/g' \
--e 's/liveness: litmus-busybox-liveness/liveness: busybox-liveness-deprovision-taintnode/g' busybox_loadgen_deprovision_taint_node.yml
+-e 's/generateName: e2e-busybox-liveness/generateName: busybox-liveness-dep-taintnode/g' \
+-e 's/liveness: e2e-busybox-liveness/liveness: busybox-liveness-deprovision-taintnode/g' busybox_loadgen_deprovision_taint_node.yml
 
 sed -i '/command:/i \
           - name: RUN_ID\
@@ -190,10 +190,10 @@ sed -i '/command:/i \
 ' busybox_loadgen_deprovision_taint_node.yml
 
 cat busybox_loadgen_deprovision_taint_node.yml
-# Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
-bash ../Openshift-EE/utils/litmus_job_runner label='liveness:busybox-liveness-deprovision-taintnode' job=busybox_loadgen_deprovision_taint_node.yml
+# Run the e2e job and get the details of the e2e job from e2e_job_runner utils.
+bash ../Openshift-EE/utils/e2e_job_runner label='liveness:busybox-liveness-deprovision-taintnode' job=busybox_loadgen_deprovision_taint_node.yml
 cd ..
-# Get the cluster state Once the litmus jobs completed.
+# Get the cluster state Once the e2e jobs completed.
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:taint-node $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
@@ -206,7 +206,7 @@ exit 1;
 fi
 
 ################
-# LitmusBook 5 #
+# e2eBook 5 #
 ################
 
 echo "********Deprovisioning Busybox Application*******"
@@ -214,34 +214,34 @@ echo "********Deprovisioning Busybox Application*******"
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-taint-node metadata="")
 echo $test_name
 
-cd litmus
-cp apps/busybox/deployers/run_litmus_test.yml deprovision_evict_node.yml
+cd e2e-tests
+cp apps/busybox/deployers/run_e2e_test.yml deprovision_evict_node.yml
 
 : << EOF
   -------------------------------------------------------------------------------------------------------------------
  | specAttribute     | kind   |         default value               | test specifc value                             |
   -------------------------------------------------------------------------------------------------------------------|
- | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName:litmus-busybox-deprovision        |
+ | e2e Job name   | name   | generateName: e2e-busybox-deploy | generateName:e2e-busybox-deprovision        |
  | appNamespace      | env    | app-busybox-ns                      | taint-node                                     |
  | appLabel          | env    | app=busybox-sts                     | app=taint-node                                 |
  | deploy type       | env    | statefulset                         | deployment                                     |
- | Litmus job label  | label  | app: busybox-litmus                 | app: busybox-deprovision-evict                 | 
+ | e2e job label  | label  | app: busybox-e2e                 | app: busybox-deprovision-evict                 | 
  | storage class     | env    | openebs-cstor-sparse                | openebs-cstor-disk                             |
  | Action            | env    | provision                           | deprovision                                    |
   --------------------------------------------------------------------------------------------------------------------
 EOF
 
-sed -i -e 's/generateName: litmus-busybox-deploy/generateName: litmus-busybox-deprovision/g' \
+sed -i -e 's/generateName: e2e-busybox-deploy/generateName: e2e-busybox-deprovision/g' \
 -e 's/app-busybox-ns/taint-node/g' \
 -e 's/app=busybox-sts/app=taint-node/g' \
 -e 's/value: statefulset/value: deployment/g' \
--e 's/busybox-litmus/busybox-deprovision-evict/g' \
+-e 's/busybox-e2e/busybox-deprovision-evict/g' \
 -e 's/openebs-cstor-sparse/openebs-cstor-disk/g' \
 -e 's/value: provision/value: deprovision/g' deprovision_evict_node.yml
 
 cat deprovision_evict_node.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-deprovision-evict' deprovision_evict_node.yml
+bash ../Openshift-EE/utils/e2e_job_runner label='app:busybox-deprovision-evict' deprovision_evict_node.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:taint-node $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
@@ -249,7 +249,7 @@ bash Openshift-EE/utils/event_updater jobname:taint-node $test_name jobid:"$job_
 rc_val=$(echo $?)
 current_time=$(eval $time)
 
-# testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+# testResult=$(kubectl get e2eresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
 
 if [ "$rc_val" != "0" ]; then
 bash Openshift-EE/utils/e2e-cr jobname:taint-node jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Fail

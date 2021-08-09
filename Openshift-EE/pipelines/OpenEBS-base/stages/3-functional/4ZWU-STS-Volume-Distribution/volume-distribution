@@ -23,28 +23,28 @@ test_name=$(bash Openshift-EE/utils/generate_test_name testcase=replica-distribu
 echo $test_name
 
 echo "*******Deploying Application and Check the statefulset storage volume distributed************"
-cd litmus
+cd e2e-tests
 : << EOF
   ---------------------------------------------------------------------------------------------------------------------
  | specAttribute     | kind   |         default value               | test specifc value                               |
   ---------------------------------------------------------------------------------------------------------------------|
  | imagePullPolicy   | image  | Always                              | IfNotPresent                                     |
- | Litmus job label  | label  | app:  busybox-statefulset-litmus    | app: busybox-vol-distribute                      |
+ | e2e job label  | label  | app:  busybox-statefulset-e2e    | app: busybox-vol-distribute                      |
  | storage class     | env    | openebs-cstor-sparse                | openebs-cstor-disk                               |
  | appLabel          | env    | app=busybox-sts                     | app=busybox                                      | 
  | appNamespace      | env    | app-busybox-ns                      | busybox                                          | 
   ----------------------------------------------------------------------------------------------------------------------
 EOF
-echo "Running the litmus test.."
-sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' experiments/functional/sts-volume-distribution/run_litmus_test.yml
-run_test=experiments/functional/sts-volume-distribution/run_litmus_test.yml
-sed -i -e 's/app: busybox-statefulset-litmus/app: busybox-vol-distribute/g' \
+echo "Running the e2e test.."
+sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' experiments/functional/sts-volume-distribution/run_e2e_test.yml
+run_test=experiments/functional/sts-volume-distribution/run_e2e_test.yml
+sed -i -e 's/app: busybox-statefulset-e2e/app: busybox-vol-distribute/g' \
 -e 's/value: openebs-cstor-sparse/value: openebs-cstor-disk/g' \
 -e 's/value: 'app=busybox-sts'/value: 'app=busybox'/g' \
 -e 's/value: app-busybox-ns/value: busybox/g' $run_test
 cat $run_test
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-vol-distribute' job=$run_test
+bash ../Openshift-EE/utils/e2e_job_runner label='app:busybox-vol-distribute' job=$run_test
 
 echo "Dumping state of cluster post job run"; echo ""
 cd ..
@@ -63,10 +63,10 @@ rc_val=$(echo $?)
 test_case_id="4ZWU-$pipeline_id"
 source ~/.profile
 gittoken=$(echo "$github_token")
-testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+testResult=$(kubectl get e2eresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
 #python3 Openshift-EE/utils/result/result_update.py $test_case_id 4ZWU 3-functional "Check if the storage volume replicas are distributed across the storage pools in case of statefulset deployment" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 
-## Check the test status & result from the litmus result custom resource
+## Check the test status & result from the e2e result custom resource
 current_time=$(eval $time)
 
 if [ "$rc_val" != "0" ]; then
