@@ -1,0 +1,102 @@
+#!/bin/bash
+
+pod() {
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-konvoy && bash openebs-openshift-e2e/pipelines/stages/2-setup/2LP01-openebs-deploy/openebs-deploy node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"' '"'$RELEASE_BRANCH'"' '"'$IMAGE_TYPE'"' '"'$OPENEBS_LOCALPV_PROVISIONER_IMAGE'"' '"'$OPENEBS_NDM_IMAGE'"' '"'$COMMIT_ID'"' '"'$RC_TAG'"'
+}
+
+node() {
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+releaseTag=$(echo $4)
+releaseBranch=$(echo $5)
+case_id=2LP01
+imagetype=$(echo $6)
+localpv_provisioner_image=$(echo $7)
+ndm_version=$(echo $8)
+commit_id=$(echo $9})
+rc_tag=$(echo ${10})
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+echo "releaseTag=$releaseTag"
+
+# Applying e2e-CRD
+echo "***Applying e2e-crd***********"
+kubectl apply -f openebs-openshift-e2e/utils/e2e-crd.yml
+
+echo "*****Deploying openebs*******"
+bash openebs-openshift-e2e/utils/e2e-cr jobname:device-localpv-provision jobphase:Waiting
+bash openebs-openshift-e2e/utils/e2e-cr jobname:device-localpv-provision jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
+
+source ~/.profile
+
+echo "Generating test name***************************"
+test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=device-localpv-provision metadata="")
+echo $test_name
+
+## Clone the e2e repo, navigate to e2e root 
+
+git clone https://github.com/openebs/dynamic-localpv-provisioner
+cd dynamic-localpv-provisioner/e2e-tests
+
+export LOCALPV_PROVISIONER_IMAGE=$localpv_provisioner_image
+export NDM_VERSION=$ndm_version
+export RELEASE_TAG=$releaseTag
+export IMAGE_TYPE=$imagetype
+export RELEASE_VERSION=$releaseBranch
+export COMMIT_ID=$commit_id
+export RC_TAG=$rc_tag
+
+wget https://raw.githubusercontent.com/openebs/e2e-infrastructure/master/env-update/env.py
+
+cp experiments/localpv-provisioner/run_e2e_test.yml operator_provision.yml
+
+python3 env.py -f operator_provision.yml
+
+cat operator_provision.yml
+
+#################
+## RUNNER MAIN ##
+#################
+
+echo "Applying rbac.yml********************************"
+kubectl apply -f ./hack/rbac.yaml
+kubectl apply -f ./hack/crds.yaml
+
+echo "Running e2e test for openebs deploy.."
+
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='provider:localpv-operator' job=operator_provision.yml
+echo "Dumping state of cluster post job run"; echo ""
+bash ../../openebs-openshift-e2e/utils/dump_cluster_state;
+cd ../..
+bash openebs-openshift-e2e/utils/event_updater jobname:device-localpv-provision $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+#################
+## GET RESULT  ##
+#################
+rc_val=$(echo $?)
+test_case_id="2LP01"
+
+## Check the test status & result from the e2e result custom resource
+source ~/.profile
+gittoken=$(echo "$github_token")
+testResult=$(kubectl get e2eresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+
+current_time=$(eval $time)
+bash openebs-openshift-e2e/utils/e2e-cr jobname:device-localpv-provision jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:$testResult
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4 $5 $6 $7 $8 $9 ${10} ${11}
+else
+  pod
+fi

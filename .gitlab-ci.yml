@@ -12,52 +12,64 @@ stages:
 
 1LS01-CLUSTER-SETUP:
   image: openebs/openshift-ci:latest
-  stage: CLUSTER-SETUP
+  stage: CLUSTER-SETUP 
   script:     
-    - chmod 755 ./Openshift-EE/pipelines/stages/1-cluster-setup/1LS01-cluster-setup/cluster-state
-    - ./Openshift-EE/pipelines/stages/1-cluster-setup/1LS01-cluster-setup/cluster-state
+    - chmod 755 ./openebs-openshift-e2e/pipelines/stages/1-cluster-setup/1LS01-cluster-setup/cluster-state
+    - ./openebs-openshift-e2e/pipelines/stages/1-cluster-setup/1LS01-cluster-setup/cluster-state
 
 ##########################################################################################
 
 2LP01-OPENEBS-DEPLOY:
   image: openebs/openshift-ci:latest
-  stage: OPENEBS-SETUP
+  stage: OPENEBS-SETUP 
   script:
-    - chmod 775 ./Openshift-EE/pipelines/stages/2-setup/2LP01-openebs-deploy/openebs-deploy
-    - ./Openshift-EE/pipelines/stages/2-setup/2LP01-openebs-deploy/openebs-deploy
+    - chmod 775 ./openebs-openshift-e2e/pipelines/stages/2-setup/2LP01-openebs-deploy/openebs-deploy
+    - ./openebs-openshift-e2e/pipelines/stages/2-setup/2LP01-openebs-deploy/openebs-deploy
 
 ##########################################################################################
 
 .func_test_template:
   image: openebs/openshift-ci:latest
-  stage: FUNCTIONAL
+  stage: FUNCTIONAL 
   when: always
   dependencies:
     - 2LP01-OPENEBS-DEPLOY
      
-3LF01-LOCALPV-DEVICE:
+3LF01-LOCALPV-ON-SELECTED-DEVICE:
   extends: .func_test_template
   script: 
-    - chmod 775 ./Openshift-EE/pipelines/stages/3-functional/3LF01-openebs-localpv-device/openebs-localpv-device
-    - ./Openshift-EE/pipelines/stages/3-functional/3LF01-openebs-localpv-device/openebs-localpv-device
+    - chmod 775 ./openebs-openshift-e2e/pipelines/stages/3-functional/3LF01-Localpv-selected-device/openebs-localpv-device
+    - ./openebs-openshift-e2e/pipelines/stages/3-functional/3LF01-Localpv-selected-device/openebs-localpv-device
 
-3LF02-LOCALPV-HOSTPATH:
+3LF02-BACKUP-RESTORE-LOCALPV-DEVICE:
   extends: .func_test_template
   script: 
-    - chmod 775 ./Openshift-EE/pipelines/stages/3-functional/3LF02-openebs-localpv-hostpath/openebs-localpv-hostpath
-    - ./Openshift-EE/pipelines/stages/3-functional/3LF02-openebs-localpv-hostpath/openebs-localpv-hostpath
+    - chmod 775 ./openebs-openshift-e2e/pipelines/stages/3-functional/3LF02-Backup-Restore-LocalPV-Device/backup-restore-localpv-device
+    - ./openebs-openshift-e2e/pipelines/stages/3-functional/3LF02-Backup-Restore-LocalPV-Device/backup-restore-localpv-device
 
-3LF03-BACKUP-RESTORE-LOCALPV:
+3LF03-BACKUP-RESTORE-LOCALPV-HOSTPATH:
   extends: .func_test_template
   script:
-    - chmod 775 ./Openshift-EE/pipelines/stages/3-functional/3LF03-Backup-Restore-LocalPV/backup-restore-localpv
-    - ./Openshift-EE/pipelines/stages/3-functional/3LF03-Backup-Restore-LocalPV/backup-restore-localpv
+    - chmod 775 ./openebs-openshift-e2e/pipelines/stages/3-functional/3LF03-Backup-Restore-LocalPV/backup-restore-localpv
+    - ./openebs-openshift-e2e/pipelines/stages/3-functional/3LF03-Backup-Restore-LocalPV/backup-restore-localpv
+
+3LF04-Data-Integrity-Device:
+  extends: .func_test_template
+  script:
+    - chmod 775 ./openebs-openshift-e2e/pipelines/stages/3-functional/3LF04-Data-Integrity-Device/data-integrity-device
+    - ./openebs-openshift-e2e/pipelines/stages/3-functional/3LF04-Data-Integrity-Device/data-integrity-device
+
+3LF05-Data-Integrity-Hostpath:
+  extends: .func_test_template
+  script:
+    - chmod 775 ./openebs-openshift-e2e/pipelines/stages/3-functional/3LF05-Data-Integrity-Hostpath/data-integrity-hostpath
+    - ./openebs-openshift-e2e/pipelines/stages/3-functional/3LF05-Data-Integrity-Hostpath/data-integrity-hostpath
 
 ##########################################################################################
 
 .chaos_test_template:
   image: openebs/openshift-ci:latest
-  stage: CHAOS
+  stage: CHAOS 
   when: always
   dependencies:
     - 2LP01-OPENEBS-DEPLOY
@@ -65,20 +77,20 @@ stages:
 4LC01-APP-KILL-LOCALPV-DEVICE:
   extends: .chaos_test_template
   script: 
-    - chmod 775 ./Openshift-EE/pipelines/stages/4-chaos/4LC01-localpv-device-app-kill/app-kill
-    - ./Openshift-EE/pipelines/stages/4-chaos/4LC01-localpv-device-app-kill/app-kill
+    - chmod 775 ./openebs-openshift-e2e/pipelines/stages/4-chaos/4LC01-localpv-device-app-kill/app-kill
+    - ./openebs-openshift-e2e/pipelines/stages/4-chaos/4LC01-localpv-device-app-kill/app-kill
 
 4LC02-APP-KILL-LOCALPV-HOSTPATH:
   extends: .chaos_test_template
   script: 
-    - chmod 775 ./Openshift-EE/pipelines/stages/4-chaos/4LC02-localpv-hostpath-app-kill/app-kill
-    - ./Openshift-EE/pipelines/stages/4-chaos/4LC02-localpv-hostpath-app-kill/app-kill
+    - chmod 775 ./openebs-openshift-e2e/pipelines/stages/4-chaos/4LC02-localpv-hostpath-app-kill/app-kill
+    - ./openebs-openshift-e2e/pipelines/stages/4-chaos/4LC02-localpv-hostpath-app-kill/app-kill
 
 ##########################################################################################
 
 .cleanup_test_template:
   image: openebs/openshift-ci:latest
-  stage: OPENEBS-CLEANUP
+  stage: OPENEBS-CLEANUP 
   when: always
   dependencies:
     - 2LP01-OPENEBS-DEPLOY
@@ -86,17 +98,19 @@ stages:
 5LD01-OPENEBS-UNINSTALL:
   extends: .cleanup_test_template
   script:
-    - chmod 775 ./Openshift-EE/pipelines/stages/5-cleanup/5LD01-openebs-cleanup/openebs-cleanup
-    - ./Openshift-EE/pipelines/stages/5-cleanup/5LD01-openebs-cleanup/openebs-cleanup
+    - chmod 775 ./openebs-openshift-e2e/pipelines/stages/5-cleanup/5LD01-openebs-cleanup/openebs-cleanup
+    - ./openebs-openshift-e2e/pipelines/stages/5-cleanup/5LD01-openebs-cleanup/openebs-cleanup
 
 ##########################################################################################
 
 5LD02-CLUSTER-DELETE:
   image: openebs/openshift-ci:latest
   stage: CLUSTER-CLEANUP
+  tags:
+    - k8s-konvoy
   when: always
   dependencies:
     - 1LS01-CLUSTER-SETUP
   script:
-    - chmod 775 ./Openshift-EE/pipelines/stages/5-cleanup/5LD02-cluster-cleanup/cluster-cleanup
-    - ./Openshift-EE/pipelines/stages/5-cleanup/5LD02-cluster-cleanup/cluster-cleanup
+    - chmod 775 ./openebs-openshift-e2e/pipelines/stages/5-cleanup/5LD02-cluster-cleanup/cluster-cleanup
+    - ./openebs-openshift-e2e/pipelines/stages/5-cleanup/5LD02-cluster-cleanup/cluster-cleanup
