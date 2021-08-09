@@ -13,7 +13,7 @@ pipeline_id=$(echo $2)
 commit_id=$(echo $3)
 releaseTag=$(echo $4)
 velero_version=$(echo $5)
-case_id=2LF03
+case_id=3LF03
 
 time="date"
 current_time=$(eval $time)

@@ -80,7 +80,7 @@ stages:
     - chmod 775 ./openebs-openshift-e2e/pipelines/stages/4-chaos/4LC01-localpv-device-app-kill/app-kill
     - ./openebs-openshift-e2e/pipelines/stages/4-chaos/4LC01-localpv-device-app-kill/app-kill
 
-4LC01-APP-KILL-LOCALPV-HOSTPATH:
+4LC02-APP-KILL-LOCALPV-HOSTPATH:
   extends: .chaos_test_template
   script: 
     - chmod 775 ./openebs-openshift-e2e/pipelines/stages/4-chaos/4LC02-localpv-hostpath-app-kill/app-kill

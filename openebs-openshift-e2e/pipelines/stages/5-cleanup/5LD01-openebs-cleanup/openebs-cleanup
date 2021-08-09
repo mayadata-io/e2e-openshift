@@ -14,7 +14,7 @@ case_id=5LP01
 imagetype=$(echo $6)
 localpv_provisioner_image=$(echo $7)
 ndm_version=$(echo $8)
-commit_id=$(echo $9})
+commit_id=$(echo $9)
 rc_tag=$(echo ${10})
 
 time="date"
@@ -54,9 +54,11 @@ export RC_TAG=$rc_tag
 
 wget https://raw.githubusercontent.com/openebs/e2e-infrastructure/master/env-update/env.py
 
-python3 env.py -f experiments/localpv-provisioner/run_e2e_test.yml
+cp experiments/localpv-provisioner/run_e2e_test.yml deprovision-operator.yml
 
-cat experiments/localpv-provisioner/run_e2e_test.yml
+python3 env.py -f deprovision-operator.yml
+
+cat deprovision-operator.yml
 
 #################
 ## RUNNER MAIN ##
@@ -68,13 +70,11 @@ kubectl apply -f ./hack/crds.yaml
 
 echo "Running e2e test for openebs deploy.."
 
-run_test=experiments/localpv-provisioner/run_e2e_test.yml
+sed -i -e 's/provider: localpv-operator/provider: localpv-operator-deprovision/g' deprovision-operator.yml
 
-sed -i -e 's/provider: localpv-operator/provider: localpv-operator-deprovision/g' $run_test
+sed -i -e "/name: ACTION/{n;s/.*/            value: deprovision/g}" deprovision-operator.yml
 
-sed -i -e "/name: ACTION/{n;s/.*/            value: deprovision/g}" $run_test
-
-bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='provider:localpv-operator-deprovision' job=$run_test
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='provider:localpv-operator-deprovision' job=deprovision-operator.yml
 
 echo "Dumping state of cluster post job run"; echo ""
 bash ../../openebs-openshift-e2e/utils/dump_cluster_state;
@@ -84,7 +84,7 @@ bash openebs-openshift-e2e/utils/event_updater jobname:device-localpv-deprovisio
 ## GET RESULT  ##
 #################
 rc_val=$(echo $?)
-test_case_id="2LP01"
+test_case_id="5LD01"
 
 ## Check the test status & result from the e2e result custom resource
 source ~/.profile

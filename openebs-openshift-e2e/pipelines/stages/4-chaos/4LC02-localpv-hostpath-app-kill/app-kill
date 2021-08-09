@@ -114,7 +114,7 @@ sed -i -e 's/name: app-failure/name: hostpath-app-kill-cm/g' \
 -e 's/value: docker/value: containerd/g' hostpath_app_kill.yml
 
 sed -i -e "/name: APP_LABEL/{n;s/.*/            value: app=busybox-sts/g}" \
--e "/name: APP_NAMESPACE/{n;s/.*/            value: hostpath-app-kill/g}" device_app_kill.yml
+-e "/name: APP_NAMESPACE/{n;s/.*/            value: hostpath-app-kill/g}" hostpath_app_kill.yml
 
 ## Replace the value of DATA_PERSISTENCE with application name in e2e experiment. 
 sed -i '/name: DATA_PERSISTENCE/{n;s/.*/            value: busybox/}' hostpath_app_kill.yml
