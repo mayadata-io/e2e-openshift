@@ -106,8 +106,6 @@ stages:
 5LD02-CLUSTER-DELETE:
   image: openebs/openshift-ci:latest
   stage: CLUSTER-CLEANUP
-  tags:
-    - k8s-konvoy
   when: always
   dependencies:
     - 1LS01-CLUSTER-SETUP
