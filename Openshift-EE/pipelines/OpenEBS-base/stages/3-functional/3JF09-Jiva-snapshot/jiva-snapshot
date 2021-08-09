@@ -28,15 +28,15 @@ bash Openshift-EE/utils/e2e-cr jobname:jiva-snapshot-clone jobphase:Waiting
 ###########Deploying Busybox Application
 
 ################
-# LitmusBook 1 #
+# e2eBook 1 #
 ################
 
 : << EOF
   --------------------------------------------------------------------------------------------------------------------     
  | specAttribute     | kind   |         default value               | test specifc value                              |
   ------------------------------------------------------------------------------------------------------------------- |
- | Litmus job label  | label  | app: busybox-litmus                 | app: deploy-jiva-busybox-snapshot               |
- | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName: busybox-provision-jiva-snapshot   |
+ | e2e job label  | label  | app: busybox-e2e                 | app: deploy-jiva-busybox-snapshot               |
+ | e2e Job name   | name   | generateName: e2e-busybox-deploy | generateName: busybox-provision-jiva-snapshot   |
  | appLabel          | env    | app=busybox-sts                     | app=busybox-jiva-snap                           |
  | deploy type       | env    | statefulset                         | deployment                                      |
  | pvcName           | env    | openebs-busybox                     | busybox-jiva-snapshot                           | 
@@ -49,11 +49,11 @@ test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provisio
 echo $test_name
 
 cd e2e-tests
-echo "Running the litmus test for Busybox Deployment.."
-cp apps/busybox/deployers/run_litmus_test.yml deploy_jiva_snapshot.yml
+echo "Running the e2e test for Busybox Deployment.."
+cp apps/busybox/deployers/run_e2e_test.yml deploy_jiva_snapshot.yml
 
-sed -i -e 's/app: busybox-litmus/app: deploy-jiva-busybox-snapshot/g' \
--e 's/generateName: litmus-busybox-deploy/generateName: busybox-provision-jiva-snapshot/g' \
+sed -i -e 's/app: busybox-e2e/app: deploy-jiva-busybox-snapshot/g' \
+-e 's/generateName: e2e-busybox-deploy/generateName: busybox-provision-jiva-snapshot/g' \
 -e 's/app=busybox-sts/app=busybox-jiva-snap/g' \
 -e 's/value: statefulset/value: deployment/g' \
 -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
@@ -63,7 +63,7 @@ sed -i -e 's/app: busybox-litmus/app: deploy-jiva-busybox-snapshot/g' \
 
 cat deploy_jiva_snapshot.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:deploy-jiva-busybox-snapshot' job=deploy_jiva_snapshot.yml
+bash ../Openshift-EE/utils/e2e_job_runner label='app:deploy-jiva-busybox-snapshot' job=deploy_jiva_snapshot.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:jiva-snapshot $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
@@ -76,17 +76,17 @@ fi
 ##Deploying loadgen and liveness
 
 #################
-# LitmusBook 2 #
+# e2eBook 2 #
 ################
 
 run_id="jiva-snap";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
 echo $test_name
 
 cd e2e-tests
-# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
-cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_jiva_snapshot.yml
+# copy the content of deployer run_e2e_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/liveness/run_e2e_test.yml busybox_loadgen_jiva_snapshot.yml
 
- # Update the environmental variables in litmus job spec.
+ # Update the environmental variables in e2e job spec.
 
  : << EOF
   ---------------------------------------------------------------------------------------------------------------------
@@ -94,13 +94,13 @@ cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_jiva_snapshot.yml
   ---------------------------------------------------------------------------------------------------------------------|
  | appNamespace      | env    | app-busybox-ns                      | busybox-jiva-snap                                |  
  | appLabel          | env    | app=busybox-sts                     | app=busybox-jiva-snap                            | 
- | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness:bb-liveness-jiva-snapshot               | 
+ | e2e job label  | label  | liveness: e2e-busybox-liveness   | liveness:bb-liveness-jiva-snapshot               | 
   ----------------------------------------------------------------------------------------------------------------------
 EOF
 
 sed -i -e 's/value: app-busybox-ns/value:  busybox-jiva-snap/g' \
 -e 's/app=busybox-sts/app=busybox-jiva-snap/g' \
--e 's/liveness: litmus-busybox-liveness/liveness: bb-liveness-jiva-snapshot/g'  busybox_loadgen_jiva_snapshot.yml
+-e 's/liveness: e2e-busybox-liveness/liveness: bb-liveness-jiva-snapshot/g'  busybox_loadgen_jiva_snapshot.yml
 
 sed -i '/command:/i \
           - name: RUN_ID\
@@ -108,10 +108,10 @@ sed -i '/command:/i \
 ' busybox_loadgen_jiva_snapshot.yml
 
 cat  busybox_loadgen_jiva_snapshot.yml
- # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
-bash ../Openshift-EE/utils/litmus_job_runner label='liveness:bb-liveness-jiva-snapshot' job=busybox_loadgen_jiva_snapshot.yml
+ # Run the e2e job and get the details of the e2e job from e2e_job_runner utils.
+bash ../Openshift-EE/utils/e2e_job_runner label='liveness:bb-liveness-jiva-snapshot' job=busybox_loadgen_jiva_snapshot.yml
 cd ..
-# Get the cluster state Once the litmus jobs completed.
+# Get the cluster state Once the e2e jobs completed.
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:jiva-snapshot $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
@@ -123,14 +123,14 @@ fi
 ###########Taking snapshot of BusyBox application
 
 ################
-# LitmusBook 3 #
+# e2eBook 3 #
 ################
 
 : << EOF
   --------------------------------------------------------------------------------------------------------------------     
  | specAttribute     | kind   |         default value               | test specifc value                              |
   ------------------------------------------------------------------------------------------------------------------- |
- | Litmus job label  | label  | app: snapshot-litmus                | app: snapshot-jiva-litmus                       |
+ | e2e job label  | label  | app: snapshot-e2e                | app: snapshot-jiva-e2e                       |
  | snapshot name     | env    | value: snapshot-busybox             | value: snapshot-jiva-busybox                    |
  | pvcName           | env    | openebs-busybox                     | busybox-jiva-snapshot                           | 
  | appNamespace      | env    | app-busybox-ns                      | busybox-jiva-snap                               |
@@ -141,11 +141,11 @@ run_id="jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=cr
 echo $test_name
 
 cd e2e-tests
-cp experiments/functional/snapshot-creation/run_litmus_test.yml run_snap_test_jiva.yml
+cp experiments/functional/snapshot-creation/run_e2e_test.yml run_snap_test_jiva.yml
 
 sed -i -e 's/value: openebs-busybox/value: busybox-jiva-snapshot/g' \
 -e 's/value: snapshot-busybox/value: snapshot-jiva-busybox/g' \
--e 's/app: snapshot-litmus/app: snapshot-jiva-litmus/g' \
+-e 's/app: snapshot-e2e/app: snapshot-jiva-e2e/g' \
 -e 's/value: app-busybox-ns/value: busybox-jiva-snap/g' run_snap_test_jiva.yml
 
 sed -i '/command:/i \
@@ -155,7 +155,7 @@ sed -i '/command:/i \
 
 cat run_snap_test_jiva.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:snapshot-jiva-litmus' job=run_snap_test_jiva.yml
+bash ../Openshift-EE/utils/e2e_job_runner label='app:snapshot-jiva-e2e' job=run_snap_test_jiva.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:jiva-snapshot $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"

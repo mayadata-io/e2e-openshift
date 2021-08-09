@@ -1,6 +1,6 @@
 # e2e-openshift
 
-This repository contains platform execution code to run OpenEBS and workloads E2E testing pipelines for OpenShift platform. The platform is built around GitLab and OpenEBS Litmus.
+This repository contains platform execution code to run OpenEBS and workloads E2E testing pipelines for OpenShift platform. The platform is built around GitLab and OpenEBS e2e.
 
 
 

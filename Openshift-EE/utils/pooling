@@ -1,7 +1,7 @@
 #!/bin/bash
 set -x
 pool_job=$(echo $1 | cut -d ":" -f 2)
-e2e_cr_status="kubectl get e2er $pool_job -n e2e -o yaml --no-headers -o custom-columns=:spec.testStatus.phase"
+e2e_cr_status="kubectl get cie2er $pool_job -n e2e -o yaml --no-headers -o custom-columns=:spec.testStatus.phase"
 
 while true; do
    val1=$(eval $e2e_cr_status)

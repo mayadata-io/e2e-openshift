@@ -24,15 +24,15 @@ bash Openshift-EE/utils/e2e-cr jobname:app-target-affinity-jiva jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:app-target-affinity-jiva jobphase:Running
 
 ################
-# LitmusBook 1 #
+# e2eBook 1 #
 ################
 
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-target-affinity-jiva metadata="")
 echo $test_name
 
 cd e2e-tests
-echo "Running the litmus test for Busybox Deployment.."
-cp apps/busybox/deployers/run_litmus_test.yml deploy_affinity_test_jiva.yml
+echo "Running the e2e test for Busybox Deployment.."
+cp apps/busybox/deployers/run_e2e_test.yml deploy_affinity_test_jiva.yml
 
 : << EOF
   -------------------------------------------------------------------------------------------------------------------
@@ -43,14 +43,14 @@ cp apps/busybox/deployers/run_litmus_test.yml deploy_affinity_test_jiva.yml
  | appNamespace      | env    | app-busybox-ns                      | target-affinity-jiva                           | 
  | storage clas      | env    | openebs-cstor-sparse                | openebs-jiva-default                           |
  | deploy type       | env    | statefulset                         | deployment                                     |
- | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName: busybox-provision-target-affinity|
- | Litmus job label  | label  | app: busybox-litmus                 | app: busybox-litmus-target-jiva                |
+ | e2e Job name   | name   | generateName: e2e-busybox-deploy | generateName: busybox-provision-target-affinity|
+ | e2e job label  | label  | app: busybox-e2e                 | app: busybox-e2e-target-jiva                |
   --------------------------------------------------------------------------------------------------------------------
 EOF
 
 sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
--e 's/generateName: litmus-busybox-deploy/generateName: busybox-provision-target-affinity/g' \
--e 's/app: busybox-litmus/app: busybox-litmus-target-jiva/g' \
+-e 's/generateName: e2e-busybox-deploy/generateName: busybox-provision-target-affinity/g' \
+-e 's/app: busybox-e2e/app: busybox-e2e-target-jiva/g' \
 -e 's/value: '\''app=busybox-sts'\''/value: '\''app=target-affinity-jiva'\''/g' \
 -e 's/value: app-busybox-ns/value: target-affinity-jiva/g' \
 -e 's/value: statefulset/value: deployment/g' \
@@ -59,7 +59,7 @@ sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
 
 cat deploy_affinity_test_jiva.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-litmus-target-jiva' job=deploy_affinity_test_jiva.yml
+bash ../Openshift-EE/utils/e2e_job_runner label='app:busybox-e2e-target-jiva' job=deploy_affinity_test_jiva.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:app-target-affinity-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
@@ -72,17 +72,17 @@ fi
 ##Deploying loadgen and liveness
 
 ################
-# LitmusBook 2 #
+# e2eBook 2 #
 ################
 
 run_id="jiva-affinity";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
 echo $test_name
 
 cd e2e-tests
-# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
-cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_target_affinity.yml
+# copy the content of deployer run_e2e_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/liveness/run_e2e_test.yml busybox_loadgen_target_affinity.yml
 
- # Update the environmental variables in litmus job spec.
+ # Update the environmental variables in e2e job spec.
 
  : << EOF
   ---------------------------------------------------------------------------------------------------------------------
@@ -90,13 +90,13 @@ cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_target_affinity.yml
   ---------------------------------------------------------------------------------------------------------------------|
  | appNamespace      | env    | app-busybox-ns                      | target-affinity-jiva                             | 
  | appLabel          | env    | app=busybox-sts                     | app=target-affinity-jiva                         | 
- | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: busybox-liveness-target-affinity       | 
+ | e2e job label  | label  | liveness: e2e-busybox-liveness   | liveness: busybox-liveness-target-affinity       | 
   ----------------------------------------------------------------------------------------------------------------------
 EOF
 
 sed -i -e 's/value: app-busybox-ns/value: target-affinity-jiva/g' \
 -e 's/app=busybox-sts/app=target-affinity-jiva /g' \
--e 's/liveness: litmus-busybox-liveness/liveness: busybox-liveness-target-affinity/g' busybox_loadgen_target_affinity.yml
+-e 's/liveness: e2e-busybox-liveness/liveness: busybox-liveness-target-affinity/g' busybox_loadgen_target_affinity.yml
 
 sed -i '/command:/i \
           - name: RUN_ID\
@@ -105,10 +105,10 @@ sed -i '/command:/i \
 
 cat busybox_loadgen_target_affinity.yml
 
- # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
-bash ../Openshift-EE/utils/litmus_job_runner label='liveness:busybox-liveness-target-affinity' job=busybox_loadgen_target_affinity.yml
+ # Run the e2e job and get the details of the e2e job from e2e_job_runner utils.
+bash ../Openshift-EE/utils/e2e_job_runner label='liveness:busybox-liveness-target-affinity' job=busybox_loadgen_target_affinity.yml
 cd ..
-# Get the cluster state Once the litmus jobs completed.
+# Get the cluster state Once the e2e jobs completed.
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:app-target-affinity-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
@@ -120,14 +120,14 @@ fi
 ##Checking Application and Target Pod Affinity 
 
 ################
-# LitmusBook 3 #
+# e2eBook 3 #
 ################
 
 run_id="jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=app-target-affinity metadata=${run_id})
 echo $test_name
 
 cd e2e-tests
-cp experiments/functional/app-target-affinity/run_litmus_test.yml run_affinity_test_jiva.yml
+cp experiments/functional/app-target-affinity/run_e2e_test.yml run_affinity_test_jiva.yml
 
 : << EOF
   ---------------------------------------------------------------------------------------------------------------
@@ -135,13 +135,13 @@ cp experiments/functional/app-target-affinity/run_litmus_test.yml run_affinity_t
   ---------------------------------------------------------------------------------------------------------------|
  | appLabel          | env    | app=busybox-sts                     | app=target-affinity-jiva               | 
  | appNamespace      | env    | app-busybox-ns                      | target-affinity-jiva                       | 
- | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName: busybox-deprovision-ctrl-kill|
- | Litmus job label  | label  | app: litmus-affinity                | app: litmus-affinity-jiva                  |
+ | e2e Job name   | name   | generateName: e2e-busybox-deploy | generateName: busybox-deprovision-ctrl-kill|
+ | e2e job label  | label  | app: e2e-affinity                | app: e2e-affinity-jiva                  |
   ----------------------------------------------------------------------------------------------------------------
 EOF
 
 sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
--e 's/app: litmus-affinity/app: litmus-affinity-jiva/g' \
+-e 's/app: e2e-affinity/app: e2e-affinity-jiva/g' \
 -e 's/value: app=busybox-sts/value: app=target-affinity-jiva/g' \
 -e 's/value: app-busybox-ns/value: target-affinity-jiva/g' run_affinity_test_jiva.yml
 
@@ -152,7 +152,7 @@ sed -i '/command:/i \
 
 cat run_affinity_test_jiva.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:litmus-affinity-jiva' job=run_affinity_test_jiva.yml
+bash ../Openshift-EE/utils/e2e_job_runner label='app:e2e-affinity-jiva' job=run_affinity_test_jiva.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:app-target-affinity-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
@@ -165,17 +165,17 @@ fi
 ##Deprovisioning loadgen and liveness 
 
 ################
-# LitmusBook 4 #
+# e2eBook 4 #
 ################
 
 run_id="dep-jiva-affinity";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
 echo $test_name
 
 cd e2e-tests
-# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
-cp apps/busybox/liveness/run_litmus_test.yml bb_loadgen_dep_target_affinity.yml
+# copy the content of deployer run_e2e_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/liveness/run_e2e_test.yml bb_loadgen_dep_target_affinity.yml
 
- # Update the environmental variables in litmus job spec.
+ # Update the environmental variables in e2e job spec.
 
  : << EOF
   ---------------------------------------------------------------------------------------------------------------------
@@ -184,15 +184,15 @@ cp apps/busybox/liveness/run_litmus_test.yml bb_loadgen_dep_target_affinity.yml
  | appNamespace      | env    | app-busybox-ns                      | target-affinity-jvia                             | 
  | action            | env    | provision                           | deprovision                                      |
  | appLabel          | env    | app=busybox-sts                     | app=target-affinity-jiva                         |  
- | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: bb-liveness-dep-affinity               |
+ | e2e job label  | label  | liveness: e2e-busybox-liveness   | liveness: bb-liveness-dep-affinity               |
  ----------------------------------------------------------------------------------------------------------------------
 EOF
 
 sed -i -e 's/value: app-busybox-ns/value: target-affinity-jiva/g' \
 -e 's/value: provision/value: deprovision/g' \
 -e 's/app=busybox-sts/app=target-affinity-jiva /g' \
--e 's/generateName: litmus-busybox-liveness/generateName: busybox-liveness-dep-target-affinity/g' \
--e 's/liveness: litmus-busybox-liveness/liveness: bb-liveness-dep-affinity/g' bb_loadgen_dep_target_affinity.yml
+-e 's/generateName: e2e-busybox-liveness/generateName: busybox-liveness-dep-target-affinity/g' \
+-e 's/liveness: e2e-busybox-liveness/liveness: bb-liveness-dep-affinity/g' bb_loadgen_dep_target_affinity.yml
 
 sed -i '/command:/i \
           - name: RUN_ID\
@@ -200,10 +200,10 @@ sed -i '/command:/i \
 ' bb_loadgen_dep_target_affinity.yml
 
 cat bb_loadgen_dep_target_affinity.yml
-# Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
-bash ../Openshift-EE/utils/litmus_job_runner label='liveness:bb-liveness-dep-affinity' job=bb_loadgen_dep_target_affinity.yml
+# Run the e2e job and get the details of the e2e job from e2e_job_runner utils.
+bash ../Openshift-EE/utils/e2e_job_runner label='liveness:bb-liveness-dep-affinity' job=bb_loadgen_dep_target_affinity.yml
 cd ..
-# Get the cluster state Once the litmus jobs completed.
+# Get the cluster state Once the e2e jobs completed.
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:app-target-affinity-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
@@ -221,11 +221,11 @@ test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovis
 echo $test_name
 
 ################
-# LitmusBook 5 #
+# e2eBook 5 #
 ################
 
 cd e2e-tests
-cp apps/busybox/deployers/run_litmus_test.yml deprovision_affinity_jiva.yml
+cp apps/busybox/deployers/run_e2e_test.yml deprovision_affinity_jiva.yml
 
 : << EOF
   ---------------------------------------------------------------------------------------------------------------------
@@ -237,26 +237,26 @@ cp apps/busybox/deployers/run_litmus_test.yml deprovision_affinity_jiva.yml
  | storage clas      | env    | openebs-cstor-sparse                | openebs-jiva-standalone                          |
  | deploy type       | env    | statefulset                         | deployment                                       |
  | Action            | env    | value: provision                    | value: deprovision                               |
- | Litmus Job name   | name   | generateName: litmus-busybox-deploy | generateName: busybox-deprovision-target-affinity|
- | Litmus job label  | label  | app: busybox-litmus                 | app: busybox-deprovision-ctrl-kill               |
+ | e2e Job name   | name   | generateName: e2e-busybox-deploy | generateName: busybox-deprovision-target-affinity|
+ | e2e job label  | label  | app: busybox-e2e                 | app: busybox-deprovision-ctrl-kill               |
   ----------------------------------------------------------------------------------------------------------------------
 EOF
 
-sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovision-target-affinity/g' \
--e 's/app: busybox-litmus/app: busybox-deprovision-affinity-jiva/g' \
+sed -i -e 's/generateName: e2e-busybox-deploy/generateName: busybox-deprovision-target-affinity/g' \
+-e 's/app: busybox-e2e/app: busybox-deprovision-affinity-jiva/g' \
 -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
 -e 's/value: '\''app=busybox-sts'\''/value: '\''app=target-affinity-jiva'\''/g' \
 -e 's/value: app-busybox-ns/value: target-affinity-jiva/g' \
 -e 's/value: statefulset/value: deployment/g' \
--e 's/app: busybox-litmus/app: busybox-deprovision-affinity-jiva/g' \
+-e 's/app: busybox-e2e/app: busybox-deprovision-affinity-jiva/g' \
 -e 's/value: openebs-busybox/value: busybox-target-affinity-jiva/g' \
 -e 's/value: openebs-cstor-sparse/value: openebs-jiva-default/g' \
 -e 's/value: provision/value: deprovision/g' deprovision_affinity_jiva.yml
 
-echo "Running the litmus test for Busybox Deployment.."
+echo "Running the e2e test for Busybox Deployment.."
 cat deprovision_affinity_jiva.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-deprovision-affinity-jiva' job=deprovision_affinity_jiva.yml
+bash ../Openshift-EE/utils/e2e_job_runner label='app:busybox-deprovision-affinity-jiva' job=deprovision_affinity_jiva.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:app-target-affinity-jiva  $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
@@ -264,7 +264,7 @@ bash Openshift-EE/utils/event_updater jobname:app-target-affinity-jiva  $test_na
 rc_val=$(echo $?)
 current_time=$(eval $time)
 
-testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+testResult=$(kubectl get e2eresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
 
 if [ "$rc_val" != "0" ]; then
 bash Openshift-EE/utils/e2e-cr jobname:app-target-affinity-jiva  jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:$testResult

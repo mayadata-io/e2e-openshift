@@ -27,7 +27,7 @@ bash Openshift-EE/utils/e2e-cr jobname:nfs-app-kill-jiva jobphase:Running init_t
 bash Openshift-EE/utils/e2e-cr jobname:nfs-ctrl-kill-jiva jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:nfs-ctrl-container-kill jobphase:Waiting
 ################
-# LitmusBook 1 #
+# e2eBook 1 #
 ################
 
 # Performing Application Pod Chaos
@@ -36,8 +36,8 @@ run_id="nfs-jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcas
 echo $test_name
 
 cd e2e-tests
-# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
-cp experiments/chaos/nfs_chaos/nfs_provisioner_pod_kill/run_litmus_test.yml nfs_app_kill_jiva.yml
+# copy the content of deployer run_e2e_test.yml into a different file to update the test specific parameters.
+cp experiments/chaos/nfs_chaos/nfs_provisioner_pod_kill/run_e2e_test.yml nfs_app_kill_jiva.yml
 
 sed -i -e '/name: NFS_NAMESPACE/{n;s/.*/            value: app-nfsv4-jiva/}' \
 -e '/name: NFS_LABEL/{n;s/.*/            value: app=nfs/}' \
@@ -46,7 +46,7 @@ sed -i -e '/name: NFS_NAMESPACE/{n;s/.*/            value: app-nfsv4-jiva/}' \
 -e '/name: CONTAINER-RUNTIME/{n;s/.*/            value: cri-o/}' nfs_app_kill_jiva.yml
 
 sed -i 's/name: nfs-app-pod-failure/name: nfs-app-pod-failure-jiva/g' nfs_app_kill_jiva.yml
-echo "Running the litmus test for minio Deployment application pod kill.."
+echo "Running the e2e test for minio Deployment application pod kill.."
 
 sed -i '/command:/i \
           - name: RUN_ID\
@@ -55,9 +55,9 @@ sed -i '/command:/i \
 
 cat nfs_app_kill_jiva.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='name:nfs-app-pod-failure-jiva' job=nfs_app_kill_jiva.yml
+bash ../Openshift-EE/utils/e2e_job_runner label='name:nfs-app-pod-failure-jiva' job=nfs_app_kill_jiva.yml
 cd ..
-# Get the cluster state Once the litmus jobs completed.
+# Get the cluster state Once the e2e jobs completed.
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:nfs-app-kill-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
