@@ -28,8 +28,8 @@ worker3_name=$(echo ${11})
 worker4_name=$(echo ${12})
 worker5_name=$(echo ${13})
 
-git clone https://github.com/mayadata-io/litmus.git
-cd litmus
+git clone https://github.com/openebs/e2e-tests
+cd e2e-tests
 
 # Replace the VM IP In csv file
 sed -i -e "s/10.12.22.10/$master_ip/g" \

@@ -24,20 +24,20 @@ bash Openshift-EE/utils/e2e-cr jobname:cstor-spc-rothresholdlimit jobphase:Waiti
 bash Openshift-EE/utils/e2e-cr jobname:cstor-spc-rothresholdlimit jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
 ################
-# LitmusBook 1 #
+# e2eBook 1 #
 ################
 
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=cstor-rothreshold-limit metadata="")
 echo $test_name
-cd litmus
+cd e2e-tests
 
-cp experiments/functional/rothreshold-limit/run_litmus_test.yml cstor_rothreshold_limit.yml
+cp experiments/functional/rothreshold-limit/run_e2e_test.yml cstor_rothreshold_limit.yml
 
 sed -i -e '/name: PV_CAPACITY/{n;s/.*/            value: 10Gi/}' cstor_rothreshold_limit.yml
 
 cat cstor_rothreshold_limit.yml 
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:cstor-rothreshold-limit' job=cstor_rothreshold_limit.yml
+bash ../Openshift-EE/utils/e2e_job_runner label='app:cstor-rothreshold-limit' job=cstor_rothreshold_limit.yml
 bash ../Openshift-EE/utils/dump_cluster_state;
 cd ..
 bash Openshift-EE/utils/event_updater jobname:cstor-spc-rothresholdlimit $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"

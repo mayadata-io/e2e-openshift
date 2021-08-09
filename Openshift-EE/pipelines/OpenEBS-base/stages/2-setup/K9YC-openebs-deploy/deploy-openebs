@@ -62,7 +62,7 @@ bash Openshift-EE/utils/e2e-cr jobname:s2-j6-policies jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:s2-j2-cstor-striped-pool jobphase:Waiting 
 bash Openshift-EE/utils/e2e-cr jobname:s2-j3-cstor-mirrored-pool jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:s2-j4-cstor-raidz1-pool jobphase:Waiting
-bash Openshift-EE/utils/e2e-cr jobname:s2-j5-cstor-raidz2-pool jobphase:Waiting
+#bash Openshift-EE/utils/e2e-cr jobname:s2-j5-cstor-raidz2-pool jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:s2-j7-nfsv4-provision jobphase:Waiting
 
 source ~/.profile
@@ -72,10 +72,10 @@ echo "Generating test name***************************"
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-provision metadata="")
 echo $test_name
 
-## Clone the litmus repo, navigate to litmus root 
+## Clone the e2e repo, navigate to e2e root 
 
-git clone https://github.com/mayadata-io/litmus.git
-cd litmus
+git clone https://github.com/openebs/e2e-tests
+cd e2e-tests
 
 export OPENEBS_MAYA_APISERVER_IMAGE=$maya_api_server_image
 export OPENEBS_PROVISIONER_IMAGE=$provisioner_image
@@ -99,13 +99,13 @@ export COMMIT_ID=$commit_id
 export RC_TAG=$rc_tag
 
 wget https://raw.githubusercontent.com/openebs/e2e-infrastructure/master/env-update/env.py
-python3 env.py -f providers/openebs/installers/operator/master/litmusbook/run_litmus_test.yml
+python3 env.py -f providers/openebs/installers/operator/master/e2e-test/run_e2e_test.yml
 
 sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
 -e "s/value: '10'/value: '20'/g" \
--e "s/value: master/value: $releaseBranch/g" providers/openebs/installers/operator/master/litmusbook/run_litmus_test.yml
+-e "s/value: master/value: $releaseBranch/g" providers/openebs/installers/operator/master/e2e-test/run_e2e_test.yml
 
-cat providers/openebs/installers/operator/master/litmusbook/run_litmus_test.yml
+cat providers/openebs/installers/operator/master/e2e-test/run_e2e_test.yml
 
 #################
 ## RUNNER MAIN ##
@@ -115,10 +115,10 @@ echo "Applying rbac.yml********************************"
 kubectl apply -f ./hack/rbac.yaml
 kubectl apply -f ./hack/crds.yaml
 
-echo "Running litmus test for openebs deploy.."
+echo "Running e2e test for openebs deploy.."
 
-run_test=providers/openebs/installers/operator/master/litmusbook/run_litmus_test.yml
-bash ../Openshift-EE/utils/litmus_job_runner label='provider:openebs-runner' job=$run_test
+run_test=providers/openebs/installers/operator/master/e2e-test/run_e2e_test.yml
+bash ../Openshift-EE/utils/e2e_job_runner label='provider:openebs-runner' job=$run_test
 
 echo "Dumping state of cluster post job run"; echo ""
 bash ../Openshift-EE/utils/dump_cluster_state;
@@ -130,10 +130,10 @@ bash Openshift-EE/utils/event_updater jobname:s2-j1-openebs-deploy $test_name jo
 rc_val=$(echo $?)
 test_case_id="K9YC"
 
-## Check the test status & result from the litmus result custom resource
+## Check the test status & result from the e2e result custom resource
 source ~/.profile
 gittoken=$(echo "$github_token")
-testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+testResult=$(kubectl get e2eresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
 
 current_time=$(eval $time)
 bash Openshift-EE/utils/e2e-cr jobname:s2-j1-openebs-deploy jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:$testResult

@@ -26,16 +26,16 @@ bash Openshift-EE/utils/pooling jobname:nfs-app-kill
 bash Openshift-EE/utils/e2e-cr jobname:nfs-target-kill jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
 ################
-# LitmusBook 1 #
+# e2eBook 1 #
 ################
 # Performing Application Target Chaos
 
 run_id="nfs";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-target-failure metadata=${run_id})
 echo $test_name
 
-cd litmus
-# copy the content of chaos run_litmus_test.yml into a different file to update the test specific parameters.
-cp experiments/chaos/nfs_chaos/nfs_openebs_target_failure/run_litmus_test.yml nfs_target_kill.yml
+cd e2e-tests
+# copy the content of chaos run_e2e_test.yml into a different file to update the test specific parameters.
+cp experiments/chaos/nfs_chaos/nfs_openebs_target_failure/run_e2e_test.yml nfs_target_kill.yml
 
 sed -i -e '/name: NFS_NAMESPACE/{n;s/.*/            value: app-nfsv4-ns/}' \
 -e '/name: NFS_LABEL/{n;s/.*/            value: app=nfs/}' \
@@ -53,9 +53,9 @@ sed -i '/command:/i \
 
 cat nfs_target_kill.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='name:nfs-openebs-target-failure' job=nfs_target_kill.yml
+bash ../Openshift-EE/utils/e2e_job_runner label='name:nfs-openebs-target-failure' job=nfs_target_kill.yml
 cd ..
-# Get the cluster state Once the litmus jobs completed.
+# Get the cluster state Once the e2e jobs completed.
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:nfs-target-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 

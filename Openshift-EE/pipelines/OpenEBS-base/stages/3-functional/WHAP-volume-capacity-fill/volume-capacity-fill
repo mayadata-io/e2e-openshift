@@ -30,11 +30,11 @@ test_name=$(bash Openshift-EE/utils/generate_test_name testcase=percona-deployme
 echo $test_name
 
 ################
-# LitmusBook 1 #
+# e2eBook 1 #
 ################
 
-cd litmus
-cp apps/percona/deployers/run_litmus_test.yml deploy_run_test_percona.yml
+cd e2e-tests
+cp apps/percona/deployers/run_e2e_test.yml deploy_run_test_percona.yml
 
 : << EOF
   ---------------------------------------------------------------------------------------------------------------------
@@ -49,7 +49,7 @@ sed -i -e 's/value: openebs-standard/value: openebs-cstor-disk/g' \
 
 cat deploy_run_test_percona.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:percona-deployment' job=deploy_run_test_percona.yml
+bash ../Openshift-EE/utils/e2e_job_runner label='app:percona-deployment' job=deploy_run_test_percona.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:volume-capacity-fill  $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
@@ -65,11 +65,11 @@ test_name=$(bash Openshift-EE/utils/generate_test_name testcase=volume-capacity 
 echo $test_name
 
 ################
-# LitmusBook 2 #
+# e2eBook 2 #
 ################
 
-cd litmus
-cp experiments/functional/volume-capacity/run_litmus_test.yml volume_capacity_fill.yaml
+cd e2e-tests
+cp experiments/functional/volume-capacity/run_e2e_test.yml volume_capacity_fill.yaml
 
 : << EOF
   ---------------------------------------------------------------------------------------------------------------------
@@ -85,7 +85,7 @@ sed -i -e 's/app-busybox-ns/app-percona-ns/g' \
 
 cat volume_capacity_fill.yaml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:volume-capacity' job=volume_capacity_fill.yaml
+bash ../Openshift-EE/utils/e2e_job_runner label='app:volume-capacity' job=volume_capacity_fill.yaml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:volume-capacity-fill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
@@ -101,11 +101,11 @@ run_id="deprovision";test_name=$(bash Openshift-EE/utils/generate_test_name test
 echo $test_name
 
 ################
-# LitmusBook 3 #
+# e2eBook 3 #
 ################
 
-cd litmus
-cp apps/percona/deployers/run_litmus_test.yml deprovision_run_test_percona.yml
+cd e2e-tests
+cp apps/percona/deployers/run_e2e_test.yml deprovision_run_test_percona.yml
 
 : << EOF
   ---------------------------------------------------------------------------------------------------------------------
@@ -116,7 +116,7 @@ cp apps/percona/deployers/run_litmus_test.yml deprovision_run_test_percona.yml
 EOF
 sed -i -e 's/value: openebs-standard/value: openebs-cstor-disk/g' \
 -e 's/app: percona-deployment/app: percona-deployment-deprovision/g' \
--e 's/generateName: litmus-percona/generateName: litmus-percona-deprovision/g' \
+-e 's/generateName: e2e-percona/generateName: e2e-percona-deprovision/g' \
 -e 's/value: provision/value: deprovision/g' deprovision_run_test_percona.yml
 
 sed -i '/command:/i \
@@ -126,14 +126,14 @@ sed -i '/command:/i \
 
 cat deprovision_run_test_percona.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:percona-deployment-deprovision' job=deprovision_run_test_percona.yml
+bash ../Openshift-EE/utils/e2e_job_runner label='app:percona-deployment-deprovision' job=deprovision_run_test_percona.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:volume-capacity-fill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 rc_val=$(echo $?)
 
-# Obtain the status of the test using litmusresult(lr) 
-testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+# Obtain the status of the test using e2eresult(lr) 
+testResult=$(kubectl get e2eresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
 current_time=$(eval $time)
 
 if [ "$rc_val" != "0" ]; then

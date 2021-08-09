@@ -25,7 +25,7 @@ bash Openshift-EE/utils/e2e-cr jobname:target-network-delay jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:target-network-delay jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
 ################
-# LitmusBook 1 #
+# e2eBook 1 #
 ################
 
 echo "*******Deploying Busybox Application****"
@@ -33,12 +33,12 @@ echo "*******Deploying Busybox Application****"
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-target-delay metadata="")
 echo $test_name
 
-cd litmus
-echo "Running the litmus test for Busybox Deployment.."
+cd e2e-tests
+echo "Running the e2e test for Busybox Deployment.."
 
-cp apps/busybox/deployers/run_litmus_test.yml busybox_target_delay.yml
+cp apps/busybox/deployers/run_e2e_test.yml busybox_target_delay.yml
 
-sed -i -e 's/app: busybox-litmus/app: deploy-busybox-target-delay/g' \
+sed -i -e 's/app: busybox-e2e/app: deploy-busybox-target-delay/g' \
 -e 's/app=busybox-sts/app=target-delay/g' \
 -e 's/value: statefulset/value: deployment/g' \
 -e 's/value: openebs-cstor-sparse/value: openebs-cstor-disk/g' \
@@ -46,7 +46,7 @@ sed -i -e 's/app: busybox-litmus/app: deploy-busybox-target-delay/g' \
 -e 's/value: app-busybox-ns/value: target-delay/g' busybox_target_delay.yml
 cat busybox_target_delay.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:deploy-busybox-target-delay' job=busybox_target_delay.yml
+bash ../Openshift-EE/utils/e2e_job_runner label='app:deploy-busybox-target-delay' job=busybox_target_delay.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:target-network-delay $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
@@ -57,31 +57,31 @@ exit 1;
 fi
 
 ################
-# LitmusBook 2 #
+# e2eBook 2 #
 ################
 
 run_id="target-network-delay";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
 echo $test_name
 
-cd litmus
-# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
-cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_target_network_delay.yml
+cd e2e-tests
+# copy the content of deployer run_e2e_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/liveness/run_e2e_test.yml busybox_loadgen_target_network_delay.yml
 
-# Update the environmental variables in litmus job spec.
+# Update the environmental variables in e2e job spec.
 
 : << EOF
   ---------------------------------------------------------------------------------------------------------------------
  | specAttribute     | kind   |         default value               | test specifc value                               |
   ---------------------------------------------------------------------------------------------------------------------|
  | appNamespace      | env    | app-busybox-ns                      | target-delay                                     | 
- | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: busybox-liveness-target-network-delay  |
+ | e2e job label  | label  | liveness: e2e-busybox-liveness   | liveness: busybox-liveness-target-network-delay  |
  | appLabel          | env    | app=busybox-sts                     | app=target-delay                                 | 
   ----------------------------------------------------------------------------------------------------------------------
 EOF
 
 sed -i -e 's/value: app-busybox-ns/value: target-delay/g' \
 -e 's/app=busybox-sts/app=target-delay/g' \
--e 's/liveness: litmus-busybox-liveness/liveness: busybox-liveness-target-network-delay/g' busybox_loadgen_target_network_delay.yml
+-e 's/liveness: e2e-busybox-liveness/liveness: busybox-liveness-target-network-delay/g' busybox_loadgen_target_network_delay.yml
 
 cat busybox_loadgen_target_network_delay.yml
 
@@ -90,10 +90,10 @@ sed -i '/command:/i \
             value: '"$run_id"'\
 ' busybox_loadgen_target_network_delay.yml
 
-# Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
-bash ../Openshift-EE/utils/litmus_job_runner label='liveness:busybox-liveness-target-network-delay' job=busybox_loadgen_target_network_delay.yml
+# Run the e2e job and get the details of the e2e job from e2e_job_runner utils.
+bash ../Openshift-EE/utils/e2e_job_runner label='liveness:busybox-liveness-target-network-delay' job=busybox_loadgen_target_network_delay.yml
 cd ..
-# Get the cluster state Once the litmus jobs completed.
+# Get the cluster state Once the e2e jobs completed.
 bash Openshift-EE/utils/dump_cluster_state;
 # Update the e2e event for the job.
 bash Openshift-EE/utils/event_updater jobname:target-network-delay $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
@@ -104,7 +104,7 @@ exit 1;
 fi
 
 ################
-# LitmusBook 3 #
+# e2eBook 3 #
 ################
 
 echo "*******Performing network delay on Target**********"
@@ -112,15 +112,15 @@ echo "*******Performing network delay on Target**********"
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-target-network-delay metadata="")
 echo $test_name
 
-cd litmus
-cp experiments/chaos/openebs_target_network_delay/run_litmus_test.yml run_target_delay_test.yml
+cd e2e-tests
+cp experiments/chaos/openebs_target_network_delay/run_e2e_test.yml run_target_delay_test.yml
 
 sed -i -e 's/value: percona-mysql-claim/value: openebs-bb-targetdelay/g' \
 -e 's/value: '\''name=percona'\''/value: '\''app=target-delay'\''/g' \
 -e 's/value: docker/value: cri-o/g' \
 -e 's/value: app-percona-ns/value: target-delay/g' run_target_delay_test.yml
 
-## Replace the value of DATA_PERSISTENCE with application name in litmus experiment.
+## Replace the value of DATA_PERSISTENCE with application name in e2e experiment.
 sed -i '/name: DATA_PERSISTENCE/{n;s/.*/            value: busybox/}' run_target_delay_test.yml
 
 ## Insert the set of variables for busybox data consistency util into configmap spec.
@@ -130,10 +130,10 @@ sed -i '/parameters.yml: |/a \
     testfile: targetnwdelaytest
 ' run_target_delay_test.yml
 
-echo "Running the litmus test for Busybox Deployment Scaleup.."
+echo "Running the e2e test for Busybox Deployment Scaleup.."
 cat run_target_delay_test.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='name:openebs-target-network-delay' job=run_target_delay_test.yml
+bash ../Openshift-EE/utils/e2e_job_runner label='name:openebs-target-network-delay' job=run_target_delay_test.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:target-network-delay $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
@@ -144,17 +144,17 @@ exit 1;
 fi
 
 ################
-# LitmusBook 4 #
+# e2eBook 4 #
 ################
 
 run_id="deprovision-target-delay";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
 echo $test_name
 
-cd litmus
-# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
-cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_deprovision_target_network_delay.yml
+cd e2e-tests
+# copy the content of deployer run_e2e_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/liveness/run_e2e_test.yml busybox_loadgen_deprovision_target_network_delay.yml
 
-# Update the environmental variables in litmus job spec.
+# Update the environmental variables in e2e job spec.
 
 : << EOF
   ---------------------------------------------------------------------------------------------------------------------
@@ -162,7 +162,7 @@ cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_deprovision_target_
   ---------------------------------------------------------------------------------------------------------------------|
  | appNamespace      | env    | app-busybox-ns                      | target-delay                                     | 
  | appLabel          | env    | app=busybox-sts                     | app=target-delay                                 |
- | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: busybox-liveness-deprovision-target-network-delay  |
+ | e2e job label  | label  | liveness: e2e-busybox-liveness   | liveness: busybox-liveness-deprovision-target-network-delay  |
  | action            | env    | provision                           | deprovision                                      | 
   ----------------------------------------------------------------------------------------------------------------------
 EOF
@@ -170,8 +170,8 @@ EOF
 sed -i -e 's/value: app-busybox-ns/value: target-delay/g' \
 -e 's/app=busybox-sts/app=target-delay/g' \
 -e 's/value: provision/value: deprovision/g' \
--e 's/generateName: litmus-busybox-liveness/generateName: busybox-liveness-dep-target-network-delay/g' \
--e 's/liveness: litmus-busybox-liveness/liveness: busybox-liveness-deprovision-target-network-delay/g' busybox_loadgen_deprovision_target_network_delay.yml
+-e 's/generateName: e2e-busybox-liveness/generateName: busybox-liveness-dep-target-network-delay/g' \
+-e 's/liveness: e2e-busybox-liveness/liveness: busybox-liveness-deprovision-target-network-delay/g' busybox_loadgen_deprovision_target_network_delay.yml
 
 sed -i '/command:/i \
           - name: RUN_ID\
@@ -179,10 +179,10 @@ sed -i '/command:/i \
 ' busybox_loadgen_deprovision_target_network_delay.yml
 
 cat busybox_loadgen_deprovision_target_network_delay.yml
-# Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
-bash ../Openshift-EE/utils/litmus_job_runner label='liveness:busybox-liveness-deprovision-target-network-delay' job=busybox_loadgen_deprovision_target_network_delay.yml
+# Run the e2e job and get the details of the e2e job from e2e_job_runner utils.
+bash ../Openshift-EE/utils/e2e_job_runner label='liveness:busybox-liveness-deprovision-target-network-delay' job=busybox_loadgen_deprovision_target_network_delay.yml
 cd ..
-# Get the cluster state Once the litmus jobs completed.
+# Get the cluster state Once the e2e jobs completed.
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:target-network-delay $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
@@ -195,7 +195,7 @@ exit 1;
 fi
 
 ################
-# LitmusBook 5 #
+# e2eBook 5 #
 ################
 
 echo "********Deprovisioning Busybox Application*******"
@@ -203,11 +203,11 @@ echo "********Deprovisioning Busybox Application*******"
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-target-delay metadata="")
 echo $test_name
 
-cd litmus
-cp apps/busybox/deployers/run_litmus_test.yml deprovision_target_delay.yml
+cd e2e-tests
+cp apps/busybox/deployers/run_e2e_test.yml deprovision_target_delay.yml
 
-sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovision-target-delay/g' \
--e 's/app: busybox-litmus/app: busybox-deprovision-target-delay/g' \
+sed -i -e 's/generateName: e2e-busybox-deploy/generateName: busybox-deprovision-target-delay/g' \
+-e 's/app: busybox-e2e/app: busybox-deprovision-target-delay/g' \
 -e 's/app=busybox-sts/app=target-delay/g' \
 -e 's/value: statefulset/value: deployment/g' \
 -e 's/value: openebs-cstor-sparse/value: openebs-cstor-disk/g' \
@@ -215,10 +215,10 @@ sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovisi
 -e 's/value: app-busybox-ns/value: target-delay/g' \
 -e 's/value: provision/value: deprovision/g' deprovision_target_delay.yml
 
-echo "Running the litmus test for Busybox Deployment.."
+echo "Running the e2e test for Busybox Deployment.."
 cat deprovision_target_delay.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-deprovision-target-delay' job=deprovision_target_delay.yml
+bash ../Openshift-EE/utils/e2e_job_runner label='app:busybox-deprovision-target-delay' job=deprovision_target_delay.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:target-network-delay $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
@@ -226,7 +226,7 @@ bash Openshift-EE/utils/event_updater jobname:target-network-delay $test_name jo
 rc_val=$(echo $?)
 current_time=$(eval $time)
 
-# testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+# testResult=$(kubectl get e2eresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
 
 if [ "$rc_val" != "0" ]; then
 bash Openshift-EE/utils/e2e-cr jobname:target-network-delay jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Fail

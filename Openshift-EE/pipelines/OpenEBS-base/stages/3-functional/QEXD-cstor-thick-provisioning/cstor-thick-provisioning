@@ -27,17 +27,17 @@ bash Openshift-EE/utils/e2e-cr jobname:cstor-thick-provisioning jobphase:Running
 
 
 ################
-# LitmusBook 1 #
+# e2eBook 1 #
 ################
 
 run_id="striped-thick-provision";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=cstor-block-device-pool-provision metadata=${run_id})
 echo $test_name
-cd litmus
+cd e2e-tests
 
-# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
-cp providers/cstor/cstor-block-device-pool/run_litmus_test.yml create_pool_thick_provisioning.yml
+# copy the content of deployer run_e2e_test.yml into a different file to update the test specific parameters.
+cp providers/cstor/cstor-block-device-pool/run_e2e_test.yml create_pool_thick_provisioning.yml
 
-echo "Running the litmus test.."
+echo "Running the e2e test.."
 
 sed -i -e 's/app: cstor-block-device-pool-provision/app: cstor-pool-thick-provision/g' \
 -e 's/generateName: cstor-block-device-pool-provision/generateName: cstor-pool-thick-provision/g' \
@@ -53,7 +53,7 @@ sed -i '/command:/i \
 
 cat create_pool_thick_provisioning.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:cstor-pool-thick-provision' job=create_pool_thick_provisioning.yml
+bash ../Openshift-EE/utils/e2e_job_runner label='app:cstor-pool-thick-provision' job=create_pool_thick_provisioning.yml
 bash ../Openshift-EE/utils/dump_cluster_state;
 cd ..
 bash Openshift-EE/utils/event_updater jobname:cstor-thick-provisioning $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
@@ -65,14 +65,14 @@ fi
 
 
 ################
-# LitmusBook 2 #
+# e2eBook 2 #
 ################
 
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=cstor-thick-provisioning metadata="")
 echo $test_name
-cd litmus
+cd e2e-tests
 
-cp experiments/functional/cstor_thick_provisioning/run_litmus_test.yml create_thick_provisioning.yml
+cp experiments/functional/cstor_thick_provisioning/run_e2e_test.yml create_thick_provisioning.yml
 
 sed -i -e '/name: APP_NAMESPACE/{n;s/.*/            value: thick-provision-ns/g}' \
 -e '/name: APP_PVC/{n;s/.*/            value: thick-provision-pvc/g}' \
@@ -81,7 +81,7 @@ sed -i -e '/name: APP_NAMESPACE/{n;s/.*/            value: thick-provision-ns/g}
 
 cat create_thick_provisioning.yml 
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:thick-provisioning' job=create_thick_provisioning.yml
+bash ../Openshift-EE/utils/e2e_job_runner label='app:thick-provisioning' job=create_thick_provisioning.yml
 bash ../Openshift-EE/utils/dump_cluster_state;
 cd ..
 bash Openshift-EE/utils/event_updater jobname:cstor-thick-provisioning $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"

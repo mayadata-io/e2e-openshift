@@ -36,15 +36,15 @@ bash Openshift-EE/utils/e2e-cr jobname:clone-parent-volume-delete jobphase:Waiti
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-provision-busybox-snap metadata="")
 echo $test_name
 
-cd litmus
-echo "Running the litmus test for Busybox Deployment.."
-cp apps/busybox/deployers/run_litmus_test.yml deploy_snapshot_test.yml
+cd e2e-tests
+echo "Running the e2e test for Busybox Deployment.."
+cp apps/busybox/deployers/run_e2e_test.yml deploy_snapshot_test.yml
 
 : << EOF
   ---------------------------------------------------------------------------------------------------------------------
  | specAttribute     | kind   |         default value               | test specifc value                               |
  --------------------------------------------------------------------------------------------------------------------- |
- | Litmus job label  | label  | app: busybox-litmus                 | app: deploy-busybox-snapshot                     |
+ | e2e job label  | label  | app: busybox-e2e                 | app: deploy-busybox-snapshot                     |
  | appLabel          | env    | app=busybox-sts                     | app=busybox-snap                                 |
  | deploy type       | env    | statefulset                         | deployment                                       |
  | imagePullPolicy   | image  | Always                              | IfNotPresent                                     |
@@ -54,7 +54,7 @@ cp apps/busybox/deployers/run_litmus_test.yml deploy_snapshot_test.yml
   ----------------------------------------------------------------------------------------------------------------------
 EOF
 
-sed -i -e 's/app: busybox-litmus/app: deploy-busybox-snapshot/g' \
+sed -i -e 's/app: busybox-e2e/app: deploy-busybox-snapshot/g' \
 -e 's/app=busybox-sts/app=busybox-snap/g' \
 -e 's/value: statefulset/value: deployment/g' \
 -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
@@ -64,7 +64,7 @@ sed -i -e 's/app: busybox-litmus/app: deploy-busybox-snapshot/g' \
 
 cat deploy_snapshot_test.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:deploy-busybox-snapshot' job=deploy_snapshot_test.yml
+bash ../Openshift-EE/utils/e2e_job_runner label='app:deploy-busybox-snapshot' job=deploy_snapshot_test.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:snapshot $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
@@ -77,17 +77,17 @@ fi
 ##Deploying loadgen and liveness
 
 ################
-# LitmusBook 2 #
+# e2eBook 2 #
 ################
 
 run_id="bb-snap";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
 echo $test_name
 
-cd litmus
-# copy the content of deployer run_litmus_test.yml into a different file to update the test specific parameters.
-cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_snapshot.yml
+cd e2e-tests
+# copy the content of deployer run_e2e_test.yml into a different file to update the test specific parameters.
+cp apps/busybox/liveness/run_e2e_test.yml busybox_loadgen_snapshot.yml
 
- # Update the environmental variables in litmus job spec.
+ # Update the environmental variables in e2e job spec.
 
  : << EOF
   ---------------------------------------------------------------------------------------------------------------------
@@ -95,13 +95,13 @@ cp apps/busybox/liveness/run_litmus_test.yml busybox_loadgen_snapshot.yml
   ---------------------------------------------------------------------------------------------------------------------|
  | appNamespace      | env    | app-busybox-ns                      |  busybox-snap                                    | 
  | appLabel          | env    | app=busybox-sts                     |  app=busybox-snap                                | 
- | Litmus job label  | label  | liveness: litmus-busybox-liveness   | liveness: bb-liveness-snapshot                   | 
+ | e2e job label  | label  | liveness: e2e-busybox-liveness   | liveness: bb-liveness-snapshot                   | 
   ----------------------------------------------------------------------------------------------------------------------
 EOF
 
 sed -i -e 's/value: app-busybox-ns/value: busybox-snap/g' \
 -e 's/app=busybox-sts/app=busybox-snap/g' \
--e 's/liveness: litmus-busybox-liveness/liveness: bb-liveness-snapshot/g' busybox_loadgen_snapshot.yml
+-e 's/liveness: e2e-busybox-liveness/liveness: bb-liveness-snapshot/g' busybox_loadgen_snapshot.yml
 
 sed -i '/command:/i \
           - name: RUN_ID\
@@ -110,10 +110,10 @@ sed -i '/command:/i \
 
 cat busybox_loadgen_snapshot.yml
 
- # Run the Litmus job and get the details of the litmus job from litmus_job_runner utils.
-bash ../Openshift-EE/utils/litmus_job_runner label='liveness:bb-liveness-snapshot' job=busybox_loadgen_snapshot.yml
+ # Run the e2e job and get the details of the e2e job from e2e_job_runner utils.
+bash ../Openshift-EE/utils/e2e_job_runner label='liveness:bb-liveness-snapshot' job=busybox_loadgen_snapshot.yml
 cd ..
-# Get the cluster state Once the litmus jobs completed.
+# Get the cluster state Once the e2e jobs completed.
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:snapshot $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
@@ -125,29 +125,29 @@ fi
 echo "*******Taking snapshot of BusyBox application**********"
 
 ################
-# LitmusBook 3 #
+# e2eBook 3 #
 ################
 
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=create-snapshot metadata="")
 echo $test_name
 
-cd litmus
-cp experiments/functional/snapshot-creation/run_litmus_test.yml run_snap_test.yml
+cd e2e-tests
+cp experiments/functional/snapshot-creation/run_e2e_test.yml run_snap_test.yml
 
 sed -i -e 's/value: openebs-busybox/value: busybox-snapshot/g' \
 -e 's/value: app-busybox-ns/value: busybox-snap/g' run_snap_test.yml
 
-echo "Running the litmus test for Busybox Deployment Snapshot.."
+echo "Running the e2e test for Busybox Deployment Snapshot.."
 cat run_snap_test.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:snapshot-litmus' job=run_snap_test.yml
+bash ../Openshift-EE/utils/e2e_job_runner label='app:snapshot-e2e' job=run_snap_test.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:snapshot $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 rc_val=$(echo $?)
 
-# Obtain the status of the test using litmusresult(lr) 
-testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+# Obtain the status of the test using e2eresult(lr) 
+testResult=$(kubectl get e2eresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
 current_time=$(eval $time)
 
 if [ "$rc_val" != "0" ]; then
@@ -161,11 +161,11 @@ fi
 #test_name=$(bash Openshift-EE/utils/generate_test_name testcase=busybox-deprovision-busybox-snap metadata="")
 #echo $test_name
 
-#cd litmus
-#cp apps/busybox/deployers/run_litmus_test.yml deprovision_snap.yml
+#cd e2e-tests
+#cp apps/busybox/deployers/run_e2e_test.yml deprovision_snap.yml
 
-#sed -i -e 's/generateName: litmus-busybox-deploy/generateName: busybox-deprovision-snap/g' \
-#-e 's/app: busybox-litmus/app: busybox-deprovision-snap/g' \
+#sed -i -e 's/generateName: e2e-busybox-deploy/generateName: busybox-deprovision-snap/g' \
+#-e 's/app: busybox-e2e/app: busybox-deprovision-snap/g' \
 #-e 's/value: statefulset/value: deployment/g' \
 #-e 's/app=busybox-sts/app=busybox-snap/g' \
 #-e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
@@ -174,17 +174,17 @@ fi
 #-e 's/value: app-busybox-ns/value: busybox-snap/g' \
 #-e 's/value: provision/value: deprovision/g' deprovision_snap.yml
 
-#echo "Running the litmus test for Busybox Deployment Scaleup.."
+#echo "Running the e2e test for Busybox Deployment Scaleup.."
 #cat deprovision_snap.yml
 
-#bash ../Openshift-EE/utils/litmus_job_runner label='app:busybox-deprovision-snap' job=deprovision_snap.yml
+#bash ../Openshift-EE/utils/e2e_job_runner label='app:busybox-deprovision-snap' job=deprovision_snap.yml
 #cd ..
 #bash Openshift-EE/utils/dump_cluster_state;
 #bash Openshift-EE/utils/event_updater jobname:snapshot $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 #rc_val=$(echo $?)
 
-# testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+# testResult=$(kubectl get e2eresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
 # if [ "$rc_val" != "0" ]; then
 # exit 1;
 # fi

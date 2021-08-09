@@ -21,22 +21,22 @@ echo $present_dir
 
 #pooling over previous job to complete
 echo "***********Applying openebs-storage-clas********"
-bash Openshift-EE/utils/pooling jobname:s2-j5-cstor-raidz2-pool
+bash Openshift-EE/utils/pooling jobname:s2-j4-cstor-raidz1-pool
 bash Openshift-EE/utils/e2e-cr jobname:s2-j6-policies jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=cstor-storage-policies metadata="")
 echo $test_name
 
-cd litmus
-echo "Running the litmus test.."
-cp providers/cstor-storage-policies/run_litmus_test.yml cstor-sc.yaml
+cd e2e-tests
+echo "Running the e2e test.."
+cp providers/cstor-storage-policies/run_e2e_test.yml cstor-sc.yaml
 
 sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
 -e 's/cstor-sparse-pool/cstor-block-disk-pool-stripe/g' cstor-sc.yaml
 
 cat cstor-sc.yaml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:cstor-storage-policy' job=cstor-sc.yaml
+bash ../Openshift-EE/utils/e2e_job_runner label='app:cstor-storage-policy' job=cstor-sc.yaml
 
 echo "Dumping state of cluster post job run"; echo ""
 bash ../Openshift-EE/utils/dump_cluster_state;
@@ -48,10 +48,10 @@ bash Openshift-EE/utils/event_updater jobname:s2-j6-policies $test_name jobid:"$
 #################
 rc_val=$(echo $?)
 
-## Check the test status & result from the litmus result custom resource
+## Check the test status & result from the e2e result custom resource
 source ~/.profile
 gittoken=$(echo "$github_token")
-testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+testResult=$(kubectl get e2eresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
 #python3 Openshift-EE/utils/result/result_update.py $job_id 1CXH 2-setup "Create K8s storage classes adhering the policies supported by OpenEBS" $testResult $pipeline_id "$current_time" $commit_id $gittoken
 
 current_time=$(eval $time)
