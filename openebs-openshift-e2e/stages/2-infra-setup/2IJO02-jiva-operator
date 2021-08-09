@@ -28,7 +28,9 @@ current_time=$(eval $time)
 kubectl apply -f openebs-openshift-e2e/utils/e2e-crd.yml
 
 #pooling over previous job to complete
-bash openebs-openshift-e2e/utils/pooling jobname:openebs-deploy
+bash openebs-openshift-e2e/utils/e2e-cr jobname:jiva-operator jobphase:Waiting
+bash openebs-openshift-e2e/utils/e2e-cr jobname:storage-policies jobphase:Waiting 
+bash openebs-openshift-e2e/utils/e2e-cr jobname:nfsv4-jiva-provision jobphase:Waiting
 bash openebs-openshift-e2e/utils/e2e-cr jobname:jiva-operator jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
 #################
