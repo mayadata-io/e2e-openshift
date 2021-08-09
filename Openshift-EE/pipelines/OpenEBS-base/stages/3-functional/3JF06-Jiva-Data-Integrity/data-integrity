@@ -27,21 +27,21 @@ bash Openshift-EE/utils/e2e-cr jobname:data-integrity-jiva jobphase:Waiting init
 bash Openshift-EE/utils/e2e-cr jobname:data-integrity-jiva jobphase:Running
 
 ################
-# LitmusBook 1 #
+# e2eBook 1 #
 ################
 
 run_id="jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=fio-data-integrity metadata=${run_id})
 echo $test_name
 cd e2e-tests
 
-cp experiments/functional/fio/data-integrity/run_litmus_test.yml data_integrity_test_jiva.yml
+cp experiments/functional/fio/data-integrity/run_e2e_test.yml data_integrity_test_jiva.yml
 
 : << EOF
   --------------------------------------------------------------------------------------------------------------
  | specAttribute     | kind     | default busybox value               | test specifc value                      |
   --------------------------------------------------------------------------------------------------------------|
  | imagePullPolicy   | image    | Always                              | IfNotPresent                            |
- | LitmusjobLabel    | label    | app:fio-di-litmus                   | app:fio-di-litmus-jiva                  |
+ | e2ejobLabel    | label    | app:fio-di-e2e                   | app:fio-di-e2e-jiva                  |
  | storage class     | env      | openebs-standard                    | openebs-jiva-default                    |
  | appNamespace      | env      | fio                                 | fio-jiva                                | 
   --------------------------------------------------------------------------------------------------------------
@@ -49,7 +49,7 @@ EOF
 
 sed -i -e 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' \
 -e 's/value: openebs-standard/value: openebs-jiva-default/g' \
--e 's/app: fio-di-litmus/app: fio-di-litmus-jiva/g' \
+-e 's/app: fio-di-e2e/app: fio-di-e2e-jiva/g' \
 -e 's/value: fio/value: fio-jiva/g' data_integrity_test_jiva.yml
 
 sed -i '/command:/i \
@@ -59,7 +59,7 @@ sed -i '/command:/i \
 
 cat data_integrity_test_jiva.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:fio-di-litmus-jiva' job=data_integrity_test_jiva.yml
+bash ../Openshift-EE/utils/e2e_job_runner label='app:fio-di-e2e-jiva' job=data_integrity_test_jiva.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:data-integrity-jiva $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
@@ -67,7 +67,7 @@ bash Openshift-EE/utils/event_updater jobname:data-integrity-jiva $test_name job
 rc_val=$(echo $?)
 current_time=$(eval $time)
 
-testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+testResult=$(kubectl get e2eresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
 
 if [ "$rc_val" != "0" ]; then
 bash Openshift-EE/utils/e2e-cr jobname:data-integrity-jiva jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:$testResult

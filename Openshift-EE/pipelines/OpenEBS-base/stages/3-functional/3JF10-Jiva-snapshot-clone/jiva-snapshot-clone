@@ -26,7 +26,7 @@ bash Openshift-EE/utils/e2e-cr jobname:jiva-snapshot-clone jobphase:Running init
 echo "*******Taking clone of BusyBox snapshot application**********"
 
 ################
-# LitmusBook 1 #
+# e2eBook 1 #
 ################
 
 : << EOF
@@ -34,7 +34,7 @@ echo "*******Taking clone of BusyBox snapshot application**********"
  | specAttribute     | kind   |         default value               | test specifc value                              |
   ------------------------------------------------------------------------------------------------------------------- |
  | pvcName           | env    | openebs-busybox                     | busybox-jiva-snapshot                           | 
- | Litmus job label  | label  | app: litmus-clone                   | app: litmus-jiva-clone                          |
+ | e2e job label  | label  | app: e2e-clone                   | app: e2e-jiva-clone                          |
  | snapshot name     | env    | value: snapshot-busybox             | value: snapshot-jiva-busybox                    |
  | clone name        | env    | value: clone-busybox                | value: clone-jiva-busybox                       |
  | appNamespace      | env    | app-busybox-ns                      | busybox-jiva-snap                               |
@@ -45,10 +45,10 @@ run_id="jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=cr
 echo $test_name
 
 cd e2e-tests
-cp experiments/functional/clone-creation/run_litmus_test.yml run_jiva_clone_test.yml
+cp experiments/functional/clone-creation/run_e2e_test.yml run_jiva_clone_test.yml
 
 sed -i -e 's/value: openebs-busybox/value: busybox-jiva-snapshot/g' \
--e 's/app: litmus-clone/app: litmus-jiva-clone/g' \
+-e 's/app: e2e-clone/app: e2e-jiva-clone/g' \
 -e 's/value: snapshot-busybox/value: snapshot-jiva-busybox/g' \
 -e 's/value: clone-busybox/value: clone-jiva-busybox/g' \
 -e 's/value: app-busybox-ns/value: busybox-jiva-snap/g' run_jiva_clone_test.yml
@@ -60,14 +60,14 @@ sed -i '/command:/i \
 
 cat run_jiva_clone_test.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:litmus-jiva-clone' job=run_jiva_clone_test.yml
+bash ../Openshift-EE/utils/e2e_job_runner label='app:e2e-jiva-clone' job=run_jiva_clone_test.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:jiva-snapshot-clone $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 rc_val=$(echo $?)
 
-# Obtain the status of the test using litmusresult(lr) 
-testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+# Obtain the status of the test using e2eresult(lr) 
+testResult=$(kubectl get e2eresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
 current_time=$(eval $time)
 
 if [ "$rc_val" != "0" ]; then

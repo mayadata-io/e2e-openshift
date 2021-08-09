@@ -27,13 +27,13 @@ echo $test_name
 
 cd e2e-tests
 
-echo "Running the litmus test.."
-cp apps/minio/deployers/run_litmus_test.yml deploy_app_jiva.yml
+echo "Running the e2e test.."
+cp apps/minio/deployers/run_e2e_test.yml deploy_app_jiva.yml
 
 # Replace the storage class name
 sed -i '/name: PROVIDER_STORAGE_CLASS/{n;s/.*/            value: openebs-nfs4-jiva/}' deploy_app_jiva.yml
 
-sed -i -e 's/app: minio-litmus/app: minio-litmus-jiva/g' \
+sed -i -e 's/app: minio-e2e/app: minio-e2e-jiva/g' \
 -e 's/value: app-minio-ns/value: app-minio-jiva/g' deploy_app_jiva.yml
 
 sed -i '/command:/i \
@@ -43,7 +43,7 @@ sed -i '/command:/i \
 
 cat deploy_app_jiva.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:minio-litmus-jiva' job=deploy_app_jiva.yml
+bash ../Openshift-EE/utils/e2e_job_runner label='app:minio-e2e-jiva' job=deploy_app_jiva.yml
 
 echo "Dumping state of cluster post job run"; echo ""
 cd ..
@@ -60,8 +60,8 @@ test_case_id="3JF08"
 source ~/.profile
 gittoken=$(echo "$github_token")
 
-## Check the test status & result from the litmus result custom resource
-testResult=$(kubectl get litmusresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+## Check the test status & result from the e2e result custom resource
+testResult=$(kubectl get e2eresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
 current_time=$(eval $time)
 
 if [ "$rc_val" != "0" ]; then

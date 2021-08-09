@@ -21,7 +21,7 @@ gittoken=$(echo "$github_token")
 time="date"
 current_time=$(eval $time)
 
-bash Openshift-EE/utils/e2e-cr jobname:openebs-deploy jobphase:Waiting
+bash Openshift-EE/utils/pooling jobname:openebs-deploy
 bash Openshift-EE/utils/e2e-cr jobname:bdd-jiva-clone jobphase:Running init_time:"$current_time" init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
 cd /home/openshift/go/src/github.com/openebs

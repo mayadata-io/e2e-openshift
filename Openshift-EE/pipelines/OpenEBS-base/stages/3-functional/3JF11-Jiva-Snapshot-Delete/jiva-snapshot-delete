@@ -25,7 +25,7 @@ bash Openshift-EE/utils/e2e-cr jobname:jiva-internal-snapshot-deletion jobphase:
 bash Openshift-EE/utils/e2e-cr jobname:jiva-internal-snapshot-deletion jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
 ################
-# LitmusBook 1 #
+# e2eBook 1 #
 ################
 
 : << EOF
@@ -42,8 +42,8 @@ echo $test_name
 
 
 cd e2e-tests
-echo "Running the litmus test for Jiva internal snapshot deletion."
-cp experiments/functional/snapshot_deletion/jiva/run_litmus_test.yml jiva_snapshot_delete.yml
+echo "Running the e2e test for Jiva internal snapshot deletion."
+cp experiments/functional/snapshot_deletion/jiva/run_e2e_test.yml jiva_snapshot_delete.yml
 
 sed -i -e 's/value: fio/value: fio-jiva-snapshot-del/g' \
 -e 's/value: "LEADER"/value: "RANDOM"/g' \
@@ -51,7 +51,7 @@ sed -i -e 's/value: fio/value: fio-jiva-snapshot-del/g' \
 
 cat jiva_snapshot_delete.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:fio-di-litmus-snap-del' job=jiva_snapshot_delete.yml
+bash ../Openshift-EE/utils/e2e_job_runner label='app:fio-di-e2e-snap-del' job=jiva_snapshot_delete.yml
 cd ..
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:jiva-internal-snapshot-deletion $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"

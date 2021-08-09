@@ -26,7 +26,7 @@ bash Openshift-EE/utils/pooling jobname:nfs-ctrl-kill-jiva
 bash Openshift-EE/utils/e2e-cr jobname:nfs-ctrl-container-kill jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 
 ################
-# LitmusBook 1 #
+# e2eBook 1 #
 ################
 # Performing Application Container Chaos
 
@@ -34,8 +34,8 @@ run_id="ctrl-container-kill";test_name=$(bash Openshift-EE/utils/generate_test_n
 echo $test_name
 
 cd e2e-tests
-# copy the content of chaos run_litmus_test.yml into a different file to update the test specific parameters.
-cp experiments/chaos/nfs_chaos/nfs_openebs_target_failure/run_litmus_test.yml nfs_ctrl_container_kill.yml
+# copy the content of chaos run_e2e_test.yml into a different file to update the test specific parameters.
+cp experiments/chaos/nfs_chaos/nfs_openebs_target_failure/run_e2e_test.yml nfs_ctrl_container_kill.yml
 
 sed -i -e '/name: NFS_NAMESPACE/{n;s/.*/            value: app-nfsv4-jiva/}' \
 -e '/name: NFS_LABEL/{n;s/.*/            value: app=nfs/}' \
@@ -47,7 +47,7 @@ sed -i -e 's/name: nfs-openebs-target-failure/name: nfs-openebs-controller-conta
 -e 's/value: "target-zrepl-kill"/value: "jiva-ctrl-kill"/g' \
 -e 's/value: docker/value: cri-o/g' nfs_ctrl_container_kill.yml
 
-echo "Running the litmus test for minio Deployment Container Volume mgmt kill.."
+echo "Running the e2e test for minio Deployment Container Volume mgmt kill.."
 
 sed -i '/command:/i \
           - name: RUN_ID\
@@ -56,9 +56,9 @@ sed -i '/command:/i \
 
 cat nfs_ctrl_container_kill.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='name:nfs-openebs-controller-container-kill' job=nfs_ctrl_container_kill.yml
+bash ../Openshift-EE/utils/e2e_job_runner label='name:nfs-openebs-controller-container-kill' job=nfs_ctrl_container_kill.yml
 cd ..
-# Get the cluster state Once the litmus jobs completed.
+# Get the cluster state Once the e2e jobs completed.
 bash Openshift-EE/utils/dump_cluster_state;
 bash Openshift-EE/utils/event_updater jobname:nfs-ctrl-container-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
 
@@ -68,7 +68,7 @@ exit 1;
 fi
 
 ################
-# LitmusBook 2 #
+# e2eBook 2 #
 ################
 # Deprovisioning the application
 run_id="deprovision-jiva";test_name=$(bash Openshift-EE/utils/generate_test_name testcase=minio-deployment metadata=${run_id})
@@ -76,14 +76,14 @@ echo $test_name
 
 cd e2e-tests
 
-echo "Running the litmus test.."
-cp apps/minio/deployers/run_litmus_test.yml deprovision_app_jiva.yml
+echo "Running the e2e test.."
+cp apps/minio/deployers/run_e2e_test.yml deprovision_app_jiva.yml
 
 # Replace the storage class name
 sed -i '/name: PROVIDER_STORAGE_CLASS/{n;s/.*/            value: openebs-nfs4-jiva/}' deprovision_app_jiva.yml
 
 sed -i -e 's/value: app-minio-ns/value: app-minio-jiva/g' \
--e 's/app: minio-litmus/app: minio-litmus-deprovision-jiva/g' \
+-e 's/app: minio-e2e/app: minio-e2e-deprovision-jiva/g' \
 -e 's/value: '\''provision'\''/value: '\''deprovision'\''/g' deprovision_app_jiva.yml
 
 sed -i '/command:/i \
@@ -93,7 +93,7 @@ sed -i '/command:/i \
 
 cat deprovision_app_jiva.yml
 
-bash ../Openshift-EE/utils/litmus_job_runner label='app:minio-litmus-deprovision-jiva' job=deprovision_app_jiva.yml
+bash ../Openshift-EE/utils/e2e_job_runner label='app:minio-e2e-deprovision-jiva' job=deprovision_app_jiva.yml
 
 echo "Dumping state of cluster post job run"; echo ""
 cd ..
