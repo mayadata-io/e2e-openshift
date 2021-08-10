@@ -29,39 +29,6 @@ bash openebs-openshift-e2e/utils/e2e-cr jobname:openebs-localpv-device jobphase:
 # e2eBook 1 #
 ################
 
-run_id="localpv";test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=busybox-provision-busybox-device metadata=${run_id})
-echo $test_name
-
-cd dynamic-localpv-provisioner/e2e-tests
-cp apps/busybox/deployers/run_e2e_test.yml run_test_local_pv_device.yml
-
-sed -i -e 's/app: busybox-e2e/app: busybox-local-pv-device/g' \
--e 's/app=busybox-sts/app=local-pv-device/g' \
--e 's/value: statefulset/value: deployment/g' \
--e 's/value: openebs-hostpath/value: openebs-device/g' \
--e 's/value: openebs-busybox/value: openebs-busybox-device/g' \
--e 's/value: app-busybox-ns/value: busybox-device/g' run_test_local_pv_device.yml
-
-sed -i '/command:/i \
-          - name: RUN_ID\
-            value: '"$run_id"'\
-' run_test_local_pv_device.yml
-
-cat run_test_local_pv_device.yml
-
-bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='app:busybox-local-pv-device' job=run_test_local_pv_device.yml
-cd ../..
-bash openebs-openshift-e2e/utils/dump_cluster_state;
-bash openebs-openshift-e2e/utils/event_updater jobname:openebs-localpv-device $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
-
-if [ "$?" != "0" ]; then
-exit 1;
-fi
-
-################
-# e2eBook 2 #
-################
-
 run_id="test";test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=localpv-selected-device metadata=${run_id})
 echo $test_name
 
@@ -81,40 +48,6 @@ sed -i '/command:/i \
 cat run_local_pv_device.yml
 
 bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='app:localpv-selected-device' job=run_local_pv_device.yml
-cd ../..
-bash openebs-openshift-e2e/utils/dump_cluster_state;
-bash openebs-openshift-e2e/utils/event_updater jobname:openebs-localpv-device $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
-
-if [ "$?" != "0" ]; then
-exit 1;
-fi
-
-################
-# e2eBook 3 #
-################
-
-run_id="localpv";test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=busybox-deprovision-busybox-device metadata=${run_id})
-echo $test_name
-
-cd dynamic-localpv-provisioner/e2e-tests
-cp apps/busybox/deployers/run_e2e_test.yml run_test_deprovision_device.yml
-
-sed -i -e 's/app: busybox-e2e/app: deprovision-busybox-local-pv-device/g' \
--e 's/app=busybox-sts/app=local-pv-device/g' \
--e 's/value: statefulset/value: deployment/g' \
--e 's/value: openebs-cstor-sparse/value: openebs-device/g' \
--e 's/value: openebs-busybox/value: openebs-busybox-device/g' \
--e 's/value: provision/value: deprovision/g' \
--e 's/value: app-busybox-ns/value: busybox-device/g' run_test_deprovision_device.yml
-
-sed -i '/command:/i \
-          - name: RUN_ID\
-            value: '"$run_id"'\
-' run_test_deprovision_device.yml
-
-cat run_test_deprovision_device.yml
-
-bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='app:deprovision-busybox-local-pv-device' job=run_test_deprovision_device.yml
 cd ../..
 bash openebs-openshift-e2e/utils/dump_cluster_state;
 bash openebs-openshift-e2e/utils/event_updater jobname:openebs-localpv-device $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
