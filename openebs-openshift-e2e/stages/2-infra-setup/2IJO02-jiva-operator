@@ -19,6 +19,9 @@ rc_tag=$(echo $8)
 jiva_operator_image=$(echo $9)
 jiva_csi_driver_image=$(echo ${10})
 
+echo "releaseTag=$releaseTag"
+echo "rctag=$rc_tag"
+echo "releasebranch=$release_branch"
 
 source ~/.profile
 gittoken=$(echo "$github_token")
