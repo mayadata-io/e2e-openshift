@@ -3,7 +3,7 @@
 
 pod() {
 echo $CI_JOB_ID
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-konvoy && bash openebs-openshift-e2e/pipelines/stages/3-functional/3LF04-Data-Integrity-Device/data-integrity-device node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash openebs-openshift-e2e/pipelines/stages/3-functional/3LF04-Data-Integrity-Device/data-integrity-device node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
 }
 
 node() {

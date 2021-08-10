@@ -1,7 +1,7 @@
 #!/bin/bash
 
 pod() {
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-konvoy && bash openebs-openshift-e2e/pipelines/stages/2-setup/2LP01-openebs-deploy/openebs-deploy node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"' '"'$RELEASE_BRANCH'"' '"'$IMAGE_TYPE'"' '"'$OPENEBS_LOCALPV_PROVISIONER_IMAGE'"' '"'$OPENEBS_NDM_IMAGE'"' '"'$COMMIT_ID'"' '"'$RC_TAG'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash openebs-openshift-e2e/pipelines/stages/2-setup/2LP01-openebs-deploy/openebs-deploy node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"' '"'$RELEASE_BRANCH'"' '"'$IMAGE_TYPE'"' '"'$OPENEBS_LOCALPV_PROVISIONER_IMAGE'"' '"'$OPENEBS_NDM_IMAGE'"' '"'$COMMIT_ID'"' '"'$RC_TAG'"'
 }
 
 node() {

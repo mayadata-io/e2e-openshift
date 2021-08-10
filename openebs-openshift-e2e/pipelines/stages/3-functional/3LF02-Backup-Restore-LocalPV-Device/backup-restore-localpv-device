@@ -1,7 +1,7 @@
 #!/bin/bash
 
 pod() {
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-konvoy && bash openebs-openshift-e2e/pipelines/stages/3-functional/3LF02-Backup-Restore-LocalPV-Device/backup-restore-localpv-device node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"' '"'$VELERO_VERSION'"'
+sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash openebs-openshift-e2e/pipelines/stages/3-functional/3LF02-Backup-Restore-LocalPV-Device/backup-restore-localpv-device node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"' '"'$VELERO_VERSION'"'
 }
 
 node() {
