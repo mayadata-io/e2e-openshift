@@ -42,10 +42,10 @@ apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
 metadata:
   # name must match the spec fields below, and be in the form: <plural>.<group>
-  name: cie2eresults.cie2e.io
+  name: cie2eresults.e2e.io
 spec:
   # group name to use for REST API: /apis/<group>/<version>
-  group: cie2e.io
+  group: e2e.io
   # version name to use for REST API: /apis/<group>/<version>
   version: v1alpha1
   # either Namespaced or Cluster
