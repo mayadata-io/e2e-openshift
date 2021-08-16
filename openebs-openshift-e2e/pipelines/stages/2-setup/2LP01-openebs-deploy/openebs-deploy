@@ -14,7 +14,7 @@ case_id=2LP01
 imagetype=$(echo $6)
 localpv_provisioner_image=$(echo $7)
 ndm_version=$(echo $8)
-commit_id=$(echo $9})
+commit_id=$(echo $9)
 rc_tag=$(echo ${10})
 
 time="date"
