@@ -2,7 +2,11 @@
 
 
 pod() {
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash openebs-openshift-e2e/stages/4-chaos/4CJO10-controller-network-delay node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
+mkdir -p /root/.ssh
+touch /root/.ssh/id_rsa
+echo "$SSH_KEYS" > /root/.ssh/id_rsa
+chmod 600 /root/.ssh/id_rsa
+ssh -o StrictHostKeyChecking=no $user@$ip -p $port -i /root/.ssh/id_rsa 'cd e2e-openshift && bash openebs-openshift-e2e/stages/4-chaos/4CJO10-controller-network-delay node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
 }
 
 node() {
@@ -143,7 +147,7 @@ EOF
 
 sed -i -e 's/value: percona-mysql-claim/value: openebs-bb-controller-delay/g' \
 -e 's/value: docker/value: cri-o/g' \
--e 's/value: '\''name=percona'\''/value: '\''app=busybox-controller-delay-jiva'\''/g' \
+-e 's/value: '\''name=percona'\''/value: '\''app=busybox'\''/g' \
 -e 's/value: app-percona-ns/value: controller-delay-jiva/g' run_controller_delay_test_jiva.yml
 
 sed -i '/command:/i \
