@@ -28,7 +28,8 @@ present_dir=$(pwd)
 echo $present_dir
 
 echo "releaseTag=$releaseTag"
-
+namespace=$(kubectl get ns --no-headers -o custom-columns=:.metadata.name | grep -v openshift | grep -v e2e | grep -v openebs | grep -v kube | grep -v default)
+kubectl delete ns $namespace
 # Applying e2e-CRD
 echo "***Applying e2e-crd***********"
 kubectl apply -f openebs-openshift-e2e/utils/e2e-crd.yml
