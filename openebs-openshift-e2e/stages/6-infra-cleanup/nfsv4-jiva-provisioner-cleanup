@@ -81,8 +81,8 @@ fi
 
 bash openebs-openshift-e2e/utils/e2e-cr jobname:nfsv4-jiva-deprovision jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
 
-#python3 openebs-openshift-e2e/utils/result/result_update.py $job_id JCSI42 7-jiva-csi-infra-cleanup "Cleanup NFS provisioner and corresponding storage class" $testResult $pipeline_id "$current_time" $commit_id $gittoken
-
+namespace=$(kubectl get ns --no-headers -o custom-columns=:.metadata.name | grep -v openshift | grep -v e2e | grep -v openebs | grep -v kube | grep -v default)
+kubectl delete ns $namespace
 if [ "$rc_val" != "0" ]; then
 exit 1;
 fi
