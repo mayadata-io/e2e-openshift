@@ -21,6 +21,9 @@ current_time=$(eval $time)
 present_dir=$(pwd)
 echo $present_dir
 
+namespace=$(kubectl get ns --no-headers -o custom-columns=:.metadata.name | grep -v openshift | grep -v e2e | grep -v openebs | grep -v kube | grep -v default)
+kubectl delete ns $namespace
+
 bash Openshift-EE/utils/e2e-cr jobname:openebs-cleanup jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:openebs-cleanup jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
 test_name=$(bash Openshift-EE/utils/generate_test_name testcase=openebs-deprovision metadata="")
