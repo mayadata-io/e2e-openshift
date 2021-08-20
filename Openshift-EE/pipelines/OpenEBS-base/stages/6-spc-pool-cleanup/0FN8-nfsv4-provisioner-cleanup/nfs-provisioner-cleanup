@@ -85,7 +85,8 @@ fi
 
 bash Openshift-EE/utils/e2e-cr jobname:nfsv4-deprovision jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
 
-python3 Openshift-EE/utils/result/result_update.py $job_id 0FN8 6-spc-pool-cleanup "Cleanup NFS provisioner and corresponding storage class" $testResult $pipeline_id "$current_time" $commit_id $gittoken
+namespace=$(kubectl get ns --no-headers -o custom-columns=:.metadata.name | grep -v openshift | grep -v e2e | grep -v openebs | grep -v kube | grep -v default)
+kubectl delete ns $namespace
 
 if [ "$rc_val" != "0" ]; then
 exit 1;
