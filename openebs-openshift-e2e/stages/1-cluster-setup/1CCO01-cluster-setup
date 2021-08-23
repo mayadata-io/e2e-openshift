@@ -14,7 +14,7 @@ chmod 600 /root/.ssh/id_rsa
 state="ssh -o StrictHostKeyChecking=no $user@$ip -p $port -i /root/.ssh/id_rsa 'ls | grep e2e-openshift'"
 cluster_state=$(eval $state)
 
-kubectl_version=$(ssh -o StrictHostKeyChecking=no $user@$ip -p $port -i /root/.ssh/id_rsa kubectl version | grep GitVersion | grep -v Client | cut -d ' ' -f 5 | cut -d ':' -f 2 |  cut -d '"' -f 2 | cut -d '+' -f 1)
+kubectl_version=$(ssh -o StrictHostKeyChecking=no $user@$ip -p $port -i /root/.ssh/id_rsa kubectl get nodes --no-headers -o custom-columns=:.status.nodeInfo.kubeletVersion | uniq | cut -d '+' -f 1)
 echo "k8s_version==$kubectl_version"
 
 while [ "${cluster_state}" == "e2e-openshift" ]; do
