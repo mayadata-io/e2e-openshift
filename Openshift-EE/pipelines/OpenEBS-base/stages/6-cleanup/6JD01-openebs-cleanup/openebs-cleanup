@@ -1,7 +1,11 @@
 #!/bin/bash
 
 pod() {
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/6JD01-openebs-cleanup/openebs-cleanup node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
+mkdir -p /root/.ssh
+touch /root/.ssh/id_rsa
+echo "$SSH_KEYS" > /root/.ssh/id_rsa
+chmod 600 /root/.ssh/id_rsa
+ssh -o StrictHostKeyChecking=no $user@$ip -p $port -i /root/.ssh/id_rsa 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/6-cleanup/6JD01-openebs-cleanup/openebs-cleanup node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
 }
 
 node() {
@@ -16,6 +20,9 @@ current_time=$(eval $time)
 
 present_dir=$(pwd)
 echo $present_dir
+
+namespace=$(kubectl get ns --no-headers -o custom-columns=:.metadata.name | grep -v openshift | grep -v e2e | grep -v openebs | grep -v kube | grep -v default)
+kubectl delete ns $namespace
 
 bash Openshift-EE/utils/e2e-cr jobname:openebs-cleanup jobphase:Waiting
 bash Openshift-EE/utils/e2e-cr jobname:openebs-cleanup jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"

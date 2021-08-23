@@ -1,8 +1,12 @@
 #!/bin/bash
 
 pod() {
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'git clone -b openebs-jiva https://github.com/mayadata-io/e2e-openshift.git'
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/2JP01-openebs-deploy/openebs-deploy node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"' '"'$RELEASE_BRANCH'"' '"'$E_USER'"' '"'$E_PASSWORD'"' '"'$OPENEBS_MAYA_APISERVER_IMAGE'"' '"'$OPENEBS_PROVISIONER_IMAGE'"' '"'$OPENEBS_SNAPSHOT_CONTROLLER_IMAGE'"' '"'$OPENEBS_SNAPSHOT_PROVISIONER_IMAGE'"' '"'$OPENEBS_IO_JIVA_IMAGE'"' '"'$OPENEBS_MAYA_EXPORTER_IMAGE'"' '"'$OPENEBS_NODE_DISK_MANAGER_IMAGE'"' '"'$OPENEBS_NODE_DISK_OPERATOR_IMAGE'"' '"'$OPENEBS_IO_CSTOR_TARGET_IMAGE'"' '"'$OPENEBS_IO_CSTOR_POOL_IMAGE'"' '"'$OPENEBS_IO_CSTOR_POOL_MGMT_IMAGE'"' '"'$OPENEBS_IO_CSTOR_VOLUME_MGMT_IMAGE'"' '"'$OPENEBS_LOCALPV_PROVISIONER_IMAGE'"' '"'$OPENEBS_ADMISSION_SERVER_IMAGE'"' '"'$OPENEBS_CLEANUP_JOB_IMAGE'"' '"'$DEPLOY_MODE'"' '"'$COMMIT_ID'"' '"'$RC_TAG'"' '"'$HELM_REPO'"' '"'$HELM_BRANCH'"'
+mkdir -p /root/.ssh
+touch /root/.ssh/id_rsa
+echo "$SSH_KEYS" > /root/.ssh/id_rsa
+chmod 600 /root/.ssh/id_rsa
+ssh -o StrictHostKeyChecking=no $user@$ip -p $port -i /root/.ssh/id_rsa 'git clone -b openebs-jiva https://github.com/mayadata-io/e2e-openshift.git'
+ssh -o StrictHostKeyChecking=no $user@$ip -p $port -i /root/.ssh/id_rsa 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/2-setup/2JP01-openebs-deploy/openebs-deploy node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"' '"'$RELEASE_BRANCH'"' '"'$E_USER'"' '"'$E_PASSWORD'"' '"'$OPENEBS_MAYA_APISERVER_IMAGE'"' '"'$OPENEBS_PROVISIONER_IMAGE'"' '"'$OPENEBS_SNAPSHOT_CONTROLLER_IMAGE'"' '"'$OPENEBS_SNAPSHOT_PROVISIONER_IMAGE'"' '"'$OPENEBS_IO_JIVA_IMAGE'"' '"'$OPENEBS_MAYA_EXPORTER_IMAGE'"' '"'$OPENEBS_NODE_DISK_MANAGER_IMAGE'"' '"'$OPENEBS_NODE_DISK_OPERATOR_IMAGE'"' '"'$OPENEBS_IO_CSTOR_TARGET_IMAGE'"' '"'$OPENEBS_IO_CSTOR_POOL_IMAGE'"' '"'$OPENEBS_IO_CSTOR_POOL_MGMT_IMAGE'"' '"'$OPENEBS_IO_CSTOR_VOLUME_MGMT_IMAGE'"' '"'$OPENEBS_LOCALPV_PROVISIONER_IMAGE'"' '"'$OPENEBS_ADMISSION_SERVER_IMAGE'"' '"'$OPENEBS_CLEANUP_JOB_IMAGE'"' '"'$DEPLOY_MODE'"' '"'$COMMIT_ID'"' '"'$RC_TAG'"' '"'$HELM_REPO'"' '"'$HELM_BRANCH'"'
 }
 
 node() {

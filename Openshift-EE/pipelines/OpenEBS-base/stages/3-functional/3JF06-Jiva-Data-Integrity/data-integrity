@@ -2,10 +2,14 @@
 
 
 pod() {
+mkdir -p /root/.ssh
+touch /root/.ssh/id_rsa
+echo "$SSH_KEYS" > /root/.ssh/id_rsa
+chmod 600 /root/.ssh/id_rsa
 echo $CI_JOB_ID
 ###clone e2e-openshift-repo
 echo "cloning e2e-openshift repo*************"
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/3JF06-Jiva-Data-Integrity/data-integrity node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
+ssh -o StrictHostKeyChecking=no $user@$ip -p $port -i /root/.ssh/id_rsa 'cd e2e-openshift && bash Openshift-EE/pipelines/OpenEBS-base/stages/3-functional/3JF06-Jiva-Data-Integrity/data-integrity node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
 }
 
 node() {
