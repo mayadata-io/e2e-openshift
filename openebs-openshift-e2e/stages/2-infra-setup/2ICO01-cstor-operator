@@ -1,7 +1,11 @@
 #!/bin/bash
 
 pod() {
-sshpass -p $pass ssh -o StrictHostKeyChecking=no $user@$ip -p $port 'cd e2e-openshift && bash openebs-openshift-e2e/stages/2-infra-setup/2ICO01-cstor-operator node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$CSPC_RELEASE_TAG'"' '"'$CSPC_IMAGE_TYPE'"' '"'$COMMIT_ID'"' '"'$RELEASE_TAG'"' '"'$RC_TAG'"' '"'$CSPC_OPERATOR_IMAGE'"' '"'$CSPI_MGMT_IMAGE'"' '"'$CSPC_CSTOR_POOL_EXPORTER_IMAGE'"' '"'$CSPC_CVC_OPERATOR_IMAGE'"' '"'$CSPC_CSTOR_ISTGT_IMAGE'"' '"'$CSPC_CSTOR_VOLUME_MGMT_IMAGE'"' '"'$CSPC_CSTOR_WEBHOOK_IMAGE'"' '"'$CSTOR_CSI_DRIVER_IMAGE'"'
+mkdir -p /root/.ssh
+touch /root/.ssh/id_rsa
+echo "$SSH_KEYS" > /root/.ssh/id_rsa
+chmod 600 /root/.ssh/id_rsa
+ssh -o StrictHostKeyChecking=no $user@$ip -p $port -i /root/.ssh/id_rsa 'cd e2e-openshift && bash openebs-openshift-e2e/stages/2-infra-setup/2ICO01-cstor-operator node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$CSPC_RELEASE_TAG'"' '"'$CSPC_IMAGE_TYPE'"' '"'$COMMIT_ID'"' '"'$RELEASE_TAG'"' '"'$RC_TAG'"' '"'$CSPC_OPERATOR_IMAGE'"' '"'$CSPI_MGMT_IMAGE'"' '"'$CSPC_CSTOR_POOL_EXPORTER_IMAGE'"' '"'$CSPC_CVC_OPERATOR_IMAGE'"' '"'$CSPC_CSTOR_ISTGT_IMAGE'"' '"'$CSPC_CSTOR_VOLUME_MGMT_IMAGE'"' '"'$CSPC_CSTOR_WEBHOOK_IMAGE'"' '"'$CSTOR_CSI_DRIVER_IMAGE'"'
 }
 
 node() {
