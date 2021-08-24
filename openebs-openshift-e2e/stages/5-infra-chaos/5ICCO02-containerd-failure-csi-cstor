@@ -1,6 +1,10 @@
 #!/bin/bash
 
-pod(){
+pod() {
+mkdir -p /root/.ssh
+touch /root/.ssh/id_rsa
+echo "$SSH_KEYS" > /root/.ssh/id_rsa
+chmod 600 /root/.ssh/id_rsa
 
 node_name=$(ssh -o StrictHostKeyChecking=no $user@$ip -p $port -i /root/.ssh/id_rsa kubectl get nodes --no-headers | grep -v master | awk 'FNR==1 {print $1}')
 
