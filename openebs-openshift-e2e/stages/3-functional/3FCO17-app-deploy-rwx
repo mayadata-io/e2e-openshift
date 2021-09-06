@@ -1,0 +1,76 @@
+#!/bin/bash
+
+pod() {
+mkdir -p /root/.ssh
+touch /root/.ssh/id_rsa
+echo "$SSH_KEYS" > /root/.ssh/id_rsa
+chmod 600 /root/.ssh/id_rsa	
+ssh -o StrictHostKeyChecking=no $user@$ip -p $port -i /root/.ssh/id_rsa 'cd e2e-openshift && bash openebs-openshift-e2e/stages/3-functional/3FCO17-app-deploy-rwx node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"'
+}
+
+node() {
+source ~/.profile
+#gittoken=$(echo "$github_token")
+
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+releaseTag=$(echo $4)
+case_id=3FCO17
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+bash openebs-openshift-e2e/utils/e2e-cr jobname:deploy-busybox-nfs jobphase:Waiting init_time:"$current_time"
+bash openebs-openshift-e2e/utils/e2e-cr jobname:deploy-busybox-nfs jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag"
+
+################
+# e2eBook 1 #
+################
+
+echo "****Deploying busybox Application using CSI****"
+oc adm policy add-scc-to-user anyuid system:serviceaccount:busybox-nfs:default
+
+run_id="ext";test_name=$(bash openebs-openshift-e2e/utils/generate_test_name testcase=busybox-provision-busybox-nfs metadata=${run_id})
+echo $test_name
+
+git clone https://github.com/openebs/dynamic-nfs-provisioner.git
+cd dynamic-nfs-provisioner/e2e-tests
+echo "Running the e2e test for busybox Deployment.."
+cp apps/busybox/deployers/run_e2e_test.yml deploy_nfs_busybox.yml
+
+sed -i -e 's/value: app-busybox-ns/value: busybox-nfs/g' \
+-e 's/app: busybox-e2e/app: busybox-e2e-nfs/g' \
+-e 's/value: openebs-nfs-rwxvalue: openebs-nfs-cstor-rwx/g' \
+-e 's/generateName: e2e-busybox-deploy-/generateName: e2e-busybox-nfs-/g' deploy_nfs_busybox.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' deploy_nfs_busybox.yml
+
+cat deploy_nfs_busybox.yml
+
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='app:busybox-e2e-nfs' job=deploy_nfs_busybox.yml
+cd ../..
+bash openebs-openshift-e2e/utils/dump_cluster_state;
+bash openebs-openshift-e2e/utils/event_updater jobname:deploy-busybox-nfs $test_name jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id"
+
+return_count=$?
+current_time=$(eval $time)
+
+bash openebs-openshift-e2e/utils/e2e-cr jobname:deploy-busybox-nfs jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" testcaseid:"$case_id" openebs_version:"$releaseTag" test_result:Pass
+if [ "$return_count" != "0" ]; then
+exit 1;
+fi
+
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4 $5
+else
+  pod
+fi
