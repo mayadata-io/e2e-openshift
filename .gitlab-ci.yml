@@ -49,6 +49,12 @@ stages:
     - chmod 755 ./openebs-openshift-e2e/stages/2-infra-setup/2ICO04-openebs-csi-sc
     - ./openebs-openshift-e2e/stages/2-infra-setup/2ICO04-openebs-csi-sc
 
+2ICO05-OPENEBS-DYNAMIC-NFS:
+  extends: .csi_infra_test_template
+  script:
+    - chmod 755 ./openebs-openshift-e2e/stages/2-infra-setup/2ICO05-openebs-dynamic-nfs
+    - ./openebs-openshift-e2e/stages/2-infra-setup/2ICO05-openebs-dynamic-nfs    
+
 ###############################################################################
 
 # ## Define job template for csi-functional jobs    
@@ -141,7 +147,13 @@ stages:
   extends: .csi_func_test_template
   script:
     - chmod 775 ./openebs-openshift-e2e/stages/3-functional/3FCO15-block-pool-creation-with-claimed-bd
-    - ./openebs-openshift-e2e/stages/3-functional/3FCO15-block-pool-creation-with-claimed-bd    
+    - ./openebs-openshift-e2e/stages/3-functional/3FCO15-block-pool-creation-with-claimed-bd
+
+3FCO16-App-deploy-RWX:
+  extends: .csi_func_test_template
+  script:
+    - chmod 775 ./openebs-openshift-e2e/stages/3-functional/3FCO17-app-deploy-rwx
+    - ./openebs-openshift-e2e/stages/3-functional/3FCO17-app-deploy-rwx
 
 ###############################################################################
 
