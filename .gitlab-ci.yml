@@ -43,6 +43,12 @@ stages:
     - chmod 775 ./openebs-openshift-e2e/stages/2-infra-setup/2IJO04-nfsv4-jiva-provision
     - ./openebs-openshift-e2e/stages/2-infra-setup/2IJO04-nfsv4-jiva-provision
   
+2IJO04-DYNAMIC-NFS-PROVISION:
+  extends: .jiva_csi_infra_setup_template
+  script:
+    - chmod 775 ./openebs-openshift-e2e/stages/2-infra-setup/2IJO05-openebs-dynamic-nfs
+    - ./openebs-openshift-e2e/stages/2-infra-setup/2IJO05-openebs-dynamic-nfs
+
 ###########################################################################################
 
 .func_test_template:
@@ -99,6 +105,12 @@ stages:
   script:
     - chmod 775 ./openebs-openshift-e2e/stages/3-functional/3FJO08-memory-consumption
     - ./openebs-openshift-e2e/stages/3-functional/3FJO08-memory-consumption
+
+3FJO09-App-deploy-Dynamic-rwx:
+  extends: .func_test_template
+  script:
+    - chmod 775 ./openebs-openshift-e2e/stages/3-functional/3FJO09-app-deploy-dynamic-nfs-rwx
+    - ./openebs-openshift-e2e/stages/3-functional/3FJO09-app-deploy-dynamic-nfs-rwx
 
 ###########################################################################################
 .chaos_test_template:
