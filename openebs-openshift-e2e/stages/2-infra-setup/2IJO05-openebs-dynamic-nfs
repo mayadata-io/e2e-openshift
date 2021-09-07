@@ -5,7 +5,7 @@ mkdir -p /root/.ssh
 touch /root/.ssh/id_rsa
 echo "$SSH_KEYS" > /root/.ssh/id_rsa
 chmod 600 /root/.ssh/id_rsa
-ssh -o StrictHostKeyChecking=no $user@$ip -p $port -i /root/.ssh/id_rsa 'cd e2e-openshift && bash openebs-openshift-e2e/stages/2-infra-setup/2ICO05-openebs-dynamic-nfs node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$NFS_RELEASE_TAG'"' '"'$NFS_IMAGE_TYPE'"' '"'$NFS_COMMIT_ID'"'
+ssh -o StrictHostKeyChecking=no $user@$ip -p $port -i /root/.ssh/id_rsa 'cd e2e-openshift && bash openebs-openshift-e2e/stages/2-infra-setup/2IJO05-openebs-dynamic-nfs node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$NFS_RELEASE_TAG'"' '"'$NFS_IMAGE_TYPE'"' '"'$NFS_COMMIT_ID'"'
 }
 
 node() {
@@ -18,7 +18,7 @@ commit_id=$(echo $3)
 releaseTag=$(echo $4)
 image_type=$(echo $5)
 release_commit_id=$(echo $6)
-case_id=2ICO05
+case_id=2IJO05
 source ~/.profile
 
 present_dir=$(pwd)
@@ -34,22 +34,22 @@ echo $test_name
 
 git clone https://github.com/openebs/dynamic-nfs-provisioner.git
 cd dynamic-nfs-provisioner/e2e-tests
-cp experiments/dynamic-nfs-provisioner/run_e2e_test.yml cstor-nfs.yaml
+cp experiments/dynamic-nfs-provisioner/run_e2e_test.yml jiva-nfs.yaml
 
 sed -i -e "/name: RELEASE_VERSION/{n;s/.*/            value: ${releaseTag}/g}" \
 -e "/name: COMMIT_ID/{n;s/.*/            value: ${release_commit_id}/g}" \
--e "/name: NFS_SC_NAME/{n;s/.*/            value: openebs-nfs-cstor-rwx/g}" \
--e "/name: BACKEND_SC_NAME/{n;s/.*/            value: openebs-cstor-csi/g}" \
--e "/name: IMAGE_TYPE/{n;s/.*/            value: ${image_type}/g}" cstor-nfs.yaml
+-e "/name: NFS_SC_NAME/{n;s/.*/            value: openebs-nfs-jiva-rwx/g}" \
+-e "/name: BACKEND_SC_NAME/{n;s/.*/            value: jiva-csi-sc/g}" \
+-e "/name: IMAGE_TYPE/{n;s/.*/            value: ${image_type}/g}" jiva-nfs.yaml
 
 sed -i '/command:/i \
           - name: RUN_ID\
             value: '"$run_id"'\
-' cstor-nfs.yaml
+' jiva-nfs.yaml
 
-cat cstor-nfs.yaml
+cat jiva-nfs.yaml
 
-bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='provider:dynamic-nfs-operator' job=cstor-nfs.yaml
+bash ../../openebs-openshift-e2e/utils/e2e_job_runner label='provider:dynamic-nfs-operator' job=jiva-nfs.yaml
 
 echo "Dumping state of cluster post job run"; echo ""
 bash ../../openebs-openshift-e2e/utils/dump_cluster_state;
