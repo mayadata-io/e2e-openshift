@@ -44,7 +44,7 @@ cp apps/busybox/deployers/run_e2e_test.yml deploy_nfs_busybox.yml
 
 sed -i -e 's/value: app-busybox-ns/value: busybox-nfs/g' \
 -e 's/app: busybox-e2e/app: busybox-e2e-nfs/g' \
--e 's/value: openebs-nfs-rwx/value: openebs-nfs-cstor-rwx/g' \
+-e 's/value: openebs-nfs-rwx/value: openebs-nfs-jiva-rwx/g' \
 -e 's/generateName: e2e-busybox-deploy-/generateName: e2e-busybox-nfs-/g' deploy_nfs_busybox.yml
 
 sed -i '/command:/i \
