@@ -11,10 +11,10 @@ touch /root/.ssh/id_rsa
 echo "$SSH_KEYS" > /root/.ssh/id_rsa
 chmod 600 /root/.ssh/id_rsa
 
-state="ssh -o StrictHostKeyChecking=no $user@$ip -p $port -i /root/.ssh/id_rsa 'ls | grep e2e-openshift'"
+state="ssh -o StrictHostKeyChecking=no $user@$ip -i /root/.ssh/id_rsa 'ls | grep e2e-openshift'"
 cluster_state=$(eval $state)
 
-kubectl_version=$(ssh -o StrictHostKeyChecking=no $user@$ip -p $port -i /root/.ssh/id_rsa kubectl get nodes --no-headers -o custom-columns=:.status.nodeInfo.kubeletVersion | uniq | cut -d '+' -f 1)
+kubectl_version=$(ssh -o StrictHostKeyChecking=no $user@$ip -i /root/.ssh/id_rsa kubectl get nodes --no-headers -o custom-columns=:.status.nodeInfo.kubeletVersion | uniq | cut -d '+' -f 1)
 echo "k8s_version==$kubectl_version"
 
 while [ "${cluster_state}" == "e2e-openshift" ]; do
@@ -31,32 +31,32 @@ fi
 echo "*************************Checking the Cluster's Health********************"
 
 echo "Checking for the number of nodes in ready state*******************************"
-ready_nodes=$(ssh -o StrictHostKeyChecking=no $user@$ip -p $port -i /root/.ssh/id_rsa kubectl get nodes --no-headers | grep -v NotReady | wc -l)
+ready_nodes=$(ssh -o StrictHostKeyChecking=no $user@$ip -i /root/.ssh/id_rsa kubectl get nodes --no-headers | grep -v NotReady | wc -l)
 
-git_token=$(ssh -o StrictHostKeyChecking=no $user@$ip -p $port -i /root/.ssh/id_rsa 'cat ~/.profile | grep github_token | cut -d= -f2')
-gittoken=$(echo $git_token | tr -d '"')
+# git_token=$(ssh -o StrictHostKeyChecking=no $user@$ip -i /root/.ssh/id_rsa 'cat ~/.profile | grep github_token | cut -d= -f2')
+# gittoken=$(echo $git_token | tr -d '"')
 
-echo "Checking for the pending certificates"
-cert=$(ssh -o StrictHostKeyChecking=no $user@$ip -p $port -i /root/.ssh/id_rsa oc get csr -no-headers | grep Pending | wc -l)
-if [ "$cert" -gt 0 ]; then
-echo "Openshift CSR's are pending kindly approve it and take snapshot"
-exit;
-fi
+# echo "Checking for the pending certificates"
+# cert=$(ssh -o StrictHostKeyChecking=no $user@$ip -i /root/.ssh/id_rsa oc get csr -no-headers | grep Pending | wc -l)
+# if [ "$cert" -gt 0 ]; then
+# echo "Openshift CSR's are pending kindly approve it and take snapshot"
+# exit;
+# fi
 
-if [ "$ready_nodes" -eq 7 ]; then
+if [ "$ready_nodes" -eq 4 ]; then
 echo "Number of nodes in ready state is $ready_nodes"
 echo "******Cluster is in Healthy state****"
 
 echo "*************Dumping cluster state********"
-ssh -o StrictHostKeyChecking=no $user@$ip -p $port -i /root/.ssh/id_rsa kubectl get nodes
-ssh -o StrictHostKeyChecking=no $user@$ip -p $port -i /root/.ssh/id_rsa kubectl get pod --all-namespaces
+ssh -o StrictHostKeyChecking=no $user@$ip -i /root/.ssh/id_rsa kubectl get nodes
+ssh -o StrictHostKeyChecking=no $user@$ip -i /root/.ssh/id_rsa kubectl get pod --all-namespaces
 
 echo "cloning e2e-openshift repo*************"
-ssh -o StrictHostKeyChecking=no $user@$ip -p $port -i /root/.ssh/id_rsa 'git clone -b openebs-localpv https://github.com/mayadata-io/e2e-openshift.git'
+ssh -o StrictHostKeyChecking=no $user@$ip -i /root/.ssh/id_rsa 'git clone -b openebs-localpv https://github.com/mayadata-io/e2e-openshift.git'
 else
 echo "All nodes are not ready"
 echo "******Cluster is in Unhealthy state*******"
 echo "cloning e2e-openshift repo*************"
-ssh -o StrictHostKeyChecking=no $user@$ip -p $port -i /root/.ssh/id_rsa 'git clone -b openebs-localpv https://github.com/mayadata-io/e2e-openshift.git'
+ssh -o StrictHostKeyChecking=no $user@$ip -i /root/.ssh/id_rsa 'git clone -b openebs-localpv https://github.com/mayadata-io/e2e-openshift.git'
 exit 1;
 fi

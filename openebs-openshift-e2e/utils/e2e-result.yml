@@ -1,5 +1,5 @@
 ---
-apiVersion: e2e.io/v1alpha1
+apiVersion: e2e.io/v1
 kind: cie2eResult
 metadata:
   # name of the e2e testcase
