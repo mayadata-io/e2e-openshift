@@ -47,7 +47,7 @@ spec:
   # group name to use for REST API: /apis/<group>/<version>
   group: e2e.io
   # version name to use for REST API: /apis/<group>/<version>
-  version:
+  versions:
   - name: v1alpha1
     # Each version can be enabled/disabled by Served flag.
     served: false
