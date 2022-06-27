@@ -8,8 +8,8 @@ echo "$SSH_KEYS" > /root/.ssh/id_rsa
 chmod 600 /root/.ssh/id_rsa
 ###clone e2e-openshift-repo
 echo "cloning e2e-openshift repo*************"
-ssh -o StrictHostKeyChecking=no $user@$ip -p $port -i /root/.ssh/id_rsa 'git clone -b openebs-localpv https://github.com/openebs/e2e-openshift.git'
-ssh -o StrictHostKeyChecking=no $user@$ip -p $port -i /root/.ssh/id_rsa 'cd e2e-openshift && bash openebs-openshift-e2e/pipelines/stages/5-cleanup/5LD02-cluster-cleanup/cluster-cleanup node '"'$CI_JOB_ID'"'' '"'$master_ip'"' '"'$worker1_ip'"' '"'$worker2_ip'"' '"'$worker3_ip'"' '"'$worker4_ip'"' '"'$worker5_ip'"' '"'$master_name'"' '"'$worker1_name'"' '"'$worker2_name'"' '"'$worker3_name'"' '"'$worker4_name'"' '"'$worker5_name'"' '"'$master_ip1'"' '"'$master_ip2'"' '"'$master_name1'"' '"'$master_name2'"'
+ssh -o StrictHostKeyChecking=no $user@$ip -i /root/.ssh/id_rsa 'git clone -b openebs-localpv https://github.com/openebs/e2e-openshift.git'
+ssh -o StrictHostKeyChecking=no $user@$ip -i /root/.ssh/id_rsa 'cd e2e-openshift && bash openebs-openshift-e2e/pipelines/stages/5-cleanup/5LD02-cluster-cleanup/cluster-cleanup node '"'$CI_JOB_ID'"'' '"'$master_ip'"' '"'$worker1_ip'"' '"'$worker2_ip'"' '"'$worker3_ip'"' '"'$worker4_ip'"' '"'$worker5_ip'"' '"'$master_name'"' '"'$worker1_name'"' '"'$worker2_name'"' '"'$worker3_name'"' '"'$worker4_name'"' '"'$worker5_name'"' '"'$master_ip1'"' '"'$master_ip2'"' '"'$master_name1'"' '"'$master_name2'"'
 }
 
 node() {
