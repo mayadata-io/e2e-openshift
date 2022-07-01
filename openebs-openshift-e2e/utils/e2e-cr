@@ -46,12 +46,12 @@ fi
 
 # Update the gitlab job id in result yaml
 if [ ! -z "$test_result" ];then
-  sed -i "s/<job-id>/$job_id/g" result-$job_name.yml
+  sed -i "s/001/$job_id/g" result-$job_name.yml
 fi
 
 # Update the Gitlab pipeline id in result yaml
 if [ ! -z "$test_result" ];then
-  sed -i "s/<pipeline-id>/$pipeline_id/g" result-$job_name.yml
+  sed -i "s/000/$pipeline_id/g" result-$job_name.yml
 fi
 
 # Update the test case id in result yaml
