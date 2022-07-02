@@ -91,7 +91,7 @@ sed -i -e 's/value: app-percona-ns/value: percona-backup-csi-diff-ns/g' \
 -e '/name: DEPROVISION_VELERO/{n;s/.*/            value: "true"/}' \
 -e '/name: RESTORE_IN_DIFF_NAMESPACE/{n;s/.*/            value: "true"/}' run_backuprestore_test_cstor_csi_diff_ns.yml
 
-sed -i "s/v1.1.0/$velero_version/g" run_backuprestore_test_cstor_csi_diff_ns.yml
+sed -i "s/v1.4.0/$velero_version/g" run_backuprestore_test_cstor_csi_diff_ns.yml
 sed -i "s/plugin:ci/plugin:$velero_plugin_version/g" run_backuprestore_test_cstor_csi_diff_ns.yml
 
 sed -i '/command:/i \
