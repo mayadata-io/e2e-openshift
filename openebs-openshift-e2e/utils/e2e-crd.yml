@@ -88,9 +88,9 @@ spec:
                   build_id:
                     type: string
                   job_id:
-                    type: string
+                    type: integer
                   pipeline_id:
-                    type: string
+                    type: integer
                   event:
                     type: object
                     properties:
