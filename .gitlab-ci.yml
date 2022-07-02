@@ -37,11 +37,11 @@ stages:
     - chmod 755 ./openebs-openshift-e2e/stages/2-infra-setup/2ICO02-create-cspc-stripe-pool
     - ./openebs-openshift-e2e/stages/2-infra-setup/2ICO02-create-cspc-stripe-pool
 
-# 2ICO03-CSPC-MIRROR-POOL:
-#   extends: .csi_infra_test_template
-#   script:
-#     - chmod 755 ./openebs-openshift-e2e/stages/2-infra-setup/2ICO03-create-cspc-mirror-pool
-#     - ./openebs-openshift-e2e/stages/2-infra-setup/2ICO03-create-cspc-mirror-pool
+2ICO03-CSPC-MIRROR-POOL:
+  extends: .csi_infra_test_template
+  script:
+    - chmod 755 ./openebs-openshift-e2e/stages/2-infra-setup/2ICO03-create-cspc-mirror-pool
+    - ./openebs-openshift-e2e/stages/2-infra-setup/2ICO03-create-cspc-mirror-pool
 
 2ICO04-CSI-STORAGE-POLICIES:
   extends: .csi_infra_test_template
