@@ -141,7 +141,7 @@ cp experiments/chaos/app_pod_failure/run_e2e_test.yml csi_app_kill.yml
 
 sed -i -e '/name: APP_NAMESPACE/{n;s/.*/            value: csi-app-kill/}' \
 -e '/name: APP_LABEL/{n;s/.*/            value: '\''app=app-kill'\''/}' \
--e '/name: CONTAINER_RUNTIME/{n;s/.*/            value: cri-o/}' \
+-e '/name: CONTAINER_RUNTIME/{n;s/.*/            value: docker/}' \
 -e '/name: DEPLOY_TYPE/{n;s/.*/            value: deployment/}' \
 -e '/name: DATA_PERSISTENCE/{n;s/.*/            value: busybox/}' csi_app_kill.yml
 

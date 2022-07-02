@@ -116,7 +116,7 @@ cp experiments/chaos/openebs_target_network_delay/run_e2e_test.yml run_target_nw
 
 sed -i -e '/name: APP_NAMESPACE/{n;s/.*/            value: percona-target-nw-delay/}' \
 -e '/name: APP_LABEL/{n;s/.*/            value: '\''name=percona'\''/}' \
--e '/name: CONTAINER_RUNTIME/{n;s/.*/            value: cri-o/}' \
+-e '/name: CONTAINER_RUNTIME/{n;s/.*/            value: docker/}' \
 -e '/name: DEPLOY_TYPE/{n;s/.*/            value: deployment/}' \
 -e '/name: APP_PVC/{n;s/.*/            value: percona-mysql-claim/}' \
 -e "/name: TARGET_AFFINITY_CHECK/{n;s/value: 'enable'/value: 'disable'/g}" \
