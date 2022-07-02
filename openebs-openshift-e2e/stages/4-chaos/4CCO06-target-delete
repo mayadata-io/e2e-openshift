@@ -121,7 +121,7 @@ cp experiments/chaos/openebs_target_failure/run_e2e_test.yml run_csi_target_dele
 
 sed -i -e '/name: APP_NAMESPACE/{n;s/.*/            value: csi-target-delete/}' \
 -e '/name: APP_LABEL/{n;s/.*/            value: '\''app=target-delete'\''/}' \
--e '/name: CONTAINER_RUNTIME/{n;s/.*/            value: cri-o/}' \
+-e '/name: CONTAINER_RUNTIME/{n;s/.*/            value: docker/}' \
 -e '/name: DEPLOY_TYPE/{n;s/.*/            value: deployment/}' \
 -e '/name: TARGET_CONTAINER/{n;s/.*/            value: ""/}' \
 -e "/name: TARGET_AFFINITY_CHECK/{n;s/value: 'enable'/value: 'disable'/g}" \
