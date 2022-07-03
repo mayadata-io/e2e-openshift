@@ -114,7 +114,7 @@ cp experiments/chaos/app_pod_failure/run_e2e_test.yml hostpath_app_kill.yml
 
 sed -i -e 's/name: app-failure/name: hostpath-app-kill-cm/g' \
 -e 's/name: application-pod-failure/name: localpv-hostpath-app-kill/g' \
--e 's/value: docker/value: cri-o/g' hostpath_app_kill.yml
+-e 's/value: docker/value: docker/g' hostpath_app_kill.yml
 
 sed -i -e "/name: APP_LABEL/{n;s/.*/            value: app=busybox-sts/g}" \
 -e "/name: APP_NAMESPACE/{n;s/.*/            value: hostpath-app-kill/g}" hostpath_app_kill.yml
