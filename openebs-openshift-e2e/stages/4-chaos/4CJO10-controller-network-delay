@@ -146,7 +146,7 @@ cp experiments/chaos/openebs_controller_network_delay/run_e2e_test.yml run_contr
 EOF
 
 sed -i -e 's/value: percona-mysql-claim/value: openebs-bb-controller-delay/g' \
--e 's/value: docker/value: cri-o/g' \
+-e 's/value: docker/value: docker/g' \
 -e 's/value: '\''name=percona'\''/value: '\''app=busybox'\''/g' \
 -e 's/value: app-percona-ns/value: controller-delay-jiva/g' run_controller_delay_test_jiva.yml
 
