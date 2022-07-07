@@ -34,7 +34,7 @@ STRIPED-POOL-PROVISION:
   extends: .infra_setup_template
   script:
     - chmod 775 ./openebs-openshift-e2e/script/2-infra-setup/create-striped-pool/create-striped-pool
-    - .openebs-openshift-e2e/script/2-infra-setup/create-striped-pool/create-striped-pool
+    - ./openebs-openshift-e2e/script/2-infra-setup/create-striped-pool/create-striped-pool
 
 STORAGE-CLASSES:
   extends: .infra_setup_template
