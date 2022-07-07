@@ -24,9 +24,9 @@ echo $present_dir
 # echo "Setting up test dependencies.."   
 # ${utils_path}/setup_dependencies e2e-test
 
-bash script/utils/e2e-cr jobname:bb-target-nw-delay jobphase:Waiting
-bash script/utils/e2e-cr jobname:bb-target-kill jobphase:Waiting
-bash script/utils/e2e-cr jobname:bb-target-kill jobphase:Running init_time:"$current_time" job_id:"$job_id" pipeline_id:"$pipeline_id" openebs_version:"$releaseTag"
+bash openebs-openshift-e2e/script/utils/e2e-cr jobname:bb-target-nw-delay jobphase:Waiting
+bash openebs-openshift-e2e/script/utils/e2e-cr jobname:bb-target-kill jobphase:Waiting
+bash openebs-openshift-e2e/script/utils/e2e-cr jobname:bb-target-kill jobphase:Running init_time:"$current_time" job_id:"$job_id" pipeline_id:"$pipeline_id" openebs_version:"$releaseTag"
 
 ## Performing target failure
 
@@ -71,7 +71,7 @@ sed -i '/parameters.yml: |/a \
 echo "Running the e2e test for Busybox Deployment Scaleup.."
 cat run_target_kill_test.yml
 
-bash ../../script/utils/e2e_job_runner label='name:openebs-target-failure' job=run_target_kill_test.yml
+bash ../../openebs-openshift-e2e/script/utils/e2e_job_runner label='name:openebs-target-failure' job=run_target_kill_test.yml
 cd ../..
 bash script/utils/dump_cluster_state;
 bash script/utils/event_updater jobname:bb-target-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id"
@@ -80,11 +80,11 @@ rc_val=$(echo $?)
 current_time=$(eval $time)
 
 if [ "$rc_val" != "0" ]; then
-bash script/utils/e2e-cr jobname:bb-target-kill jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" openebs_version:"$releaseTag" test_result:Fail
+bash openebs-openshift-e2e/script/utils/e2e-cr jobname:bb-target-kill jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" openebs_version:"$releaseTag" test_result:Fail
 exit 1;
 fi
 
-bash script/utils/e2e-cr jobname:bb-target-kill jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" openebs_version:"$releaseTag" test_result:Pass
+bash openebs-openshift-e2e/script/utils/e2e-cr jobname:bb-target-kill jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" openebs_version:"$releaseTag" test_result:Pass
 
 if [ "$rc_val" != "0" ]; then
 exit 1;

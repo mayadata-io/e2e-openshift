@@ -23,7 +23,7 @@ while [ -z "$job_name" ]; do
   job_name=$(eval ${jobNameCmd});
 done
 chmod 755 ../../script/utils/error_handler
-bash ../../script/utils/error_handler ${retcode} msg="Unable to run e2ebook, exiting" action="exit"
+bash ../../openebs-openshift-e2e/script/utils/error_handler ${retcode} msg="Unable to run e2ebook, exiting" action="exit"
     
 ## Obtain the e2e pod name 
 
@@ -39,7 +39,7 @@ while [ -z "$e2e_pod" ]; do
   e2e_pod=$(eval ${e2ePodCmd});
 done
 
-bash ../../script/utils/error_handler ${retcode} msg="Unable to find e2e test runner pod, exiting" action="exit"
+bash ../../openebs-openshift-e2e/script/utils/error_handler ${retcode} msg="Unable to find e2e test runner pod, exiting" action="exit"
 
 ## Wait till the ansibletest container terminates && also confirm job completion status. This is done to ensure
 ## that execution of auxiliary containers such as loggers is completed. Getting the ansibletest ccontainer to completed state 

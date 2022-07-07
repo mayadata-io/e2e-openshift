@@ -23,8 +23,8 @@ echo $present_dir
 # echo "Setting up test dependencies.."   
 # ${utils_path}/setup_dependencies e2e-test
 
-bash script/utils/e2e-cr jobname:percona-target-nw-delay jobphase:Waiting
-bash script/utils/e2e-cr jobname:percona-target-nw-delay jobphase:Running init_time:"$current_time" job_id:"$job_id" pipeline_id:"$pipeline_id" openebs_version:"$releaseTag"
+bash openebs-openshift-e2e/script/utils/e2e-cr jobname:percona-target-nw-delay jobphase:Waiting
+bash openebs-openshift-e2e/script/utils/e2e-cr jobname:percona-target-nw-delay jobphase:Running init_time:"$current_time" job_id:"$job_id" pipeline_id:"$pipeline_id" openebs_version:"$releaseTag"
 
 
 ##########################################
@@ -69,7 +69,7 @@ sed -i '/parameters.yml: |/a \
 
 cat run_percona_target_nw_delay.yml
 
-bash ../../script/utils/e2e_job_runner label='name:percona-target-nw-delay' job=run_percona_target_nw_delay.yml
+bash ../../openebs-openshift-e2e/script/utils/e2e_job_runner label='name:percona-target-nw-delay' job=run_percona_target_nw_delay.yml
 cd ../..
 
 bash script/utils/dump_cluster_state;
@@ -79,11 +79,11 @@ rc_val=$(echo $?)
 current_time=$(eval $time)
 
 if [ "$rc_val" != "0" ]; then
-bash script/utils/e2e-cr jobname:percona-target-nw-delay jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" openebs_version:"$releaseTag" test_result:Fail
+bash openebs-openshift-e2e/script/utils/e2e-cr jobname:percona-target-nw-delay jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" openebs_version:"$releaseTag" test_result:Fail
 exit 1;
 fi
 
-bash script/utils/e2e-cr jobname:percona-target-nw-delay jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" openebs_version:"$releaseTag" test_result:Pass
+bash openebs-openshift-e2e/script/utils/e2e-cr jobname:percona-target-nw-delay jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" openebs_version:"$releaseTag" test_result:Pass
 
 
 if [ "$rc_val" != "0" ]; then

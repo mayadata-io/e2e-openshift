@@ -23,8 +23,8 @@ echo $present_dir
 # echo "Setting up test dependencies.."	
 # ${utils_path}/setup_dependencies e2e-test
 
-bash script/utils/e2e-cr jobname:busybox-deployment-cstor jobphase:Waiting
-bash script/utils/e2e-cr jobname:busybox-deployment-cstor jobphase:Running init_time:"$current_time" job_id:"$job_id" pipeline_id:"$pipeline_id" openebs_version:"$releaseTag"
+bash openebs-openshift-e2e/script/utils/e2e-cr jobname:busybox-deployment-cstor jobphase:Waiting
+bash openebs-openshift-e2e/script/utils/e2e-cr jobname:busybox-deployment-cstor jobphase:Running init_time:"$current_time" job_id:"$job_id" pipeline_id:"$pipeline_id" openebs_version:"$releaseTag"
 
 ##Deploying BusyBox Application
 
@@ -46,7 +46,7 @@ sed -i -e 's/value: app-busybox-ns/value: bb-cstor-deployment/g' \
 
 cat deploy_busybox_cstor.yml
 
-bash ../../script/utils/e2e_job_runner label='app:busybox-deployment-cstor' job=deploy_busybox_cstor.yml
+bash ../../openebs-openshift-e2e/script/utils/e2e_job_runner label='app:busybox-deployment-cstor' job=deploy_busybox_cstor.yml
 cd ../..
 
 bash script/utils/dump_cluster_state;
@@ -75,7 +75,7 @@ sed -i '/command:/i \
             
 cat liveness_busybox_deployment_cstor.yml
 
-bash ../../script/utils/e2e_job_runner label='liveness:busybox-deployment-liveness-cstor' job=liveness_busybox_deployment_cstor.yml
+bash ../../openebs-openshift-e2e/script/utils/e2e_job_runner label='liveness:busybox-deployment-liveness-cstor' job=liveness_busybox_deployment_cstor.yml
 cd ../..
 
 bash script/utils/dump_cluster_state;
@@ -86,11 +86,11 @@ rc_val=$(echo $?)
 current_time=$(eval $time)
 
 if [ "$rc_val" != "0" ]; then
-bash script/utils/e2e-cr jobname:busybox-deployment-cstor jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" openebs_version:"$releaseTag" test_result:Fail
+bash openebs-openshift-e2e/script/utils/e2e-cr jobname:busybox-deployment-cstor jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" openebs_version:"$releaseTag" test_result:Fail
 exit 1;
 fi
 
-bash script/utils/e2e-cr jobname:busybox-deployment-cstor jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" openebs_version:"$releaseTag" test_result:Pass
+bash openebs-openshift-e2e/script/utils/e2e-cr jobname:busybox-deployment-cstor jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" openebs_version:"$releaseTag" test_result:Pass
 
 
 if [ "$rc_val" != "0" ]; then

@@ -25,8 +25,8 @@ echo $present_dir
 # ${utils_path}/setup_dependencies e2e-test
 
 bash script/utils/pooling jobname:bb-target-kill
-bash script/utils/e2e-cr jobname:bb-target-nw-delay jobphase:Waiting
-bash script/utils/e2e-cr jobname:bb-target-nw-delay jobphase:Running init_time:"$current_time" job_id:"$job_id" pipeline_id:"$pipeline_id" openebs_version:"$releaseTag"
+bash openebs-openshift-e2e/script/utils/e2e-cr jobname:bb-target-nw-delay jobphase:Waiting
+bash openebs-openshift-e2e/script/utils/e2e-cr jobname:bb-target-nw-delay jobphase:Running init_time:"$current_time" job_id:"$job_id" pipeline_id:"$pipeline_id" openebs_version:"$releaseTag"
 
 run_id="bb-cstor";test_name=$(bash script/utils/generate_test_name testcase=openebs-target-network-delay metadata=${run_id})
 echo $test_name
@@ -63,7 +63,7 @@ sed -i '/command:/i \
 
 cat run_bb_target_nw_delay.yml
 
-bash ../../script/utils/e2e_job_runner label='name:bb-deployment-target-nw-delay' job=run_bb_target_nw_delay.yml
+bash ../../openebs-openshift-e2e/script/utils/e2e_job_runner label='name:bb-deployment-target-nw-delay' job=run_bb_target_nw_delay.yml
 cd ../..
 
 bash script/utils/dump_cluster_state;
@@ -73,11 +73,11 @@ rc_val=$(echo $?)
 current_time=$(eval $time)
 
 if [ "$rc_val" != "0" ]; then
-bash script/utils/e2e-cr jobname:bb-target-nw-delay jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" openebs_version:"$releaseTag" test_result:Fail
+bash openebs-openshift-e2e/script/utils/e2e-cr jobname:bb-target-nw-delay jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" openebs_version:"$releaseTag" test_result:Fail
 exit 1;
 fi
 
-bash script/utils/e2e-cr jobname:bb-target-nw-delay jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" openebs_version:"$releaseTag" test_result:Pass
+bash openebs-openshift-e2e/script/utils/e2e-cr jobname:bb-target-nw-delay jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" openebs_version:"$releaseTag" test_result:Pass
 
 
 if [ "$rc_val" != "0" ]; then

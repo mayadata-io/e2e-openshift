@@ -31,8 +31,8 @@ current_time=$(eval $time)
 kubectl apply -f script/utils/e2e-crd.yml
 
 #pooling over previous job to complete
-bash script/utils/e2e-cr jobname:cstor-operator jobphase:Waiting
-bash script/utils/e2e-cr jobname:cstor-operator jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" openebs_version:"$releaseTag"
+bash openebs-openshift-e2e/script/utils/e2e-cr jobname:cstor-operator jobphase:Waiting
+bash openebs-openshift-e2e/script/utils/e2e-cr jobname:cstor-operator jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" openebs_version:"$releaseTag"
 
 test_name=$(bash script/utils/generate_test_name testcase=openebs-cstor-operator-provision metadata="")
 echo $test_name
@@ -53,8 +53,8 @@ sed -i -e "/name: COMMIT_ID/{n;s/.*/            value: charts/g}" \
 
 cat cstor_operator.yml
 
-bash ../../script/utils/e2e_job_runner label='provider:cstor-operator' job=cstor_operator.yml
-bash ../../script/utils/dump_cluster_state;
+bash ../../openebs-openshift-e2e/script/utils/e2e_job_runner label='provider:cstor-operator' job=cstor_operator.yml
+bash ../../openebs-openshift-e2e/script/utils/dump_cluster_state;
 cd ../..
 bash script/utils/event_updater jobname:cstor-operator $test_name jobid:"$job_id" pipelineid:"$pipeline_id"
 
@@ -69,7 +69,7 @@ rc_val=$(echo $?)
 testResult=$(kubectl get e2eresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
 
 current_time=$(eval $time)
-bash script/utils/e2e-cr jobname:cstor-operator jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" openebs_version:"$releaseTag" test_result:Pass
+bash openebs-openshift-e2e/script/utils/e2e-cr jobname:cstor-operator jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" openebs_version:"$releaseTag" test_result:Pass
 
 if [ "$rc_val" != "0" ]; then
 exit 1;
