@@ -15,7 +15,7 @@ pipeline_id=$(echo $2)
 commit_id=$(echo $3)
 release_version=$(echo $4)
 releaseTag=$(echo $5)
-release_branch=$(echo 6)
+release_branch=$(echo $6)
 source ~/.profile
 # gittoken=$(echo "$github_token")
 csi_ns=$(echo $7)
@@ -48,7 +48,7 @@ cp experiments/cstor-operator-provision/run_e2e_test.yml cstor_operator.yml
 
 sed -i -e "/name: COMMIT_ID/{n;s/.*/            value: charts/g}" \
 -e "/name: RC_TAG/{n;s/.*/            value: ${rc_tag}/g}" \
--e "/name: CSI_NS/{n;s/.*/            value: ${csi_ns}/g}" \
+#-e "/name: CSI_NS/{n;s/.*/            value: ${csi_ns}/g}" \
 -e "/name: OPENEBS_VERSION/{n;s/.*/            value: ${release_version}/g}" cstor_operator.yml
 
 cat cstor_operator.yml
