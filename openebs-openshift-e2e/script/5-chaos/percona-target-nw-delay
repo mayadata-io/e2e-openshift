@@ -73,7 +73,7 @@ bash ../../openebs-openshift-e2e/script/utils/e2e_job_runner label='name:percona
 cd ../..
 
 bash script/utils/dump_cluster_state;
-bash script/utils/event_updater jobname:percona-target-nw-delay $test_name jobid:"$job_id" pipeline_id:"$pipeline_id"
+bash openebs-openshift-e2e/script/utils/event_updater jobname:percona-target-nw-delay $test_name jobid:"$job_id" pipeline_id:"$pipeline_id"
 
 rc_val=$(echo $?)
 current_time=$(eval $time)

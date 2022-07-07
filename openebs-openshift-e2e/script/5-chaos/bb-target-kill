@@ -74,7 +74,7 @@ cat run_target_kill_test.yml
 bash ../../openebs-openshift-e2e/script/utils/e2e_job_runner label='name:openebs-target-failure' job=run_target_kill_test.yml
 cd ../..
 bash script/utils/dump_cluster_state;
-bash script/utils/event_updater jobname:bb-target-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id"
+bash openebs-openshift-e2e/script/utils/event_updater jobname:bb-target-kill $test_name jobid:"$job_id" pipelineid:"$pipeline_id"
 
 rc_val=$(echo $?)
 current_time=$(eval $time)

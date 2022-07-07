@@ -64,7 +64,7 @@ echo "Dumping state of cluster post job run"; echo ""
 bash ../../openebs-openshift-e2e/script/utils/dump_cluster_state;
 
 cd ../..
-bash script/utils/event_updater jobname:upgrade-cstor-csi $test_name jobid:"$job_id" pipelineid:"$pipeline_id"
+bash openebs-openshift-e2e/script/utils/event_updater jobname:upgrade-cstor-csi $test_name jobid:"$job_id" pipelineid:"$pipeline_id"
 #################
 ## GET RESULT  ##
 #################

@@ -50,7 +50,7 @@ cat cstor_operator.yml
 bash ../../openebs-openshift-e2e/script/utils/e2e_job_runner label='provider:cstor-operator' job=cstor_operator.yml
 bash ../../openebs-openshift-e2e/script/utils/dump_cluster_state;
 cd ../..
-bash script/utils/event_updater jobname:cstor-operator $test_name jobid:"$job_id" pipelineid:"$pipeline_id"
+bash openebs-openshift-e2e/script/utils/event_updater jobname:cstor-operator $test_name jobid:"$job_id" pipelineid:"$pipeline_id"
 
 #################
 ## GET RESULT  ##

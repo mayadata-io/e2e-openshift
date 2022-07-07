@@ -45,7 +45,7 @@ cat cspc_create_striped_pool.yml
 bash ../../openebs-openshift-e2e/script/utils/e2e_job_runner label='app:cstor-cspc-pool-provision' job=cspc_create_striped_pool.yml
 bash ../../openebs-openshift-e2e/script/utils/dump_cluster_state;
 cd ../..
-bash script/utils/event_updater jobname:cstor-cspc-striped-pool $test_name jobid:"$job_id" pipelineid:"$pipeline_id"
+bash openebs-openshift-e2e/script/utils/event_updater jobname:cstor-cspc-striped-pool $test_name jobid:"$job_id" pipelineid:"$pipeline_id"
 
 #################
 ## GET RESULT  ##

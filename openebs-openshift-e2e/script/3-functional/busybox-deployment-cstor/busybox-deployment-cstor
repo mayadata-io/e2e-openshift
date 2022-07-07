@@ -50,7 +50,7 @@ bash ../../openebs-openshift-e2e/script/utils/e2e_job_runner label='app:busybox-
 cd ../..
 
 bash script/utils/dump_cluster_state;
-bash script/utils/event_updater jobname:busybox-deployment-cstor $test_name jobid:"$job_id" pipeline_id:"$pipeline_id"
+bash openebs-openshift-e2e/script/utils/event_updater jobname:busybox-deployment-cstor $test_name jobid:"$job_id" pipeline_id:"$pipeline_id"
 
 if [ "$?" != "0" ]; then
 exit 1;
@@ -79,7 +79,7 @@ bash ../../openebs-openshift-e2e/script/utils/e2e_job_runner label='liveness:bus
 cd ../..
 
 bash script/utils/dump_cluster_state;
-bash script/utils/event_updater jobname:busybox-deployment-cstor $test_name jobid:"$job_id" pipeline_id:"$pipeline_id"
+bash openebs-openshift-e2e/script/utils/event_updater jobname:busybox-deployment-cstor $test_name jobid:"$job_id" pipeline_id:"$pipeline_id"
 
 
 rc_val=$(echo $?)
