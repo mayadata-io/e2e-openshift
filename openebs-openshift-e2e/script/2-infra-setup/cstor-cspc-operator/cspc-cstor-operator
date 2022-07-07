@@ -5,7 +5,7 @@ mkdir -p /root/.ssh
 touch /root/.ssh/id_rsa
 echo "$SSH_KEYS" > /root/.ssh/id_rsa
 chmod 600 /root/.ssh/id_rsa
-ssh -o StrictHostKeyChecking=no $user@$ip -i /root/.ssh/id_rsa 'cd e2e-openshift && bash openebs-openshift-e2e/script/2-infra-setup/cstor-cspc-operator/cspc-cstor-operator node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$FROM_VERSION'"' '"'$TO_VERSION'"' '"'$CSPC_FROM_BRANCH'"' '"'$CSI_NAMESPACE'"' '"'$FROM_COMMIT_ID'"' '"'$FROM_RC_TAG'"'
+ssh -o StrictHostKeyChecking=no $user@$ip -i /root/.ssh/id_rsa 'cd e2e-openshift && bash openebs-openshift-e2e/script/2-infra-setup/cstor-cspc-operator/cspc-cstor-operator node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$FROM_VERSION'"' '"'$CSI_NAMESPACE'"'
 }
 
 
@@ -14,13 +14,8 @@ job_id=$(echo $1)
 pipeline_id=$(echo $2)
 commit_id=$(echo $3)
 release_version=$(echo $4)
-releaseTag=$(echo $5)
-release_branch=$(echo $6)
-source ~/.profile
-# gittoken=$(echo "$github_token")
-csi_ns=$(echo $7)
-release_commit_id=$(echo $8)
-rc_tag=$(echo $9)
+csi_ns=$(echo $5)
+
 
 time="date"
 current_time=$(eval $time)
@@ -47,8 +42,7 @@ kubectl apply -f hack/crds.yaml
 cp experiments/cstor-operator-provision/run_e2e_test.yml cstor_operator.yml
 
 sed -i -e "/name: COMMIT_ID/{n;s/.*/            value: charts/g}" \
--e "/name: RC_TAG/{n;s/.*/            value: ${rc_tag}/g}" \
-#-e "/name: CSI_NS/{n;s/.*/            value: ${csi_ns}/g}" \
+-e "/name: CSI_NS/{n;s/.*/            value: ${csi_ns}/g}" \
 -e "/name: OPENEBS_VERSION/{n;s/.*/            value: ${release_version}/g}" cstor_operator.yml
 
 cat cstor_operator.yml
@@ -77,7 +71,7 @@ fi
 }
 
 if [ "$1" == "node" ];then
-  node $2 $3 $4 $5 $6 $7 $8 $9 ${10}
+  node $2 $3 $4 $5 $6
 else
   pod
 fi
