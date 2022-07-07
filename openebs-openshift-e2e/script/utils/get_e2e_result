@@ -1,0 +1,20 @@
+#!/bin/bash
+set -x 
+
+e2e_test_name=$1
+
+## Check the test status & result from the e2e result custom resource
+
+testStatus=$(kubectl get e2eresult ${e2e_test_name} --no-headers -o custom-columns=:spec.testStatus.phase) && \
+testResult=$(kubectl get e2eresult ${e2e_test_name} --no-headers -o custom-columns=:spec.testStatus.result); retcode=$?
+error_handler ${retcode} msg="Unable to find e2e result custom resource, exiting" action="exit"
+
+if [[ ${testStatus} == "completed" ]]; then
+  if [[ ${testResult} == "Pass" ]]; then
+    echo "TEST: PASS"
+  else
+    echo "TEST: FAILED"; exit 1
+  fi
+else
+  echo "Test Execution was aborted"; exit 1
+fi

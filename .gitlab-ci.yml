@@ -3,189 +3,116 @@
 stages:
   - CLUSTER-SETUP
   - INFRA-SETUP
-  - FUNCTIONAL
-  - CHAOS
-  - CLUSTER-CLEANUP
-  
+  - APP-FUNC-TEST
+  - UPGRADE-OPENEBS
+  - APP-CHAOS-TEST  
 ##########################################################################################
 
-1CJO01-Openshift:
+Cluster-Setup:
   image: openebs/openshift-ci:latest
   stage: CLUSTER-SETUP
   script:     
-    - chmod 755 ./openebs-openshift-e2e/stages/1-cluster-setup/1CJO01-cluster-setup
-    - ./openebs-openshift-e2e/stages/1-cluster-setup/1CJO01-cluster-setup
+    - chmod 755 ./openebs-openshift-e2e/script/1-cluster-setup/cluster-setup
+    - ./openebs-openshift-e2e/script/1-cluster-setup/cluster-setup
 
 ##########################################################################################
 
-.jiva_csi_infra_setup_template:
+.infra_setup_template:
   image: openebs/openshift-ci:latest
   stage: INFRA-SETUP
   when: always
   dependencies:
-    - 1CJO01-Openshift
+    - Cluster-Setup
 
-2IJO01-JIVA-OPERATOR:
-  extends: .jiva_csi_infra_setup_template
+CSTOR-OPERATOR:
+  extends: .infra_setup_template
   script:
-    - chmod 755 ./openebs-openshift-e2e/stages/2-infra-setup/2IJO02-jiva-operator
-    - ./openebs-openshift-e2e/stages/2-infra-setup/2IJO02-jiva-operator
+    - chmod 755 ./openebs-openshift-e2e/script/2-infra-setup/cstor-cspc-operator/cspc-cstor-operator
+    - ./openebs-openshift-e2e/script/2-infra-setup/cstor-cspc-operator/cspc-cstor-operator
 
-2IJO03-STORAGE-POLICIES:
-  extends: .jiva_csi_infra_setup_template
+STRIPED-POOL-PROVISION:
+  extends: .infra_setup_template
   script:
-    - chmod 775 ./openebs-openshift-e2e/stages/2-infra-setup/2IJO03-storage-policies
-    - ./openebs-openshift-e2e/stages/2-infra-setup/2IJO03-storage-policies
+    - chmod 775 ./openebs-openshift-e2e/script/2-infra-setup/create-striped-pool/create-striped-pool
+    - .openebs-openshift-e2e/script/2-infra-setup/create-striped-pool/create-striped-pool
 
-2IJO04-NFSv4-JIVA-PROVISION:
-  extends: .jiva_csi_infra_setup_template
+STORAGE-CLASSES:
+  extends: .infra_setup_template
   script:
-    - chmod 775 ./openebs-openshift-e2e/stages/2-infra-setup/2IJO04-nfsv4-jiva-provision
-    - ./openebs-openshift-e2e/stages/2-infra-setup/2IJO04-nfsv4-jiva-provision
-  
-2IJO04-DYNAMIC-NFS-PROVISION:
-  extends: .jiva_csi_infra_setup_template
-  script:
-    - chmod 775 ./openebs-openshift-e2e/stages/2-infra-setup/2IJO05-openebs-dynamic-nfs
-    - ./openebs-openshift-e2e/stages/2-infra-setup/2IJO05-openebs-dynamic-nfs
+    - chmod 775 ./openebs-openshift-e2e/script/2-infra-setup/storage-policies/openebs-sc
+    - ./openebs-openshift-e2e/script/2-infra-setup/storage-policies/openebs-sc
 
 ###########################################################################################
 
 .func_test_template:
   image: openebs/openshift-ci:latest
-  stage: FUNCTIONAL
+  stage: APP-FUNC-TEST
   when: always
   dependencies:
-    - 1CJO01-Openshift
+    - Cluster-Setup
 
-3FJO01-App-Deploy-Jiva-RWX:
+busybox-deployment-cstor:
   extends: .func_test_template
   script:
-    - chmod 775 ./openebs-openshift-e2e/stages/3-functional/3FJO01-app-deploy-jiva-rwx
-    - ./openebs-openshift-e2e/stages/3-functional/3FJO01-app-deploy-jiva-rwx
+    - chmod 775 ./openebs-openshift-e2e/script/3-functional/busybox-deployment-cstor/busybox-deployment-cstor
+    - ./openebs-openshift-e2e/script/3-functional/busybox-deployment-cstor/busybox-deployment-cstor
 
-3FJO02-Jiva-App-Scaleup:
+percona-deployment-cstor:
   extends: .func_test_template
   script:
-    - chmod 775 ./openebs-openshift-e2e/stages/3-functional/3FJO02-app-replica-scaleup
-    - ./openebs-openshift-e2e/stages/3-functional/3FJO02-app-replica-scaleup
-
-3FJO03-Backup-Restore-Jiva:
-  extends: .func_test_template
-  script:
-    - chmod 775 ./openebs-openshift-e2e/stages/3-functional/3FJO03-backup-restore-jiva
-    - ./openebs-openshift-e2e/stages/3-functional/3FJO03-backup-restore-jiva
-
-3FJO04-Jiva-Data-Integrity:
-  extends: .func_test_template
-  script:
-    - chmod 775 ./openebs-openshift-e2e/stages/3-functional/3FJO04-data-integrity
-    - ./openebs-openshift-e2e/stages/3-functional/3FJO04-data-integrity
-
-3FJO05-JIVA-CSI-VOLUME-RESIZE:
-  extends: .func_test_template
-  script:
-    - chmod 755 ./openebs-openshift-e2e/stages/3-functional/3FJO05-jiva-csi-volume-resize
-    - ./openebs-openshift-e2e/stages/3-functional/3FJO05-jiva-csi-volume-resize
-
-3FJO06-JIVA-CSI-VOLUME-RESIZE-XFS:
-  extends: .func_test_template
-  script:
-    - chmod 755 ./openebs-openshift-e2e/stages/3-functional/3FJO06-jiva-csi-volume-resize-xfs
-    - ./openebs-openshift-e2e/stages/3-functional/3FJO06-jiva-csi-volume-resize-xfs
-
-3FJCO07-Jiva-Volume-Scaleup:
-  extends: .func_test_template
-  script:
-    - chmod 775 ./openebs-openshift-e2e/stages/3-functional/3FJO07-jiva-volume-scaleup
-    - ./openebs-openshift-e2e/stages/3-functional/3FJO07-jiva-volume-scaleup
-
-3FJO08-Jiva-Memory-Consumption:
-  extends: .func_test_template
-  script:
-    - chmod 775 ./openebs-openshift-e2e/stages/3-functional/3FJO08-memory-consumption
-    - ./openebs-openshift-e2e/stages/3-functional/3FJO08-memory-consumption
-
-3FJO09-App-deploy-Dynamic-rwx:
-  extends: .func_test_template
-  script:
-    - chmod 775 ./openebs-openshift-e2e/stages/3-functional/3FJO09-app-deploy-dynamic-nfs-rwx
-    - ./openebs-openshift-e2e/stages/3-functional/3FJO09-app-deploy-dynamic-nfs-rwx
+    - chmod 775 ./openebs-openshift-e2e/script/3-functional/percona-deployment-cstor/percona-deployment-cstor
+    - ./openebs-openshift-e2e/script/3-functional/percona-deployment-cstor/percona-deployment-cstor
 
 ###########################################################################################
+
+.upgrade_openebs:
+  image: openebs/openshift-ci:latest
+  stage: UPGRADE-OPENEBS
+  when: always
+  dependencies:
+    - Cluster-Setup
+
+upgrade-cstor-operator:
+  extends: .upgrade_openebs
+  script:
+    - chmod 775 ./openebs-openshift-e2e/script/4-upgrade-openebs/upgrade-cstor-operator
+    - ./openebs-openshift-e2e/script/4-upgrade-openebs/upgrade-cstor-operator
+
+upgrade-cspc-csi:
+  extends: .upgrade_openebs
+  script:
+    - chmod 775 ./openebs-openshift-e2e/script/4-upgrade-openebs/upgrade-cstor-csi
+    - ./openebs-openshift-e2e/script/4-upgrade-openebs/upgrade-cstor-csi
+
+###########################################################################################
+
 .chaos_test_template:
   image: openebs/openshift-ci:latest
-  stage: CHAOS
+  stage: APP-CHAOS-TEST
   when: always
   dependencies:
-    - 1CJO01-Openshift
+    - Cluster-Setup
 
-4CJO01-Jiva-controller-kill:
+busybox-target-kill:
   extends: .chaos_test_template
   script:
-    - chmod 775 ./openebs-openshift-e2e/stages/4-chaos/4CJO01-controller-kill
-    - ./openebs-openshift-e2e/stages/4-chaos/4CJO01-controller-kill
+    - chmod 775 ./openebs-openshift-e2e/script/5-chaos/bb-target-kill
+    - ./openebs-openshift-e2e/script/5-chaos/bb-target-kill
 
-4CJO02-Jiva-controller-delete:
+busybox-deployment-target-network-delay:
   extends: .chaos_test_template
   script:
-    - chmod 775 ./openebs-openshift-e2e/stages/4-chaos/4CJO02-controller-delete
-    - ./openebs-openshift-e2e/stages/4-chaos/4CJO02-controller-delete
+    - chmod 775 ./openebs-openshift-e2e/script/5-chaos/bb-deployment-target-nw-delay
+    - ./openebs-openshift-e2e/script/5-chaos/bb-deployment-target-nw-delay
 
-4CJO03-App-Kill:
+percona-target-network-delay:
   extends: .chaos_test_template
   script:
-    - chmod 775 ./openebs-openshift-e2e/stages/4-chaos/4CJO03-jiva-app-kill
-    - ./openebs-openshift-e2e/stages/4-chaos/4CJO03-jiva-app-kill
+    - chmod 775 ./openebs-openshift-e2e/script/5-chaos/percona-target-nw-delay
+    - ./openebs-openshift-e2e/script/5-chaos/percona-target-nw-delay
 
-4CJO04-Jiva-replica-failure:
+percona-cstor:
   extends: .chaos_test_template
   script:
-    - chmod 775 ./openebs-openshift-e2e/stages/4-chaos/4CJO04-jiva-replica-failure
-    - ./openebs-openshift-e2e/stages/4-chaos/4CJO04-jiva-replica-failure
-
-4CJO05-Jiva-Revision-Counter:
-  extends: .chaos_test_template
-  script:
-    - chmod 775 ./openebs-openshift-e2e/stages/4-chaos/4CJO05-jiva-revision-counter
-    - ./openebs-openshift-e2e/stages/4-chaos/4CJO05-jiva-revision-counter
-
-4CJO06-nfs-App-Kill-Jiva:
-  extends: .chaos_test_template
-  script:
-    - chmod 775 ./openebs-openshift-e2e/stages/4-chaos/4CJO06-nfs-app-kill-jiva
-    - ./openebs-openshift-e2e/stages/4-chaos/4CJO06-nfs-app-kill-jiva
-
-4CJO07-nfs-Ctrl-Kill-Jiva:
-  extends: .chaos_test_template
-  script:
-    - chmod 775 ./openebs-openshift-e2e/stages/4-chaos/4CJO07-nfs-ctrl-kill-jiva
-    - ./openebs-openshift-e2e/stages/4-chaos/4CJO07-nfs-ctrl-kill-jiva
-
-4CJO08-nfs-Ctrl-Container-Kill-Jiva:
-  extends: .chaos_test_template
-  script:
-    - chmod 775 ./openebs-openshift-e2e/stages/4-chaos/4CJO08-nfs-ctrl-container-kill
-    - ./openebs-openshift-e2e/stages/4-chaos/4CJO08-nfs-ctrl-container-kill
-
-4CJO09-Jiva-replica-node-affinity:
-  extends: .chaos_test_template
-  script:
-    - chmod 775 ./openebs-openshift-e2e/stages/4-chaos/4CJO09-replica-node-affinity
-    - ./openebs-openshift-e2e/stages/4-chaos/4CJO09-replica-node-affinity
-
-4CJO10-Controller-network-delay:
-  extends: .chaos_test_template
-  script:
-    - chmod 775 ./openebs-openshift-e2e/stages/4-chaos/4CJO10-controller-network-delay
-    - ./openebs-openshift-e2e/stages/4-chaos/4CJO10-controller-network-delay
-
-5CJO01-cluster-Delete:
-  image: openebs/openshift-ci:latest
-  stage: CLUSTER-CLEANUP
-  when: always
-  dependencies:
-    - 1CJO01-Openshift
-  script:
-    - chmod 775 ./openebs-openshift-e2e/stages/7-cleanup/cluster-cleanup
-    - ./openebs-openshift-e2e/stages/7-cleanup/cluster-cleanup
+    - chmod 775 ./openebs-openshift-e2e/script/5-chaos/percona-deployment-cstor
+    - ./openebs-openshift-e2e/script/5-chaos/percona-deployment-cstor

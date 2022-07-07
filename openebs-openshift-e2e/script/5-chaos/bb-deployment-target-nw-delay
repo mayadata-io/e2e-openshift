@@ -1,0 +1,93 @@
+#!/bin/bash
+
+pod() {
+mkdir -p /root/.ssh
+touch /root/.ssh/id_rsa
+echo "$SSH_KEYS" > /root/.ssh/id_rsa
+chmod 600 /root/.ssh/id_rsa
+ssh -o StrictHostKeyChecking=no $user@$ip -i /root/.ssh/id_rsa 'cd e2e-openshift && bash openebs-openshift-e2e/script/5-chaos/bb-deployment-target-nw-delay node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+}
+
+node() {
+
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+# echo "Setting up test dependencies.."   
+# ${utils_path}/setup_dependencies e2e-test
+
+bash script/utils/pooling jobname:bb-target-kill
+bash script/utils/e2e-cr jobname:bb-target-nw-delay jobphase:Waiting
+bash script/utils/e2e-cr jobname:bb-target-nw-delay jobphase:Running init_time:"$current_time" job_id:"$job_id" pipeline_id:"$pipeline_id" openebs_version:"$releaseTag"
+
+run_id="bb-cstor";test_name=$(bash script/utils/generate_test_name testcase=openebs-target-network-delay metadata=${run_id})
+echo $test_name
+
+git clone https://github.com/openebs/cstor-operators.git
+cd  cstor-operators/e2e-tests
+
+kubectl apply -f hack/rbac.yaml
+kubectl apply -f hack/crds.yaml
+
+cd  cstor-operators/e2e-tests
+cp experiments/chaos/openebs_target_network_delay/run_e2e_test.yml run_bb_target_nw_delay.yml
+
+sed -i -e 's/openebs-target-network-delay/bb-deployment-target-nw-delay/g' run_bb_target_nw_delay.yml
+
+sed -i -e '/name: APP_NAMESPACE/{n;s/.*/            value: bb-cstor-deployment/}' \
+-e '/name: APP_LABEL/{n;s/.*/            value: '\''app=busybox'\''/}' \
+-e '/name: CONTAINER_RUNTIME/{n;s/.*/            value: docker/}' \
+-e '/name: DEPLOY_TYPE/{n;s/.*/            value: deployment/}' \
+-e '/name: APP_PVC/{n;s/.*/            value: openebs-busybox/}' \
+-e "/name: TARGET_AFFINITY_CHECK/{n;s/value: 'enable'/value: 'disable'/g}" \
+-e '/name: DATA_PERSISTENCE/{n;s/.*/            value: busybox/}' run_bb_target_nw_delay.yml
+
+sed -i '/parameters.yml: |/a \
+    blocksize: 4k \
+    blockcount: 1024 \
+    testfile: targetnwdelaytest
+' run_bb_target_nw_delay.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' run_bb_target_nw_delay.yml
+
+cat run_bb_target_nw_delay.yml
+
+bash ../../script/utils/e2e_job_runner label='name:bb-deployment-target-nw-delay' job=run_bb_target_nw_delay.yml
+cd ../..
+
+bash script/utils/dump_cluster_state;
+bash script/utils/event_updater jobname:bb-target-nw-delay $test_name jobid:"$job_id" pipeline_id:"$pipeline_id"
+
+rc_val=$(echo $?)
+current_time=$(eval $time)
+
+if [ "$rc_val" != "0" ]; then
+bash script/utils/e2e-cr jobname:bb-target-nw-delay jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" openebs_version:"$releaseTag" test_result:Fail
+exit 1;
+fi
+
+bash script/utils/e2e-cr jobname:bb-target-nw-delay jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" openebs_version:"$releaseTag" test_result:Pass
+
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4 $5
+else
+  pod
+fi

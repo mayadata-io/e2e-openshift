@@ -1,0 +1,90 @@
+#!/bin/bash
+
+pod() {
+mkdir -p /root/.ssh
+touch /root/.ssh/id_rsa
+echo "$SSH_KEYS" > /root/.ssh/id_rsa
+chmod 600 /root/.ssh/id_rsa
+ssh -o StrictHostKeyChecking=no $user@$ip -i /root/.ssh/id_rsa 'cd e2e-openshift && bash openebs-openshift-e2e/script/4-upgrade-openebs/upgrade-cstor-csi node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"' '"'$FROM_VERSION'"' '"'$TO_VERSION'"' '"'$RELEASE_TAG'"' '"'$CSI_UPGRADE_IMAGE_TAG'"'
+}
+
+
+node() {
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+releaseTag=$(echo $4)
+from_version=$(echo $5)
+to_version=$(echo $6)
+releasebranch=$(echo $7)
+csi_upgrade_imageTag=$(echo $8)
+
+source ~/.profile
+
+present_dir=$(pwd)
+echo $present_dir
+
+# echo "Setting up test dependencies.."	
+# ${utils_path}/setup_dependencies e2e-test	
+
+bash script/utils/pooling jobname:upgrade-cstor-operator
+bash script/utils/e2e-cr jobname:upgrade-cstor-csi jobphase:Waiting
+bash script/utils/e2e-cr jobname:upgrade-cstor-csi jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" openebs_version:"$releaseTag"
+
+run_id="cstor-csi";test_name=$(bash script/utils/generate_test_name testcase=cstor-csi-upgrade metadata=${run_id})
+echo $test_name
+
+git clone https://github.com/openebs/upgrade.git
+cd  upgrade/e2e-tests
+
+kubectl apply -f hack/rbac.yaml
+kubectl apply -f hack/crds.yaml
+
+echo "Running the e2e test.."
+
+cp experiments/cspc_csi_upgrade/run_e2e_test.yml upgrade-cstor.yml
+
+sed -i -e '/name: CSPC_POOL_UPGRADE/{n;s/.*/            value: "true"/}' \
+-e '/name: CSI_VOLUME_UPGRADE/{n;s/.*/            value: "true"/}' \
+-e '/name: FROM_VERSION/{n;s/.*/            value: '"'$from_version'"'/}' \
+-e '/name: TO_VERSION/{n;s/.*/            value: '"'$to_version'"'/}' \
+-e '/name: RELEASE_VERSION/{n;s/.*/            value: '"'$releasebranch'"'/}' \
+-e '/name: UPGRADE_IMAGE_TAG/{n;s/.*/            value: '"'$csi_upgrade_imageTag'"'/}' upgrade-cstor.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' upgrade-cstor.yml 
+
+cat upgrade-cstor.yml
+
+bash ../../script/utils/e2e_job_runner label='app:cstor-csi-upgrade' job=upgrade-cstor.yml
+
+echo "Dumping state of cluster post job run"; echo ""
+bash ../../script/utils/dump_cluster_state;
+
+cd ../..
+bash script/utils/event_updater jobname:upgrade-cstor-csi $test_name jobid:"$job_id" pipelineid:"$pipeline_id"
+#################
+## GET RESULT  ##
+#################
+rc_val=$(echo $?)
+kubectl get pods -n openebs -o yaml | grep image | grep -v imageID | grep quay
+
+## Check the test status & result from the e2e result custom resource
+source ~/.profile
+testResult=$(kubectl get e2eresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
+
+current_time=$(eval $time)
+bash script/utils/e2e-cr jobname:upgrade-cstor-csi jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" openebs_version:"$releaseTag" test_result:$testResult
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4 $5 $6 $7 $8 $9
+else
+  pod
+fi

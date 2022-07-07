@@ -1,0 +1,4 @@
+#!/bin/bash
+set -x
+
+printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' "%"

@@ -1,0 +1,106 @@
+#!/bin/bash
+
+pod() {
+mkdir -p /root/.ssh
+touch /root/.ssh/id_rsa
+echo "$SSH_KEYS" > /root/.ssh/id_rsa
+chmod 600 /root/.ssh/id_rsa
+ssh -o StrictHostKeyChecking=no $user@$ip -i /root/.ssh/id_rsa 'cd e2e-openshift && bash openebs-openshift-e2e/script/3-functional/busybox-deployment-cstor/busybox-deployment-cstor node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"'
+}
+
+node() {
+
+job_id=$(echo $1)
+pipeline_id=$(echo $2)
+commit_id=$(echo $3)
+
+time="date"
+current_time=$(eval $time)
+
+present_dir=$(pwd)
+echo $present_dir
+
+# echo "Setting up test dependencies.."	
+# ${utils_path}/setup_dependencies e2e-test
+
+bash script/utils/e2e-cr jobname:busybox-deployment-cstor jobphase:Waiting
+bash script/utils/e2e-cr jobname:busybox-deployment-cstor jobphase:Running init_time:"$current_time" job_id:"$job_id" pipeline_id:"$pipeline_id" openebs_version:"$releaseTag"
+
+##Deploying BusyBox Application
+
+test_name=$(bash script/utils/generate_test_name testcase=busybox-provision-bb-cstor-deployment metadata="")
+echo $test_name
+
+git clone https://github.com/openebs/cstor-operators.git
+
+cd  cstor-operators/e2e-tests
+
+kubectl apply -f hack/rbac.yaml
+kubectl apply -f hack/crds.yaml
+
+cp apps/busybox/deployers/run_e2e_test.yml deploy_busybox_cstor.yml
+
+sed -i -e 's/value: app-busybox-ns/value: bb-cstor-deployment/g' \
+-e 's/generateName: e2e-busybox-deploy-/generateName: busybox-deployment-cstor-/g' \
+-e 's/app: busybox-e2e/app: busybox-deployment-cstor/g' deploy_busybox_cstor.yml
+
+cat deploy_busybox_cstor.yml
+
+bash ../../script/utils/e2e_job_runner label='app:busybox-deployment-cstor' job=deploy_busybox_cstor.yml
+cd ../..
+
+bash script/utils/dump_cluster_state;
+bash script/utils/event_updater jobname:busybox-deployment-cstor $test_name jobid:"$job_id" pipeline_id:"$pipeline_id"
+
+if [ "$?" != "0" ]; then
+exit 1;
+fi
+
+##Deploying Liveness on BusyBox Application
+
+run_id="deployment-cstor";test_name=$(bash script/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+echo $test_name
+
+cd  cstor-operators/e2e-tests
+cp apps/busybox/liveness/run_e2e_test.yml liveness_busybox_deployment_cstor.yml
+
+sed -i -e 's/generateName: e2e-busybox-liveness-/generateName: busybox-deployment-liveness-cstor-/g' \
+-e 's/value: app-busybox-ns/value: bb-cstor-deployment/g' \
+-e 's/liveness: e2e-busybox-liveness/liveness: busybox-deployment-liveness-cstor/g' liveness_busybox_deployment_cstor.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' liveness_busybox_deployment_cstor.yml
+            
+cat liveness_busybox_deployment_cstor.yml
+
+bash ../../script/utils/e2e_job_runner label='liveness:busybox-deployment-liveness-cstor' job=liveness_busybox_deployment_cstor.yml
+cd ../..
+
+bash script/utils/dump_cluster_state;
+bash script/utils/event_updater jobname:busybox-deployment-cstor $test_name jobid:"$job_id" pipeline_id:"$pipeline_id"
+
+
+rc_val=$(echo $?)
+current_time=$(eval $time)
+
+if [ "$rc_val" != "0" ]; then
+bash script/utils/e2e-cr jobname:busybox-deployment-cstor jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" openebs_version:"$releaseTag" test_result:Fail
+exit 1;
+fi
+
+bash script/utils/e2e-cr jobname:busybox-deployment-cstor jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" openebs_version:"$releaseTag" test_result:Pass
+
+
+if [ "$rc_val" != "0" ]; then
+exit 1;
+fi
+
+}
+
+if [ "$1" == "node" ];then
+  node $2 $3 $4 $5
+else
+  pod
+fi

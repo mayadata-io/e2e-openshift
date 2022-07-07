@@ -1,0 +1,39 @@
+#!/bin/bash
+set -x
+
+## TODO: Identify if both 'aws' & 'aws-openebs' are necessary, can't 'aws' alone be passed as artifact
+## TODO: csv files are needed only at cleanup, are they necessary for infra-setup job
+
+derive_cluster_details_infra()
+{
+
+ ## 'aws' folder is updated/filled with data from cluster create playbook
+ ## and passed as artifact to openebs infra-setup gitlab pod
+
+ ## Get kubeconfig file into infra-setup gitlab runner pod
+ path=$(pwd)
+ mkdir ~/.kube;
+
+ cp $path/aws/.kube/config ~/.kube/config
+
+ ## Transfer cluster config & physical details into 'aws-openebs'
+ mkdir -p $path/aws-openebs/ssh
+ cat $path/aws/cluster/id.csv > $path/aws-openebs/id.csv
+ cat $path/aws/cluster/cluster_name.csv > $path/aws-openebs/cluster_name.csv
+ cp $path/aws/.kube/config $path/aws-openebs/
+}
+
+setup_cluster_config_test()
+{
+ path=$(pwd)
+ mkdir ~/.kube
+ cp  $path/aws-openebs/config ~/.kube/config
+ cp -r $path/aws-openebs/ssh/. ~/.ssh/
+}
+
+if [[ $1 == "infra-setup" ]]; then
+ derive_cluster_details_infra;
+elif [[ $1 == "e2e-test" ]]; then
+ setup_cluster_config_test;
+else echo "invalid job type"; exit 1
+fi
