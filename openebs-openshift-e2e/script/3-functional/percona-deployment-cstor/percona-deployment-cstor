@@ -28,7 +28,7 @@ bash openebs-openshift-e2e/script/utils/e2e-cr jobname:percona-deployment-cstor 
 
 ##Deploying percona Application
 
-run_id="cstor";test_name=$(bash script/utils/generate_test_name testcase=percona-deployment metadata=${run_id})
+run_id="cstor";test_name=$(bash openebs-openshift-e2e/script/utils/generate_test_name testcase=percona-deployment metadata=${run_id})
 echo $test_name
 
 git clone https://github.com/openebs/cstor-operators.git
@@ -65,7 +65,7 @@ fi
 
 ##Loadgen on percona Application
 
-run_id="cstor";test_name=$(bash script/utils/generate_test_name testcase=percona-loadgen metadata=${run_id})
+run_id="cstor";test_name=$(bash openebs-openshift-e2e/script/utils/generate_test_name testcase=percona-loadgen metadata=${run_id})
 echo $test_name
 
 cd  cstor-operators/e2e-tests

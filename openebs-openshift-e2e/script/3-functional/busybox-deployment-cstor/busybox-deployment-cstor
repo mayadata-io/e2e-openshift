@@ -28,7 +28,7 @@ bash openebs-openshift-e2e/script/utils/e2e-cr jobname:busybox-deployment-cstor 
 
 ##Deploying BusyBox Application
 
-test_name=$(bash script/utils/generate_test_name testcase=busybox-provision-bb-cstor-deployment metadata="")
+test_name=$(bash openebs-openshift-e2e/script/utils/generate_test_name testcase=busybox-provision-bb-cstor-deployment metadata="")
 echo $test_name
 
 git clone https://github.com/openebs/cstor-operators.git
@@ -58,7 +58,7 @@ fi
 
 ##Deploying Liveness on BusyBox Application
 
-run_id="deployment-cstor";test_name=$(bash script/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
+run_id="deployment-cstor";test_name=$(bash openebs-openshift-e2e/script/utils/generate_test_name testcase=busybox-liveness metadata=${run_id})
 echo $test_name
 
 cd  cstor-operators/e2e-tests

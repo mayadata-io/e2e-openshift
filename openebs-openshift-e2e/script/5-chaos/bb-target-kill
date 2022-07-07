@@ -30,7 +30,7 @@ bash openebs-openshift-e2e/script/utils/e2e-cr jobname:bb-target-kill jobphase:R
 
 ## Performing target failure
 
-run_id="cstor-kill";test_name=$(bash script/utils/generate_test_name testcase=openebs-target-failure metadata=${run_id})
+run_id="cstor-kill";test_name=$(bash openebs-openshift-e2e/script/utils/generate_test_name testcase=openebs-target-failure metadata=${run_id})
 echo $test_name
 
 git clone https://github.com/openebs/cstor-operators.git

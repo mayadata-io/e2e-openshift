@@ -22,7 +22,7 @@ while [ -z "$job_name" ]; do
     fi
   job_name=$(eval ${jobNameCmd});
 done
-chmod 755 ../../script/utils/error_handler
+chmod 755 ../../openebs-openshift-e2e/script/utils/error_handler
 bash ../../openebs-openshift-e2e/script/utils/error_handler ${retcode} msg="Unable to run e2ebook, exiting" action="exit"
     
 ## Obtain the e2e pod name 

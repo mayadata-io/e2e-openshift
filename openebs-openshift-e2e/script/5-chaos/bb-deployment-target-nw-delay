@@ -24,11 +24,11 @@ echo $present_dir
 # echo "Setting up test dependencies.."   
 # ${utils_path}/setup_dependencies e2e-test
 
-bash script/utils/pooling jobname:bb-target-kill
+bash openebs-openshift-e2e/script/utils/pooling jobname:bb-target-kill
 bash openebs-openshift-e2e/script/utils/e2e-cr jobname:bb-target-nw-delay jobphase:Waiting
 bash openebs-openshift-e2e/script/utils/e2e-cr jobname:bb-target-nw-delay jobphase:Running init_time:"$current_time" job_id:"$job_id" pipeline_id:"$pipeline_id" openebs_version:"$releaseTag"
 
-run_id="bb-cstor";test_name=$(bash script/utils/generate_test_name testcase=openebs-target-network-delay metadata=${run_id})
+run_id="bb-cstor";test_name=$(bash openebs-openshift-e2e/script/utils/generate_test_name testcase=openebs-target-network-delay metadata=${run_id})
 echo $test_name
 
 git clone https://github.com/openebs/cstor-operators.git

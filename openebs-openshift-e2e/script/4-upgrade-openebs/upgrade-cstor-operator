@@ -32,7 +32,7 @@ echo $present_dir
 bash openebs-openshift-e2e/script/utils/e2e-cr jobname:upgrade-cstor-operator jobphase:Waiting
 bash openebs-openshift-e2e/script/utils/e2e-cr jobname:upgrade-cstor-operator jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" openebs_version:"$releaseTag"
 
-test_name=$(bash script/utils/generate_test_name testcase=cstor-csi-upgrade metadata="")
+test_name=$(bash openebs-openshift-e2e/script/utils/generate_test_name testcase=cstor-csi-upgrade metadata="")
 echo $test_name
 
 git clone https://github.com/openebs/upgrade.git

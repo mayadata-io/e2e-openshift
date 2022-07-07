@@ -31,7 +31,7 @@ bash openebs-openshift-e2e/script/utils/e2e-cr jobname:percona-target-nw-delay j
 ## Performing Target-network-delay test ##
 ##########################################
 
-run_id="percona-cstor";test_name=$(bash script/utils/generate_test_name testcase=openebs-target-network-delay metadata=${run_id})
+run_id="percona-cstor";test_name=$(bash openebs-openshift-e2e/script/utils/generate_test_name testcase=openebs-target-network-delay metadata=${run_id})
 echo $test_name
 
 git clone https://github.com/openebs/cstor-operators.git

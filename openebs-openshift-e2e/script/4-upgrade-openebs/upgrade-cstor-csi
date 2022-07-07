@@ -27,11 +27,11 @@ echo $present_dir
 # echo "Setting up test dependencies.."	
 # ${utils_path}/setup_dependencies e2e-test	
 
-bash script/utils/pooling jobname:upgrade-cstor-operator
+bash openebs-openshift-e2e/script/utils/pooling jobname:upgrade-cstor-operator
 bash openebs-openshift-e2e/script/utils/e2e-cr jobname:upgrade-cstor-csi jobphase:Waiting
 bash openebs-openshift-e2e/script/utils/e2e-cr jobname:upgrade-cstor-csi jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" openebs_version:"$releaseTag"
 
-run_id="cstor-csi";test_name=$(bash script/utils/generate_test_name testcase=cstor-csi-upgrade metadata=${run_id})
+run_id="cstor-csi";test_name=$(bash openebs-openshift-e2e/script/utils/generate_test_name testcase=cstor-csi-upgrade metadata=${run_id})
 echo $test_name
 
 git clone https://github.com/openebs/upgrade.git
