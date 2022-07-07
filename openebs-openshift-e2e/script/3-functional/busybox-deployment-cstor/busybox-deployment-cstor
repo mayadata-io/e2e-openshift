@@ -49,7 +49,7 @@ cat deploy_busybox_cstor.yml
 bash ../../openebs-openshift-e2e/script/utils/e2e_job_runner label='app:busybox-deployment-cstor' job=deploy_busybox_cstor.yml
 cd ../..
 
-bash script/utils/dump_cluster_state;
+bash openebs-openshift-e2e/script/utils/dump_cluster_state;
 bash openebs-openshift-e2e/script/utils/event_updater jobname:busybox-deployment-cstor $test_name jobid:"$job_id" pipeline_id:"$pipeline_id"
 
 if [ "$?" != "0" ]; then
@@ -78,7 +78,7 @@ cat liveness_busybox_deployment_cstor.yml
 bash ../../openebs-openshift-e2e/script/utils/e2e_job_runner label='liveness:busybox-deployment-liveness-cstor' job=liveness_busybox_deployment_cstor.yml
 cd ../..
 
-bash script/utils/dump_cluster_state;
+bash openebs-openshift-e2e/script/utils/dump_cluster_state;
 bash openebs-openshift-e2e/script/utils/event_updater jobname:busybox-deployment-cstor $test_name jobid:"$job_id" pipeline_id:"$pipeline_id"
 
 

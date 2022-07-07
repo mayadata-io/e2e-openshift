@@ -23,7 +23,7 @@ current_time=$(eval $time)
 # echo "Setting up test dependencies.."
 # ${utils_path}/setup_dependencies infra-setup
 
-kubectl apply -f script/utils/e2e-crd.yml
+kubectl apply -f openebs-openshift-e2e/script/utils/e2e-crd.yml
 
 #pooling over previous job to complete
 bash openebs-openshift-e2e/script/utils/e2e-cr jobname:cstor-operator jobphase:Waiting

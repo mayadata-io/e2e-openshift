@@ -66,7 +66,7 @@ cat run_bb_target_nw_delay.yml
 bash ../../openebs-openshift-e2e/script/utils/e2e_job_runner label='name:bb-deployment-target-nw-delay' job=run_bb_target_nw_delay.yml
 cd ../..
 
-bash script/utils/dump_cluster_state;
+bash openebs-openshift-e2e/script/utils/dump_cluster_state;
 bash openebs-openshift-e2e/script/utils/event_updater jobname:bb-target-nw-delay $test_name jobid:"$job_id" pipeline_id:"$pipeline_id"
 
 rc_val=$(echo $?)

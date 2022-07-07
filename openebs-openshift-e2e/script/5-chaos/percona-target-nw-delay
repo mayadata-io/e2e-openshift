@@ -72,7 +72,7 @@ cat run_percona_target_nw_delay.yml
 bash ../../openebs-openshift-e2e/script/utils/e2e_job_runner label='name:percona-target-nw-delay' job=run_percona_target_nw_delay.yml
 cd ../..
 
-bash script/utils/dump_cluster_state;
+bash openebs-openshift-e2e/script/utils/dump_cluster_state;
 bash openebs-openshift-e2e/script/utils/event_updater jobname:percona-target-nw-delay $test_name jobid:"$job_id" pipeline_id:"$pipeline_id"
 
 rc_val=$(echo $?)

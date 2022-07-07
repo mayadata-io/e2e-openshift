@@ -55,7 +55,7 @@ cat percona_cstor.yml
 bash ../../openebs-openshift-e2e/script/utils/e2e_job_runner label='app:percona-deploy-cstor' job=percona_cstor.yml
 cd ../..
 
-bash script/utils/dump_cluster_state;
+bash openebs-openshift-e2e/script/utils/dump_cluster_state;
 bash openebs-openshift-e2e/script/utils/event_updater jobname:percona-cstor $test_name jobid:"$job_id" pipeline_id:"$pipeline_id"
 
 
