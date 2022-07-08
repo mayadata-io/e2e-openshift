@@ -22,7 +22,7 @@ echo $present_dir
 
 # Applying e2e-CRD
 echo "***Applying e2e-crd***********"
-kubectl apply-f openebs-openshift-e2e/script/utils/e2e-crd.yml
+kubectl apply -f openebs-openshift-e2e/script/utils/e2e-crd.yml
 
 kubectl get pods -n openebs -o yaml | grep image | grep -v imageID | grep quay
 

@@ -22,7 +22,7 @@ echo $present_dir
 
 # Applying e2e-CRD
 echo "***Applying e2e-crd***********"
-kubectl apply-f openebs-openshift-e2e/script/utils/e2e-crd.yml
+kubectl apply -f openebs-openshift-e2e/script/utils/e2e-crd.yml
 
 bash openebs-openshift-e2e/script/utils/e2e-cr jobname:percona-deployment-cstor jobphase:Waiting
 bash openebs-openshift-e2e/script/utils/e2e-cr jobname:percona-deployment-cstor jobphase:Running init_time:"$current_time" job_id:"$job_id" pipeline_id:"$pipeline_id" openebs_version:"$releaseTag"
