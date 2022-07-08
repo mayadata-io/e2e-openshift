@@ -20,9 +20,6 @@ current_time=$(eval $time)
 present_dir=$(pwd)
 echo $present_dir
 
-# echo "Setting up test dependencies.."   
-# ${utils_path}/setup_dependencies e2e-test
-
 bash openebs-openshift-e2e/script/utils/e2e-cr jobname:percona-cstor jobphase:Waiting
 bash openebs-openshift-e2e/script/utils/e2e-cr jobname:percona-cstor jobphase:Running init_time:"$current_time" job_id:"$job_id" pipeline_id:"$pipeline_id" openebs_version:"$releaseTag"
 
@@ -31,16 +28,13 @@ bash openebs-openshift-e2e/script/utils/e2e-cr jobname:percona-cstor jobphase:Ru
 run_id="cstor";test_name=$(bash openebs-openshift-e2e/script/utils/generate_test_name testcase=percona-deployment metadata=${run_id})
 echo $test_name
 
-git clone https://github.com/openebs/cstor-operators.git	
+git clone https://github.com/openebs/cstor-operators
 cd cstor-operators/e2e-tests
-
-kubectl apply -f hack/rbac.yaml
-kubectl apply -f hack/crds.yaml
-
 echo "Running the e2e test for percona Deployment..."
 cp apps/percona/deployers/run_e2e_test.yml percona_cstor.yml
 
 sed -i -e 's/app: percona-deployment/app: percona-deploy-cstor/g' \
+-e 's/value: openebs-cstor-csi/value: openebs-cstor-disk/g' \
 -e 's/value: app-percona-ns/value: percona-cstor-ns/g' percona_cstor.yml
 
 sed -i '/command:/i \
@@ -58,7 +52,6 @@ cd ../..
 bash openebs-openshift-e2e/script/utils/dump_cluster_state;
 bash openebs-openshift-e2e/script/utils/event_updater jobname:percona-cstor $test_name jobid:"$job_id" pipeline_id:"$pipeline_id"
 
-
 rc_val=$(echo $?)
 current_time=$(eval $time)
 
@@ -68,7 +61,6 @@ exit 1;
 fi
 
 bash openebs-openshift-e2e/script/utils/e2e-cr jobname:percona-cstor jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" openebs_version:"$releaseTag" test_result:Pass
-
 if [ "$rc_val" != "0" ]; then
 exit 1;
 fi

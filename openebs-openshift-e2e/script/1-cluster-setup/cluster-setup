@@ -52,11 +52,11 @@ ssh -o StrictHostKeyChecking=no $user@$ip -i /root/.ssh/id_rsa kubectl get nodes
 ssh -o StrictHostKeyChecking=no $user@$ip -i /root/.ssh/id_rsa kubectl get pod --all-namespaces
 
 echo "cloning e2e-openshift repo*************"
-ssh -o StrictHostKeyChecking=no $user@$ip -i /root/.ssh/id_rsa 'git clone -b cncf-openebs-csi-upgrade https://github.com/mayadata-io/e2e-openshift.git'
+ssh -o StrictHostKeyChecking=no $user@$ip -i /root/.ssh/id_rsa 'git clone -b cncf-openebs-spc-migration https://github.com/mayadata-io/e2e-openshift.git'
 else
 echo "All nodes are not ready"
 echo "******Cluster is in Unhealthy state*******"
 echo "cloning e2e-openshift repo*************"
-ssh -o StrictHostKeyChecking=no $user@$ip -i /root/.ssh/id_rsa 'git clone -b cncf-openebs-csi-upgrade https://github.com/mayadata-io/e2e-openshift.git'
+ssh -o StrictHostKeyChecking=no $user@$ip -i /root/.ssh/id_rsa 'git clone -b cncf-openebs-spc-migration https://github.com/mayadata-io/e2e-openshift.git'
 exit 1;
 fi

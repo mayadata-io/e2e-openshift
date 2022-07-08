@@ -4,7 +4,7 @@ stages:
   - CLUSTER-SETUP
   - INFRA-SETUP
   - APP-FUNC-TEST
-  - UPGRADE-OPENEBS
+  - MIGRATE-OPENEBS
   - APP-CHAOS-TEST  
 ##########################################################################################
 
@@ -24,23 +24,17 @@ Cluster-Setup:
   dependencies:
     - Cluster-Setup
 
-CSTOR-OPERATOR:
+OPENEBS-DEPLOY:
   extends: .infra_setup_template
   script:
-    - chmod 755 ./openebs-openshift-e2e/script/2-infra-setup/cstor-cspc-operator/cspc-cstor-operator
-    - ./openebs-openshift-e2e/script/2-infra-setup/cstor-cspc-operator/cspc-cstor-operator
+    - chmod 755 ./openebs-openshift-e2e/script/2-infra-setup/openebs-deploy/infra-setup
+    - ./openebs-openshift-e2e/script/2-infra-setup/openebs-deploy/infra-setup
 
 STRIPED-POOL-PROVISION:
   extends: .infra_setup_template
   script:
     - chmod 775 ./openebs-openshift-e2e/script/2-infra-setup/create-striped-pool/create-striped-pool
     - ./openebs-openshift-e2e/script/2-infra-setup/create-striped-pool/create-striped-pool
-
-STORAGE-CLASSES:
-  extends: .infra_setup_template
-  script:
-    - chmod 775 ./openebs-openshift-e2e/script/2-infra-setup/storage-policies/openebs-sc
-    - ./openebs-openshift-e2e/script/2-infra-setup/storage-policies/openebs-sc
 
 ###########################################################################################
 
@@ -65,24 +59,36 @@ percona-deployment-cstor:
 
 ###########################################################################################
 
-.upgrade_openebs:
+.migrate_openebs:
   image: openebs/openshift-ci:latest
-  stage: UPGRADE-OPENEBS
+  stage: MIGRATE-OPENEBS
   when: always
   dependencies:
     - Cluster-Setup
 
-upgrade-cstor-operator:
-  extends: .upgrade_openebs
+upgrade-control-plane:
+  extends: .migrate_openebs
   script:
-    - chmod 775 ./openebs-openshift-e2e/script/4-upgrade-openebs/upgrade-cstor-operator
-    - ./openebs-openshift-e2e/script/4-upgrade-openebs/upgrade-cstor-operator
+    - chmod 775 ./openebs-openshift-e2e/script/4-migrate-openebs/upgrade-control-plane
+    - ./openebs-openshift-e2e/script/4-migrate-openebs/upgrade-control-plane
 
-upgrade-cspc-csi:
-  extends: .upgrade_openebs
+cstor-operator-provision:
+  extends: .migrate_openebs
   script:
-    - chmod 775 ./openebs-openshift-e2e/script/4-upgrade-openebs/upgrade-cstor-csi
-    - ./openebs-openshift-e2e/script/4-upgrade-openebs/upgrade-cstor-csi
+    - chmod 775 ./openebs-openshift-e2e/script/4-migrate-openebs/cspc-cstor-operator
+    - ./openebs-openshift-e2e/script/4-migrate-openebs/cspc-cstor-operator
+
+migrate-spc-pool:
+  extends: .migrate_openebs
+  script:
+    - chmod 775 ./openebs-openshift-e2e/script/4-migrate-openebs/migrate-cstor-pool
+    - ./openebs-openshift-e2e/script/4-migrate-openebs/migrate-cstor-pool
+
+migrate-cstor-volume:
+  extends: .migrate_openebs
+  script:
+    - chmod 775 ./openebs-openshift-e2e/script/4-migrate-openebs/migrate-cstor-volume
+    - ./openebs-openshift-e2e/script/4-migrate-openebs/migrate-cstor-volume
 
 ###########################################################################################
 
@@ -92,12 +98,6 @@ upgrade-cspc-csi:
   when: always
   dependencies:
     - Cluster-Setup
-
-busybox-target-kill:
-  extends: .chaos_test_template
-  script:
-    - chmod 775 ./openebs-openshift-e2e/script/5-chaos/bb-target-kill
-    - ./openebs-openshift-e2e/script/5-chaos/bb-target-kill
 
 busybox-deployment-target-network-delay:
   extends: .chaos_test_template

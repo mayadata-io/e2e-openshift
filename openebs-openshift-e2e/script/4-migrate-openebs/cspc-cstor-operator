@@ -5,7 +5,7 @@ mkdir -p /root/.ssh
 touch /root/.ssh/id_rsa
 echo "$SSH_KEYS" > /root/.ssh/id_rsa
 chmod 600 /root/.ssh/id_rsa
-ssh -o StrictHostKeyChecking=no $user@$ip -i /root/.ssh/id_rsa 'cd e2e-openshift && bash openebs-openshift-e2e/script/2-infra-setup/cstor-cspc-operator/cspc-cstor-operator node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$FROM_VERSION'"' '"'$CSI_NAMESPACE'"'
+ssh -o StrictHostKeyChecking=no $user@$ip -i /root/.ssh/id_rsa 'cd e2e-openshift && bash openebs-openshift-e2e/script/4-migrate-openebs/cspc-cstor-operator node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"' '"'$COMMIT_ID'"' '"'$RC_TAG'"'
 }
 
 
@@ -13,37 +13,35 @@ node() {
 job_id=$(echo $1)
 pipeline_id=$(echo $2)
 commit_id=$(echo $3)
-release_version=$(echo $4)
-csi_ns=$(echo $5)
-
+openebs_version=$(echo $4)
+release_commit_id=$(echo $5)
+rc_tag=$(echo $6)
 
 time="date"
 current_time=$(eval $time)
 
-# echo "Setting up test dependencies.."
-# ${utils_path}/setup_dependencies infra-setup
-
-kubectl apply -f openebs-openshift-e2e/script/utils/e2e-crd.yml
-
 #pooling over previous job to complete
+bash openebs-openshift-e2e/script/utils/pooling jobname:upgrade-control-plane
 bash openebs-openshift-e2e/script/utils/e2e-cr jobname:cstor-operator jobphase:Waiting
 bash openebs-openshift-e2e/script/utils/e2e-cr jobname:cstor-operator jobphase:Running init_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" openebs_version:"$releaseTag"
 
-test_name=$(bash openebs-openshift-e2e/script/utils/generate_test_name testcase=openebs-cstor-operator-provision metadata="")
+run_id="upgrade";test_name=$(bash openebs-openshift-e2e/script/utils/generate_test_name testcase=openebs-cstor-operator-provision metadata=${run_id})
 echo $test_name
 
-git clone https://github.com/openebs/upgrade.git
+git clone https://github.com/openebs/upgrade
 cd upgrade/e2e-tests
-
-kubectl apply -f hack/rbac.yaml
-kubectl apply -f hack/crds.yaml
 
 # copy the content of deployer run_e2e_test.yml into a different file to update the test specific parameters.
 cp experiments/cstor-operator-provision/run_e2e_test.yml cstor_operator.yml
 
-sed -i -e "/name: COMMIT_ID/{n;s/.*/            value: charts/g}" \
--e "/name: CSI_NS/{n;s/.*/            value: ${csi_ns}/g}" \
--e "/name: OPENEBS_VERSION/{n;s/.*/            value: ${release_version}/g}" cstor_operator.yml
+sed -i -e "/name: COMMIT_ID/{n;s/.*/            value: ${release_commit_id}/g}" \
+-e "/name: RC_TAG/{n;s/.*/            value: ${rc_tag}/g}" \
+-e "/name: OPENEBS_VERSION/{n;s/.*/            value: ${openebs_version}/g}" cstor_operator.yml
+
+sed -i '/command:/i \
+          - name: RUN_ID\
+            value: '"$run_id"'\
+' cstor_operator.yml
 
 cat cstor_operator.yml
 
@@ -58,12 +56,12 @@ bash openebs-openshift-e2e/script/utils/event_updater jobname:cstor-operator $te
 rc_val=$(echo $?)
 
 ## Check the test status & result from the e2e result custom resource
-# source ~/.profile
-# gittoken=$(echo "$github_token")
+source ~/.profile
+gittoken=$(echo "$github_token")
 testResult=$(kubectl get e2eresult ${test_name} --no-headers -o custom-columns=:spec.testStatus.result)
 
 current_time=$(eval $time)
-bash openebs-openshift-e2e/script/utils/e2e-cr jobname:cstor-operator jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" openebs_version:"$releaseTag" test_result:Pass
+bash openebs-openshift-e2e/script/utils/e2e-cr jobname:cstor-operator jobphase:Completed end_time:"$current_time" jobid:"$job_id" pipelineid:"$pipeline_id" openebs_version:"$openebs_version" test_result:Pass
 
 if [ "$rc_val" != "0" ]; then
 exit 1;
@@ -71,7 +69,7 @@ fi
 }
 
 if [ "$1" == "node" ];then
-  node $2 $3 $4 $5 $6
+  node $2 $3 $4 $5 $6 $7
 else
   pod
 fi
