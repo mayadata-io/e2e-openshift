@@ -6,7 +6,7 @@ touch /root/.ssh/id_rsa
 echo "$SSH_KEYS" > /root/.ssh/id_rsa
 chmod 600 /root/.ssh/id_rsa
 
-ssh -o StrictHostKeyChecking=no $user@$ip -i /root/.ssh/id_rsa 'cd e2e-openshift && bash openebs-openshift-e2e/stages/2-infra-setup/2IJO02-jiva-operator node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"' '"'$JIVA_OPERATOR_RELEASE_BRANCH'"' '"'$JIVA_OPERATOR_IMAGE_TYPE'"' '"'$COMMIT_ID'"' '"'$RC_TAG'"' '"'$JIVA_OPERATOR_IMAGE'"' '"'$JIVA_CSI_DRIVER_IMAGE'"'
+ssh -o StrictHostKeyChecking=no $user@$ip -i /root/.ssh/id_rsa 'cd e2e-openshift && bash openebs-openshift-e2e/stages/2-infra-setup/2IJO02-jiva-operator node '"'$CI_JOB_ID'"'' '"'$CI_PIPELINE_ID'"' '"'$CI_COMMIT_SHA'"' '"'$RELEASE_TAG'"' '"'$JIVA_OPERATOR_RELEASE_BRANCH'"' '"'$JIVA_OPERATOR_IMAGE_TYPE'"' '"'$COMMIT_ID'"' '"'$JIVA_OPERATOR_IMAGE'"' '"'$JIVA_CSI_DRIVER_IMAGE'"' '"'$RC_TAG'"'
 }
 
 node() {
@@ -19,9 +19,9 @@ releaseTag=$(echo $4)
 release_branch=$(echo $5)
 release_image_type=$(echo $6)
 release_commit_id=$(echo $7)
-rc_tag=$(echo $8)
-jiva_operator_image=$(echo $9)
-jiva_csi_driver_image=$(echo ${10})
+jiva_operator_image=$(echo $8)
+jiva_csi_driver_image=$(echo $9)
+rc_tag=$(echo ${10})
 
 echo "releaseTag=$releaseTag"
 echo "rctag=$rc_tag"
