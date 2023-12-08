@@ -1,1 +1,4 @@
 git clone -b jiva-operator https://github.com/mayadata-io/e2e-openshift.git'
+cd e2e-openshift
+git clone https://github.com/openebs/jiva-operator
+cd jiva-operator/e2e-tests
